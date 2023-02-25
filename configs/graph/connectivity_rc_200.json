@@ -1,0 +1,19 @@
+{
+	"run_name": "connectivity",
+	"system_sizes": [200],
+	"partition_sizes": [100],
+	"probs": [0.0, 0.01, 0.02, 0.03, 0.05, 0.06, 0.07, 0.08, 0.09, 0.1, 0.11, 0.12, 0.13, 0.14, 0.15, 0.16, 0.17, 0.18, 0.19, 0.2, 0.21, 0.22, 0.23, 0.24, 0.25, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 0.95, 0.99],
+
+	"evolution_type": "random_clifford",
+	"gate_width": 2,
+	"equilibration_steps": 1000,
+	"timesteps": 1000,
+	"measurement_freq": 5,
+
+	"num_runs": 5,
+
+	"space_avg": true,
+	"spacing": 5,
+
+	"filename": "connectivity_rc_200.json"
+}

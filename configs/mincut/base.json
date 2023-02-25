@@ -1,0 +1,17 @@
+{
+	"run_name": "base_mc",
+	"circuit_type": "mincut",
+
+	"system_sizes": [50],
+	"partition_sizes": [2, 4, 8, 12, 16, 26],
+	"fparams": [{"mzr_prob": 0.06}, {"mzr_prob": 0.08}, {"mzr_prob": 0.1}, {"mzr_prob": 0.138}, {"mzr_prob": 0.16}],
+
+	"temporal_avg": true,
+	"sampling_timesteps": 1000,
+	"equilibration_steps": 300,
+	"measurement_freq": 5,
+
+	"spacing": 5,
+
+	"filename": "base_mc.json"
+}

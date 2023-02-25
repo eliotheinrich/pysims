@@ -1,2 +1,7 @@
+.vscode
 cmake
 build
+bin
+jobs
+data
+slurm-*

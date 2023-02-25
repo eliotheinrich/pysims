@@ -1,0 +1,19 @@
+{
+	"run_name": "time_rc",
+	"simulator_type": "chp",
+	"circuit_type": "random_clifford",
+	"num_runs": 100000,
+
+	"system_sizes": [256],
+	"partition_sizes": [128],
+	"iparams": [{"gate_width": 2}],
+	"fparams": [{"mzr_prob": 0.16}],
+
+	"sampling_timesteps": 100,
+	"measurement_freq": 5,
+	"temporal_avg": false,
+	
+	"spacing": 5,
+	
+	"filename": "time_rc_256.json"
+}

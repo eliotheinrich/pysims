@@ -1,0 +1,21 @@
+{
+	"run_name": "base_rc",
+	"simulator_type": "chp",
+	"circuit_type": "random_clifford",
+
+	"system_sizes": [10],
+	"partition_sizes": [2, 8],
+	"iparams": [{"gate_width": 2}, {"gate_width": 2}, {"gate_width": 2}, {"gate_width": 2},
+				{"gate_width": 2}, {"gate_width": 2}, {"gate_width": 2}, {"gate_width": 2}],
+	"fparams": [{"mzr_prob": 0.08}, {"mzr_prob": 0.12}, {"mzr_prob": 0.14}, {"mzr_prob": 0.15}, 
+				{"mzr_prob": 0.16}, {"mzr_prob": 0.17}, {"mzr_prob": 0.18}, {"mzr_prob": 0.19}],
+
+	"temporal_avg": true,
+	"sampling_timesteps": 5000,
+	"equilibration_steps": 500,
+	"measurement_freq": 5,
+
+	"spacing": 5,
+
+	"filename": "base_rc.json"
+}

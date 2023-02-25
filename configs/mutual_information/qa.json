@@ -1,0 +1,19 @@
+{
+	"run_name": "mutual_information",
+	"simulator_type": "chp",
+	"circuit_type": "quantum_automaton",
+	"num_runs": 100,
+
+	"system_sizes": [256],
+	"partition_size": 16,
+	"num_bins": 100,
+	"min_eta": 0.01,
+	"max_eta": 1.0,
+	"fparams": [{"mzr_prob": 0.12}, {"mzr_prob": 0.13}, {"mzr_prob": 0.138}, {"mzr_prob": 0.145}, {"mzr_prob": 0.16}, {"mzr_prob": 0.17}],
+
+	"equilibration_steps": 3000, 
+	"sampling_timesteps": 100,
+	"measurement_freq": 2,
+
+	"filename": "mutual_information_256_qa.json"
+}

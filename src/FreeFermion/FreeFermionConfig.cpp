@@ -5,41 +5,26 @@
 
 using json = nlohmann::json;
 
-FreeFermionConfig::FreeFermionConfig() {}
-
-FreeFermionConfig::FreeFermionConfig(std::map<std::string, int> iparams, std::map<std::string, float> fparams) {
-    system_size = iparams["system_size"];
-    partition_size = iparams["partition_size"];
-
-    equilibration_steps = iparams["equilibration_steps"];
-    timesteps = iparams["timesteps"];
-    measurement_freq = iparams["measurement_freq"];
-
-    spacing = iparams["spacing"];
-    
-    p1 = fparams["p1"];
-    p2 = fparams["p2"];
-    beta = fparams["beta"];
-    filling_fraction = fparams["filling_fraction"];
-}
-
-std::vector<FreeFermionConfig> FreeFermionConfig::load_json(std::string filename) {
+std::vector<FreeFermionConfig*> FreeFermionConfig::load_json(std::string filename) {
     std::ifstream f(filename);
+    
     json data = json::parse(f);
+
+    uint num_configs = data["system_sizes"].size()*data["partition_sizes"].size()*data["fparams"].size();
+    assert(num_configs > 0);
 
     std::map<std::string, int> iparams;
     std::map<std::string, float> fparams;
 
-    std::vector<FreeFermionConfig> configs(0);
-
+    std::vector<FreeFermionConfig*> configs(0);
     uint num_runs = data.value("num_runs", DEFAULT_NUM_RUNS);
     iparams["equilibration_steps"] = data.value("equilibration_steps", DEFAULT_EQUILIBRATION_STEPS);
     iparams["timesteps"] = data.value("timesteps", DEFAULT_TIMESTEPS);
     iparams["measurement_freq"] = data.value("measurement_freq", DEFAULT_MEASUREMENT_FREQ);
     iparams["spacing"] = data.value("spacing", DEFAULT_SPACING);
 
-    for (int system_size : data["system_size"]) {
-        for (int partition_size : data["partition_size"]) {
+    for (int system_size : data["system_sizes"]) {
+        for (int partition_size : data["partition_sizes"]) {
             iparams["partition_size"] = partition_size;
             iparams["system_size"] = system_size;
             for (auto json_fparams : data["fparams"]) {
@@ -48,13 +33,29 @@ std::vector<FreeFermionConfig> FreeFermionConfig::load_json(std::string filename
                 fparams["beta"] = json_fparams["beta"];
                 fparams["filling_fraction"] = json_fparams["filling_fraction"];
                 for (int i = 0; i < num_runs; i++) {
-                    configs.push_back(FreeFermionConfig(iparams, fparams));
+                    configs.push_back(new FreeFermionConfig(iparams, fparams));
                 }
             }
         }
     }
 
     return configs;
+}
+
+FreeFermionConfig::FreeFermionConfig(std::map<std::string, int> iparams, std::map<std::string, float> fparams) {
+    system_size = iparams["system_size"];
+
+    equilibration_steps = iparams["equilibration_steps"];
+    timesteps = iparams["timesteps"];
+    measurement_freq = iparams["measurement_freq"];
+
+    partition_size = iparams["partition_size"];
+    spacing = iparams["spacing"];
+    
+    p1 = fparams["p1"];
+    p2 = fparams["p2"];
+    beta = fparams["beta"];
+    filling_fraction = fparams["filling_fraction"];
 }
 
 std::map<std::string, int> FreeFermionConfig::get_iparams() const {

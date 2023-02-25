@@ -1,0 +1,18 @@
+{
+	"run_name": "base_qa",
+	"simulator_type": "chp",
+	"circuit_type": "quantum_automaton",
+
+	"system_sizes": [256],
+	"partition_sizes": [2, 4, 8, 12, 16, 25, 35, 45, 55, 65, 80, 85, 100, 125],
+	"fparams": [{"mzr_prob": 0.06}, {"mzr_prob": 0.08}, {"mzr_prob": 0.1}, {"mzr_prob": 0.138}, {"mzr_prob": 0.16}],
+	
+	"sampling_timesteps": 100,
+	"equilibration_steps": 30,
+	"temporal_avg": true,
+	"measurement_freq": 5,
+
+	"spacing": 5,
+	
+	"filename": "base_qa.json"
+}

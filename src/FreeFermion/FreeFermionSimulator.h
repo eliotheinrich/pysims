@@ -1,5 +1,6 @@
-#ifndef FREEFERMION_H
-#define FREEFERMION_H
+#ifndef FF_SIM_H
+#define FF_SIM_H
+
 
 #include <Eigen/Core>
 #include <vector>
@@ -23,6 +24,8 @@ class FreeFermionSimulator : public Simulator, public Entropy {
     public:
         FreeFermionSimulator();
         FreeFermionSimulator(uint system_size, float p1, float p2, float beta, float filling_fraction);
+        ~FreeFermionSimulator();
+        
         int get_num_particles();
 
         float kappa();

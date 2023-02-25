@@ -11,12 +11,13 @@
 
 class FreeFermionConfig : Config {
     private:
-        uint partition_size;
+        uint system_size;
 
         uint equilibration_steps;
         uint timesteps;
         uint measurement_freq;
 
+        uint partition_size;
         uint spacing;
         
         float p1;
@@ -28,10 +29,11 @@ class FreeFermionConfig : Config {
 
     public:
         uint system_size;
-        static std::vector<FreeFermionConfig> load_json(std::string filename);
+        static std::vector<FreeFermionConfig*> load_json(std::string filename);
 
-        FreeFermionConfig();
+        FreeFermionConfig() {}
         FreeFermionConfig(std::map<std::string, int> iparams, std::map<std::string, float> fparams);
+        ~FreeFermionConfig() {}
 
         virtual std::map<std::string, int> get_iparams() const;
         virtual std::map<std::string, float> get_fparams() const;

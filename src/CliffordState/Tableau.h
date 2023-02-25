@@ -1,9 +1,9 @@
-#ifndef QCHP_H
-#define QCHP_H
+#ifndef TABLEAU_H
+#define TABLEAU_H
 
+#include <string>
 #include <vector>
-
-using uint = unsigned int;
+#include <random>
 
 class PauliString {
     public:
@@ -12,14 +12,17 @@ class PauliString {
         bool phase;
 
         PauliString(uint num_qubits);
-        static PauliString rand(uint num_quibts);
+        ~PauliString() {}
+
+        static PauliString rand(uint num_qubits, std::minstd_rand *r);
+		PauliString copy();
 
         std::string to_op(uint i) const;
         std::string to_string(bool to_ops) const;
 
         bool x(uint i) const { return bit_string[i]; }
-        bool z(uint i) const { return bit_string[i + num_qubits]; };
-        bool r() const { return phase; };
+        bool z(uint i) const { return bit_string[i + num_qubits]; }
+        bool r() const { return phase; }
 
         void set_x(uint i, bool v) { bit_string[i] = v; }
         void set_z(uint i, bool v) { bit_string[i + num_qubits] = v; }
@@ -27,18 +30,26 @@ class PauliString {
 
         bool commutes_at(PauliString &p, uint i) const;
         bool commutes(PauliString &p) const;
+
+
+		bool operator==(const PauliString &rhs);
+		bool operator!=(const PauliString &rhs) { return !(this->operator==(rhs)); }
 };
 
 class Tableau {
     private:
         uint num_qubits;
-        std::vector<PauliString> rows;
         bool track_destabilizers;
         bool print_ops;
 
     public:
+        std::vector<PauliString> rows;
+
         Tableau(uint num_qubits);
-        uint num_rows() const { if (track_destabilizers) { return rows.size() - 1; } else { return rows.size(); }};
+        Tableau(uint num_qubits, std::vector<PauliString> rows);
+        ~Tableau() {}
+
+        uint num_rows() const { if (track_destabilizers) { return rows.size() - 1; } else { return rows.size(); }}
         std::string to_string() const;
 
         bool x(uint i, uint j) const { return rows[i].x(j); }
@@ -71,6 +82,7 @@ class Tableau {
         }
 
         void cx_gate(uint a, uint b);
+
 
         std::pair<bool, uint> mzr_deterministic(uint a);
         bool mzr(uint a, bool outcome);

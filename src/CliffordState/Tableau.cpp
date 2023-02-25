@@ -1,14 +1,31 @@
-#include "QuantumCHPState.h"
-#include <random>
+#include "Tableau.h"
+#include <assert.h>
+#include <algorithm>
+#include <iostream>
 
-PauliString::PauliString(uint num_qubits) : num_qubits(num_qubits), bit_string(std::vector<bool>(num_qubits, false)), phase(false) {}
+PauliString::PauliString(uint num_qubits) : num_qubits(num_qubits), bit_string(std::vector<bool>(2*num_qubits, false)), phase(false) {}
 
-PauliString PauliString::rand(uint num_qubits) {
+PauliString PauliString::rand(uint num_qubits, std::minstd_rand *r) {
     PauliString p(num_qubits);
-    std::minstd_rand r;
 
-    std::transform(p.bit_string.begin(), p.bit_string.end(), p.bit_string.begin(), [&r]() { return r() % 2 == 0; });
-    p.set_r(r() % 2 == 0);
+    std::transform(p.bit_string.begin(), p.bit_string.end(), p.bit_string.begin(), [&r](bool) { return (*r)() % 2 == 0; });
+    p.set_r((*r)() % 2 == 0);
+
+	// Need to check that at least one bit is nonzero so that p is not the identity
+	for (uint j = 0; j < 2*num_qubits; j++) {
+		if (p.bit_string[j]) {
+			return p;
+		}
+	}
+
+    return PauliString::rand(num_qubits, r);
+}
+
+PauliString PauliString::copy() {
+	PauliString p(num_qubits);
+	std::copy(bit_string.begin(), bit_string.end(), p.bit_string.begin());
+	p.set_r(r());
+	return p;
 }
 
 std::string PauliString::to_op(uint i) const {
@@ -37,7 +54,7 @@ std::string PauliString::to_string(bool to_ops) const {
         return s;
     } else {
         std::string s = "[";
-        for (uint i = 0; i < num_qubits; i++) {
+        for (uint i = 0; i < 2*num_qubits; i++) {
             if (bit_string[i]) { s += "1"; } else { s += "0"; }
         }
         s += " | ";
@@ -67,7 +84,17 @@ bool PauliString::commutes(PauliString &p) const {
     return anticommuting_indices % 2 == 0;
 }
 
+bool PauliString::operator==(const PauliString &rhs) {
+	if (num_qubits != rhs.num_qubits) { return false; }
+	if (r() != rhs.r()) { return false; }
+	
+	for (uint i = 0; i < num_qubits; i++) {
+		if (x(i) != rhs.x(i)) { return false; }
+		if (z(i) != rhs.z(i)) { return false; }
+	}
 
+	return true;
+}
 
 Tableau::Tableau(uint num_qubits) : num_qubits(num_qubits), 
                                     track_destabilizers(true),
@@ -75,9 +102,14 @@ Tableau::Tableau(uint num_qubits) : num_qubits(num_qubits),
     rows = std::vector<PauliString>(2*num_qubits + 1, PauliString(num_qubits));
     for (uint i = 0; i < num_qubits; i++) {
         rows[i].set_x(i, true);
-        rows[i].set_z(i + num_qubits, true);
+        rows[i + num_qubits].set_z(i, true);
     }
 }
+
+Tableau::Tableau(uint num_qubits, std::vector<PauliString> rows) : num_qubits(num_qubits),
+                                                                   rows(rows),
+                                                                   track_destabilizers(false),
+                                                                   print_ops(false) {};
 
 std::string Tableau::to_string() const {
     std::string s = "";
@@ -174,7 +206,7 @@ std::pair<bool, uint> Tableau::mzr_deterministic(uint a) {
 }
 
 bool Tableau::mzr(uint a, bool outcome) {
-    assert(track_destabilizers);
+	assert(track_destabilizers);
 
     std::pair<bool, uint> result_deterministic = mzr_deterministic(a);
     bool found_p = result_deterministic.first;
@@ -190,6 +222,11 @@ bool Tableau::mzr(uint a, bool outcome) {
         // TODO check that copy is happening, not passing reference
         rows[p - num_qubits] = rows[p];
         rows[p] = PauliString(num_qubits);
+
+		if (outcome) {
+			set_r(p, true);
+		}
+		set_z(p, a, true);
 
         return outcome;
     } else {

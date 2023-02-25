@@ -1,0 +1,19 @@
+{
+	"run_name": "spaceseries_mincut",
+	"system_sizes": [512],
+	"partition_sizes": [2, 4, 6, 8, 10, 12, 14, 16, 18, 24, 26, 32, 38, 44, 50, 58, 66, 74, 84, 96, 110, 126, 144, 166, 194, 220, 240, 256],
+	"probs": [0.5],
+
+	"evolution_type": "minimal_cut",
+	"equilibration_steps": 1000,
+	"timesteps": 100,
+	"measurement_freq": 5,
+	"temporal_avg": false,
+
+	"num_runs": 100,
+
+	"space_avg": true,
+	"spacing": 5,
+
+	"filename": "spaceseries_mincut.json"
+}

@@ -1,0 +1,18 @@
+{
+	"run_name": "test",
+	"system_sizes": [20],
+	"partition_sizes": [10],
+	"probs": [0.5],
+
+	"evolution_type": "quantum_automaton",
+	"equilibration_steps": 100,
+	"timesteps": 10,
+	"measurement_freq": 10,
+
+	"num_runs": 1,
+
+	"space_avg": true,
+	"spacing": 5,
+
+	"filename": "test.json"
+}
