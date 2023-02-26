@@ -34,8 +34,8 @@ add_subdirectory(${FF_DIR})
 set(MC_DIR ${CMAKE_SOURCE_DIR}/src/MinCut)
 add_subdirectory(${MC_DIR})
 
-add_executable(test src/main.cpp)
-target_include_directories(test PRIVATE 
+add_executable(main src/main.cpp)
+target_include_directories(main PRIVATE 
     src 
     ${CLIFFORD_DIR}
     ${QA_DIR}
@@ -44,4 +44,4 @@ target_include_directories(test PRIVATE
     ${DF_DIR} 
     ${NLOHMANN_DIR}
 )
-target_link_libraries(test PRIVATE quantum_automaton random_clifford mincut)
+target_link_libraries(main PRIVATE quantum_automaton random_clifford mincut)

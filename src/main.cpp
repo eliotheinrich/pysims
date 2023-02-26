@@ -2,7 +2,7 @@
 #include "RandomCliffordConfig.h"
 #include "MinCutConfig.h"
 
-
+#include <DataFrame.hpp>
 #include <nlohmann/json.hpp>
 #include <iostream>
 

@@ -27,7 +27,7 @@ class MinCutConfig : public TimeConfig, public Entropy {
 		virtual std::map<std::string, Sample> take_samples();
 
 	public:
-		MinCutConfig(std::map<std::string, int> iparams, std::map<std::string, float> fparams);
+		MinCutConfig(Params &params);
 
 		int rand() { return (*rng)(); }
 		float randf() { return double((*rng)())/double(RAND_MAX); }

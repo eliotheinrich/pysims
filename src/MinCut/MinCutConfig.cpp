@@ -5,35 +5,32 @@ std::vector<MinCutConfig*> MinCutConfig::load_json(nlohmann::json data) {
 	uint num_system_sizes = data["system_sizes"].size();
 	uint num_partition_sizes = data["partition_sizes"].size();
 	uint num_params = data["fparams"].size();
-	uint num_runs = data.value("num_runs", DEFAULT_NUM_RUNS);
-	uint num_configs = num_system_sizes*num_partition_sizes*num_params*num_runs;
+	uint num_configs = num_system_sizes*num_partition_sizes*num_params;
 	assert(num_configs > 0);
 
-	std::map<std::string, int> iparams;
-	std::map<std::string, float> fparams;
+	std::vector<MinCutConfig*> configs;
 
-	std::vector<MinCutConfig*> configs(0);
-    iparams["equilibration_steps"] = data.value("equilibration_steps", DEFAULT_EQUILIBRATION_STEPS);
-    iparams["sampling_timesteps"] = data.value("sampling_timesteps", DEFAULT_SAMPLING_TIMESTEPS);
-    iparams["measurement_freq"] = data.value("measurement_freq", DEFAULT_MEASUREMENT_FREQ);
-    iparams["spacing"] = data.value("spacing", DEFAULT_SPACING);
-    iparams["temporal_avg"] = data.value("temporal_avg", DEFAULT_TEMPORAL_AVG);
+    Params params;
+    // Requirements for TimeConfig
+    params.set("equilibration_timesteps", (int) data.value("equilibration_steps", DEFAULT_EQUILIBRATION_STEPS));
+    params.set("sampling_timesteps", (int) data.value("sampling_timesteps", DEFAULT_SAMPLING_TIMESTEPS));
+    params.set("measurement_freq", (int) data.value("measurement_freq", DEFAULT_MEASUREMENT_FREQ));
+    params.set("temporal_avg", (int) data.value("temporal_avg", DEFAULT_TEMPORAL_AVG));
+    params.set("num_runs", (int) data.value("num_runs", DEFAULT_NUM_RUNS));
+
+    params.set("spacing", (int) data.value("spacing", DEFAULT_SPACING));
     
     for (int system_size : data["system_sizes"]) {
         for (int partition_size : data["partition_sizes"]) {
-            iparams["partition_size"] = partition_size;
-            iparams["system_size"] = system_size;
+            params.set("partition_size", partition_size);
+            params.set("system_size", system_size);
 
             for (auto json_fparams : data["fparams"]) {
-                fparams["mzr_prob"] = json_fparams["mzr_prob"];
-                for (int i = 0; i < num_runs; i++) {
-                    configs.push_back(new MinCutConfig(iparams, fparams));
-                }
+                params.set("mzr_prob", (float) json_fparams["mzr_prob"]);
+				configs.push_back(new MinCutConfig(params));
             }
         }
     }
-
-    std::string data_filename = data["filename"];
 
     return configs;
 }
@@ -49,10 +46,8 @@ std::map<std::string, Sample> MinCutConfig::take_samples() {
 	return sample;
 }
 
-MinCutConfig::MinCutConfig(std::map<std::string, int> iparams, std::map<std::string, float> fparams)
-	: TimeConfig(iparams, fparams), Entropy(iparams, fparams) {
-
-	mzr_prob = fparams["mzr_prob"];
+MinCutConfig::MinCutConfig(Params &params) : TimeConfig(params), Entropy(params) {
+	mzr_prob = params.getf("mzr_prob");
 }
 
 float MinCutConfig::entropy(std::vector<uint> &qubits) const {

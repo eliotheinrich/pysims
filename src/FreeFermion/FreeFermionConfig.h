@@ -8,36 +8,28 @@
 #define DEFAULT_TIMESTEPS 0u
 #define DEFAULT_MEASUREMENT_FREQ 1u
 #define DEFAULT_SPACING 1u
+#define DEFAULT_TEMPORAL_AVG true
 
-class FreeFermionConfig : Config {
+class FreeFermionConfig : public TimeConfig, public Entropy {
     private:
-        uint system_size;
-
-        uint equilibration_steps;
-        uint timesteps;
-        uint measurement_freq;
-
-        uint partition_size;
-        uint spacing;
-        
         float p1;
         float p2;
         float beta;
         float filling_fraction;
 
-        FreeFermionSimulator simulator;
+        FreeFermionSimulator *simulator;
+
+		virtual void init_state();
+		virtual std::map<std::string, Sample> take_samples();
 
     public:
-        uint system_size;
         static std::vector<FreeFermionConfig*> load_json(std::string filename);
 
-        FreeFermionConfig() {}
-        FreeFermionConfig(std::map<std::string, int> iparams, std::map<std::string, float> fparams);
-        ~FreeFermionConfig() {}
+        FreeFermionConfig(Params &p);
 
-        virtual std::map<std::string, int> get_iparams() const;
-        virtual std::map<std::string, float> get_fparams() const;
-        virtual void compute(DataSlide* slide);
+        virtual float entropy(std::vector<uint> &sites) { return simulator->entropy(sites); }
+        virtual void init_state();
+        virtual void timesteps(uint num_steps);
 
 };
 
