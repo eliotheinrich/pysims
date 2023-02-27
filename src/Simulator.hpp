@@ -133,7 +133,7 @@ class Entropy {
             s2 /= num_partitions;
 
             float stdev = std::sqrt(std::abs(s2 - s*s));
-
+            
             return Sample(s, stdev, num_partitions);        
         }
 

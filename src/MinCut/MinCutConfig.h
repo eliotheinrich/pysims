@@ -42,4 +42,9 @@ class MinCutConfig : public TimeConfig, public Entropy {
 
 };
 
+static const uint mod(int a, int b) {
+	int c = a % b;
+	return (c < 0) ? c + b : c;
+}
+
 #endif

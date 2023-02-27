@@ -2,7 +2,8 @@
 #include "QuantumCHPState.h"
 #include <iostream>
 
-RandomCliffordSimulator::RandomCliffordSimulator(uint system_size, float mzr_prob, uint gate_width, CliffordType simulator_type) : mzr_prob(mzr_prob), gate_width(gate_width), initial_offset(false) {
+RandomCliffordSimulator::RandomCliffordSimulator(uint system_size, float mzr_prob, uint gate_width, CliffordType simulator_type) 
+	: init_mzr_prob(mzr_prob), gate_width(gate_width), initial_offset(false) {
 	switch (simulator_type) {
 		case CHP : state = new QuantumCHPState(system_size); break;
 		case GraphSim : std::cout << "Graph state not implemented yet.\n"; break;
@@ -35,7 +36,7 @@ void RandomCliffordSimulator::timesteps(uint num_steps) {
 
 		// Apply measurements
 		for (uint j = 0; j < num_qubits; j++) {
-			if (state->randf() < mzr_prob) {
+			if (state->randf() < mzr_prob(j)) {
 				state->mzr(j);
 			}
 		}

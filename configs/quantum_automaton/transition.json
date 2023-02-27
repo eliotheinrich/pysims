@@ -1,6 +1,6 @@
 {
 	"run_name": "transition_qa",
-	"simulator_type": "chp",
+	"clifford_state": "chp",
 	"circuit_type": "quantum_automaton",
 	"num_runs": 10,
 
@@ -17,7 +17,7 @@
 	"temporal_avg": true,
 	"sampling_timesteps": 1000,
 	"measurement_freq": 2,
-	"equilibration_steps": 1000, 
+	"equilibration_timesteps": 1000, 
 
 	"space_avg": true,
 	"spacing": 5,

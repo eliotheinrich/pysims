@@ -16,7 +16,7 @@ class QuantumCHPState : public CliffordState {
         QuantumCHPState(uint num_qubits);
         ~QuantumCHPState() {}
 
-        std::string to_string() const;
+        virtual std::string to_string() const;
         virtual uint system_size() const;
 
         virtual void h_gate(uint a);
@@ -24,7 +24,7 @@ class QuantumCHPState : public CliffordState {
         virtual void cx_gate(uint a, uint b);
         virtual void cz_gate(uint a, uint b);
         virtual bool mzr(uint a);
-        
+
         virtual float entropy(std::vector<uint> &qubits) const;
 };
 

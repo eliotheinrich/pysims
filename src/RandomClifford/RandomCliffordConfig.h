@@ -5,13 +5,26 @@
 #include <nlohmann/json.hpp>
 #include "RandomCliffordSimulator.h"
 
-#define DEFAULT_SIMULATOR "chp"
+#define DEFAULT_CLIFFORD_STATE "chp"
+#define DEFAULT_DRIVE_TYPE "undriven"
+
+enum DriveType { Undriven, Test };
+
+static DriveType parse_drive_type(std::string s) {
+	if (s == "undriven") return DriveType::Undriven;
+	else if (s == "test") return DriveType::Test;
+	else {
+		std::cout << "Drive type " << s << " not supported. Defaulting to " << DEFAULT_DRIVE_TYPE << "\n";
+		return parse_drive_type(DEFAULT_DRIVE_TYPE);
+	}
+}
 
 class RandomCliffordConfig : public TimeConfig, public Entropy {
 	private:
 		uint gate_width;
-		float mzr_prob;
-		CliffordType simulator_type;
+		float init_mzr_prob;
+		CliffordType clifford_state;
+		DriveType drive_type;
 
 		RandomCliffordSimulator *simulator;
 

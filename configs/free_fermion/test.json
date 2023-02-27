@@ -12,7 +12,7 @@
 					 {"p1": 0.3, "p2": 0.3, "beta": 0.9}],
 
 	"timesteps": 0,
-	"equilibration_steps": 0,
+	"equilibration_timesteps": 0,
 	"temporal_avg": true,
 	"measurement_freq": 5,
 

@@ -1,6 +1,6 @@
 {
 	"run_name": "transition_rc",
-	"simulator_type": "chp",
+	"clifford_state": "chp",
 	"circuit_type": "random_clifford",
 	"num_runs": 10,
 
@@ -24,7 +24,7 @@
 	"temporal_avg": true,
 	"sampling_timesteps": 1000,
 	"measurement_freq": 2,
-	"equilibration_steps": 1000, 
+	"equilibration_timesteps": 1000, 
 
 	"spacing": 5,
 	

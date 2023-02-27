@@ -5,7 +5,7 @@
 #include <nlohmann/json.hpp>
 #include "QuantumAutomatonSimulator.h"
 
-#define DEFAULT_SIMULATOR "chp"
+#define DEFAULT_CLIFFORD_STATE "chp"
 
 class QuantumAutomatonConfig : public TimeConfig, public Entropy {
 	private:

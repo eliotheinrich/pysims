@@ -1,8 +1,8 @@
 {
 	"run_name": "time_rc",
-	"simulator_type": "chp",
+	"clifford_state": "chp",
 	"circuit_type": "random_clifford",
-	"num_runs": 100000,
+	"num_runs": 1000,
 
 	"system_sizes": [256],
 	"partition_sizes": [128],

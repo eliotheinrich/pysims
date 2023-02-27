@@ -18,14 +18,17 @@ uint QuantumCHPState::system_size() const {
 }
 
 void QuantumCHPState::h_gate(uint a) {
+//std::cout << "h " << a << std::endl;
     tableau.h_gate(a);
 }
 
 void QuantumCHPState::s_gate(uint a) {
+//std::cout << "s " << a << std::endl;
     tableau.s_gate(a);
 }
 
 void QuantumCHPState::cx_gate(uint a, uint b) {
+//std::cout << "cx " << a << " " << b << std::endl;
     tableau.cx_gate(a, b);
 }
 
@@ -54,7 +57,6 @@ float QuantumCHPState::entropy(std::vector<uint> &qubits) const {
         }
     }
 
-    bool found_pivot;
     uint pivot_row = 0;
     uint row = 0;
     uint leading = 0;
@@ -75,7 +77,7 @@ float QuantumCHPState::entropy(std::vector<uint> &qubits) const {
             for (uint i = row + 1; i < system_size; i++) {
                 if (ttableau[i][c]) {
                     for (uint j = 0; j < 2*partition_size; j++) {
-                        bool v1 = ttableau[row][i];
+                        bool v1 = ttableau[row][j];
                         bool v2 = ttableau[i][j];
                         ttableau[i][j] = v1 ^ v2;
                     }
@@ -96,6 +98,7 @@ float QuantumCHPState::entropy(std::vector<uint> &qubits) const {
             rank++;
         }
     }
-
+    float s = rank - partition_size;
+if (s > 1000) std::cout << "rank = " << rank << ", partition_size = " << partition_size << std::endl;
     return rank - partition_size;
 }

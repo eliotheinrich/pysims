@@ -13,9 +13,7 @@ PauliString PauliString::rand(uint num_qubits, std::minstd_rand *r) {
 
 	// Need to check that at least one bit is nonzero so that p is not the identity
 	for (uint j = 0; j < 2*num_qubits; j++) {
-		if (p.bit_string[j]) {
-			return p;
-		}
+		if (p.bit_string[j]) return p;
 	}
 
     return PauliString::rand(num_qubits, r);
@@ -32,15 +30,10 @@ std::string PauliString::to_op(uint i) const {
     bool xi = x(i); 
     bool zi = z(i);
 
-    if (xi && zi) {
-        return "Y";
-    } else if (!xi && zi) {
-        return "Z";
-    } else if (xi && !zi) {
-        return "X";
-    } else {
-        return "I";
-    }
+    if (xi && zi) return "Y";
+    else if (!xi && zi) return "Z";
+    else if (xi && !zi) return "X";
+    else return "I";
 }
 
 std::string PauliString::to_string(bool to_ops) const {
@@ -66,31 +59,29 @@ std::string PauliString::to_string(bool to_ops) const {
 }
 
 bool PauliString::commutes_at(PauliString &p, uint i) const {
-    if (x(i) == p.x(i) && z(i) == p.z(i)) { return true; } // operators are identical
-    else if (!x(i) && !z(i)) { return true; } // this is identity
-    else if (!p.x(i) && p.z(i)) { return true; } // other is identity
-    else { return false; }
+    if ((x(i) == p.x(i)) && (z(i) == p.z(i))) return true; // operators are identical
+    else if (!x(i) && !z(i)) return true; // this is identity
+    else if (!p.x(i) && !p.z(i)) return true; // other is identity
+    else return false; 
 }
 
 bool PauliString::commutes(PauliString &p) const {
     assert(num_qubits == p.num_qubits);
     uint anticommuting_indices = 0u;
     for (uint i = 0; i < num_qubits; i++) {
-        if (!commutes_at(p, i)) {
-            anticommuting_indices++;
-        }
+        if (!commutes_at(p, i)) anticommuting_indices++;
     }
 
     return anticommuting_indices % 2 == 0;
 }
 
 bool PauliString::operator==(const PauliString &rhs) {
-	if (num_qubits != rhs.num_qubits) { return false; }
-	if (r() != rhs.r()) { return false; }
+	if (num_qubits != rhs.num_qubits) return false;
+	if (r() != rhs.r()) return false;
 	
 	for (uint i = 0; i < num_qubits; i++) {
-		if (x(i) != rhs.x(i)) { return false; }
-		if (z(i) != rhs.z(i)) { return false; }
+		if (x(i) != rhs.x(i)) return false;
+		if (z(i) != rhs.z(i)) return false;
 	}
 
 	return true;
@@ -167,7 +158,6 @@ void Tableau::h_gate(uint a) {
         set_x(i, a, zia);
         set_z(i, a, xia);
     }
-
 }
 
 void Tableau::s_gate(uint a) {
@@ -220,12 +210,10 @@ bool Tableau::mzr(uint a, bool outcome) {
         }
 
         // TODO check that copy is happening, not passing reference
-        rows[p - num_qubits] = rows[p];
+        std::swap(rows[p - num_qubits], rows[p]);
         rows[p] = PauliString(num_qubits);
 
-		if (outcome) {
-			set_r(p, true);
-		}
+        set_r(p, outcome);
 		set_z(p, a, true);
 
         return outcome;

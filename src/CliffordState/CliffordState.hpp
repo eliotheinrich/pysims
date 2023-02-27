@@ -25,7 +25,7 @@ static void remove_even_indices(std::vector<T> &v) {
     uint vlen = v.size();
     for (uint i = 0; i < vlen; i++) {
         uint j = vlen - i - 1;
-        if (!(j % 2)) v.erase(v.begin() + j);
+        if ((j % 2)) v.erase(v.begin() + j);
     }
 }
 
@@ -127,6 +127,11 @@ class CliffordState: public Entropy {
         void random_clifford_iteration(std::deque<uint> &qubits) {
             uint num_qubits = qubits.size();
 
+
+//std::cout << "Random clifford iter on ";
+//for (auto q : qubits) std::cout << q << " ";
+//std::cout << "State = \n" << to_string() << std::endl;
+
             // If only acting on one qubit, can easily lookup from a table
             if (num_qubits == 1) {
                 single_qubit_random_clifford(qubits[0], rand() % 24);
@@ -139,8 +144,11 @@ class CliffordState: public Entropy {
                 p2 = PauliString::rand(num_qubits, &rng);
             }
 
+//std::cout << p1.to_string(true) << " " << p2.to_string(true) << std::endl;
+
             Tableau tableau = Tableau(num_qubits, std::vector<PauliString>{p1, p2});
 
+//std::cout << "Step one\n";
             // Step one
             for (uint i = 0; i < num_qubits; i++) {
                 if (tableau.z(0, i)) {
@@ -154,25 +162,27 @@ class CliffordState: public Entropy {
                 }
             }
 
+//std::cout << "Step two\n";
             // Step two
-            std::vector<uint> nonzero_idx(0);
+            std::vector<uint> nonzero_idx;
             for (uint i = 0; i < num_qubits; i++) {
                 if (tableau.x(0, i)) {
                     nonzero_idx.push_back(i);
                 }
             }
-
             while (nonzero_idx.size() > 1) {
+//print_vector(nonzero_idx);
                 for (uint j = 0; j < nonzero_idx.size()/2; j++) {
                     uint q1 = nonzero_idx[2*j];
                     uint q2 = nonzero_idx[2*j+1];
                     tableau.cx_gate(q1, q2);
-                    cx_gate(qubits[q1], nonzero_idx[q2]);
+                    cx_gate(qubits[q1], qubits[q2]);
                 }
 
                 remove_even_indices(nonzero_idx);
+//print_vector(nonzero_idx);
             }
-
+//std::cout << "Step three\n";
             // Step three
             uint ql = nonzero_idx[0];
             if (ql != 0) {
@@ -190,7 +200,7 @@ class CliffordState: public Entropy {
                     }
                 }
             }
-
+//std::cout << "Step four\n";
             // Step four
             PauliString z1_p(num_qubits);
             z1_p.set_z(0, true);
@@ -202,7 +212,7 @@ class CliffordState: public Entropy {
                 tableau.h_gate(0);
                 h_gate(qubits[0]);
 
-
+//std::cout << "Repeat step one\n";
                 // Repeat step one
                 for (uint i = 0; i < num_qubits; i++) {
                     if (tableau.z(1, i)) {
@@ -216,8 +226,9 @@ class CliffordState: public Entropy {
                     }
                 }
 
+//std::cout << "Repeat step two\n";
                 // ... and step two
-                nonzero_idx = std::vector<uint>(0);
+                nonzero_idx.clear();
                 for (uint i = 0; i < num_qubits; i++) {
                     if (tableau.x(1, i)) {
                         nonzero_idx.push_back(i);
@@ -229,7 +240,7 @@ class CliffordState: public Entropy {
                         uint q1 = nonzero_idx[2*j];
                         uint q2 = nonzero_idx[2*j+1];
                         tableau.cx_gate(q1, q2);
-                        cx_gate(qubits[q1], nonzero_idx[q2]);
+                        cx_gate(qubits[q1], qubits[q2]);
                     }
 
                     remove_even_indices(nonzero_idx);
@@ -239,8 +250,9 @@ class CliffordState: public Entropy {
                 h_gate(qubits[0]);
             }
 
+//std::cout << "Step five\n";
             // Step five: correct phase
-            if (tableau.r(0) && !tableau.r(1)) {
+            if (tableau.r(0) && tableau.r(1)) {
                 y_gate(qubits[0]);
             } else if (!tableau.r(0) && tableau.r(1)) {
                 x_gate(qubits[0]);
@@ -250,7 +262,7 @@ class CliffordState: public Entropy {
         }
 
     public:
-        CliffordState() : rng(std::minstd_rand()) {}
+        CliffordState() : rng(std::minstd_rand(std::rand())) {}
         virtual uint system_size() const=0;
         uint rand() {
             return this->rng();
@@ -319,6 +331,9 @@ class CliffordState: public Entropy {
                 dqubits.pop_front();
             }
         }
+
+        virtual std::string to_string() const { return ""; };
+
 };
 
 #endif

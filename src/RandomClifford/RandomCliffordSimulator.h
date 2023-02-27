@@ -7,9 +7,13 @@
 class RandomCliffordSimulator : public Simulator, public Entropy {
 	private:
 		CliffordState *state;
-		float mzr_prob;
-		uint gate_width;
 		bool initial_offset;
+
+		virtual float mzr_prob(uint i)=0;
+	
+	protected:
+		float init_mzr_prob;
+		uint gate_width;
 
 	public:
 		RandomCliffordSimulator() {}

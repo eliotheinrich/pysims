@@ -80,7 +80,7 @@ void MinCutConfig::timesteps(uint num_steps) {
 			uint col = i;
 			uint row = (v1 - i) / num_new_vertices;
 
-			uint next_col = offset ? (col + 1) % num_new_vertices : (col - 1) % num_new_vertices; // TODO EUCLIDIAN MODULO
+			uint next_col = offset ? mod(col + 1, num_new_vertices) : mod(col - 1, num_new_vertices);
 			uint v2 = (row - 1)*num_new_vertices + col;
 			uint v3 = (row - 1)*num_new_vertices + next_col;
 

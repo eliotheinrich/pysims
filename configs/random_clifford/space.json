@@ -1,6 +1,6 @@
 {
 	"run_name": "space_rc",
-	"simulator_type": "chp",
+	"clifford_state": "chp",
 	"circuit_type": "random_clifford",
 	"num_runs": 100,
 
@@ -10,7 +10,7 @@
 	"fparams": [{"mzr_prob": 0.16}],
 
 	"temporal_avg": true,
-	"equilibration_steps": 3000, 
+	"equilibration_timesteps": 3000, 
 	"sampling_timesteps": 1000,
 	"measurement_freq": 2,
 	

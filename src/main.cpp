@@ -9,9 +9,19 @@
 using namespace std;
 using json = nlohmann::json;
 
+#include "QuantumCHPState.h"
 
 void defaultf() {
     cout << "Default behavior\n";
+
+    uint system_size = 4;
+    QuantumCHPState state(system_size);
+    std::vector<uint> qubits{1, 2};
+    state.random_clifford(qubits);
+
+    //for (uint i = 0; i < 10; i++) state.random_clifford(qubits);
+    std::cout << state.to_string() << std::endl;
+    std::cout << state.entropy(qubits) << std::endl;
 }
 
 bool file_valid(string filename) {
@@ -33,6 +43,8 @@ int main(int argc, char *argv[]) {
         return 1;
     }
 
+    if (argc != 3) cout << "Incorrect arguments.\n";
+
     string filename = argv[1];
     uint num_threads = std::stoi(argv[2]);
     bool valid = file_valid(filename);
@@ -43,24 +55,24 @@ int main(int argc, char *argv[]) {
 
     std::ifstream f(filename);
     json data = json::parse(f);
-    std::string simulator_type = data["circuit_type"];
+    std::string circuit_type = data["circuit_type"];
 
     std::cout << "Starting job\n";
 
     std::string data_prefix = "../data/";
-    if (simulator_type == "quantum_automaton") {
+    if (circuit_type == "quantum_automaton") {
         auto configs = QuantumAutomatonConfig::load_json(data);
         std::string data_filename = data["filename"];
         ParallelCompute pc(configs);
         DataFrame df = pc.compute(num_threads);
         df.write_json(data_prefix + data_filename);
-    } else if (simulator_type == "random_clifford") {
+    } else if (circuit_type == "random_clifford") {
         auto configs = RandomCliffordConfig::load_json(data);
         std::string data_filename = data["filename"];
         ParallelCompute pc(configs);
         DataFrame df = pc.compute(num_threads);
         df.write_json(data_prefix + data_filename);
-    } else if (simulator_type == "mincut") {
+    } else if (circuit_type == "mincut") {
         auto configs = MinCutConfig::load_json(data);
         std::string data_filename = data["filename"];
         ParallelCompute pc(configs);
