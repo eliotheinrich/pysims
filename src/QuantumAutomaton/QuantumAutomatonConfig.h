@@ -7,7 +7,7 @@
 
 #define DEFAULT_CLIFFORD_STATE "chp"
 
-class QuantumAutomatonConfig : public TimeConfig, public Entropy {
+class QuantumAutomatonConfig : public EntropyConfig {
 	private:
 		float mzr_prob;
 		CliffordType simulator_type;
@@ -15,15 +15,12 @@ class QuantumAutomatonConfig : public TimeConfig, public Entropy {
 		QuantumAutomatonSimulator *simulator;
 
 		virtual void init_state();
-		virtual std::map<std::string, Sample> take_samples();
 
 	public:
 		QuantumAutomatonConfig(Params &p);
 
-		// Implementing TimeConfig
+		// Implementing EntropyConfig 
 		virtual void timesteps(uint num_steps);
-
-		// Implementing Entropy
 		virtual float entropy(std::vector<uint> &qubits) const { return simulator->entropy(qubits); }
 
 		static std::vector<QuantumAutomatonConfig*> load_json(nlohmann::json filename);

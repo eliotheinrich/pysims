@@ -56,13 +56,7 @@ void RandomCliffordConfig::timesteps(uint num_steps) {
     simulator->timesteps(num_steps);
 }
 
-std::map<std::string, Sample> RandomCliffordConfig::take_samples() {
-    std::map<std::string, Sample> sample;
-    sample.emplace("entropy", spatially_averaged_entropy());
-    return sample;
-}
-
-RandomCliffordConfig::RandomCliffordConfig(Params &params) : TimeConfig(params), Entropy(params) {
+RandomCliffordConfig::RandomCliffordConfig(Params &params) : EntropyConfig(params) {
     clifford_state = (CliffordType) params.geti("clifford_state");
     drive_type = (DriveType) params.geti("drive_type");
     gate_width = params.geti("gate_width");

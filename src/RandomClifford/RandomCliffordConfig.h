@@ -19,7 +19,7 @@ static DriveType parse_drive_type(std::string s) {
 	}
 }
 
-class RandomCliffordConfig : public TimeConfig, public Entropy {
+class RandomCliffordConfig : public EntropyConfig {
 	private:
 		uint gate_width;
 		float init_mzr_prob;
@@ -29,16 +29,12 @@ class RandomCliffordConfig : public TimeConfig, public Entropy {
 		RandomCliffordSimulator *simulator;
 
 		virtual void init_state();
-		virtual std::map<std::string, Sample> take_samples();
-
 
 	public:
 		RandomCliffordConfig(Params &p);
 
-		// Implementing TimeConfig
+		// Implementing EntropyConfig
 		virtual void timesteps(uint num_steps);
-
-		// Implementing Entropy 
 		virtual float entropy(std::vector<uint> &qubits) const { return simulator->entropy(qubits); }
 
 		static std::vector<RandomCliffordConfig*> load_json(nlohmann::json data);

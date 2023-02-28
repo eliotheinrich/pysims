@@ -5,26 +5,48 @@
 #include <set>
 #include <map>
 #include <iostream>
+#include <assert.h>
+#include <algorithm>
+
+#define DEFAULT_VAL 0
 
 class Graph {
 	private:
 		std::vector<std::map<uint, int>> edges;
+		std::vector<uint> vals;
 
 	public:
 		uint num_vertices;
 
 		Graph() : num_vertices(0) {}
-		Graph(uint num_vertices) : num_vertices(0) { for (uint i = 0; i < num_vertices; i++) add_vertex(); }
+		Graph(uint num_vertices) : num_vertices(0) { for (uint i = 0; i < num_vertices; i++) add_vertex(DEFAULT_VAL); }
 		Graph(const Graph *g);
 
 		std::string to_string() const;
 
-		void add_vertex() {
+		void add_vertex() { add_vertex(DEFAULT_VAL); }
+
+		void add_vertex(uint v) {
 			num_vertices++;
 			edges.push_back(std::map<uint, int>());
+			vals.push_back(v);
 		}
 
 		void remove_vertex(uint v);
+
+		void set_val(uint v, uint val) {
+			assert(v < num_vertices);
+			vals[v] = val;
+		}
+
+		uint get_val(uint v) { return vals[v]; }
+
+		std::vector<uint> neighbors(uint a) {
+			std::vector<uint> neighbors;
+			for (auto const &[e, _] : edges[a]) neighbors.push_back(e);
+			std::sort(neighbors.begin(), neighbors.end());
+			return neighbors;
+		}
 
 		bool contains_edge(uint v1, uint v2) const;
 		int edge_weight(uint v1, uint v2) const;
@@ -46,7 +68,7 @@ class Graph {
 
 		void local_complement(uint v);
 
-		//Graph<bool> partition(std::vector<uint> &set) const;
+		Graph partition(std::vector<uint> &set) const;
 
 		std::pair<bool, std::vector<uint>> path(uint s, uint t) const;
 

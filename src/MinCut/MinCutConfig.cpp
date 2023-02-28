@@ -40,13 +40,7 @@ void MinCutConfig::init_state() {
 	rng = new std::minstd_rand(std::rand());
 }
 
-std::map<std::string, Sample> MinCutConfig::take_samples() {
-	std::map<std::string, Sample> sample;
-	sample.emplace("entropy", spatially_averaged_entropy());
-	return sample;
-}
-
-MinCutConfig::MinCutConfig(Params &params) : TimeConfig(params), Entropy(params) {
+MinCutConfig::MinCutConfig(Params &params) : EntropyConfig(params) {
 	mzr_prob = params.getf("mzr_prob");
 }
 

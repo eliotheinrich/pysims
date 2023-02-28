@@ -4,8 +4,8 @@
 	"circuit_type": "mincut",
 	"num_runs": 10000,
 
-	"system_sizes": [64],
-	"partition_sizes": [32],
+	"system_size": [64],
+	"partition_size": [32],
 	"fparams": [{"mzr_prob": 0.5}],
 
 	"temporal_avg": false,

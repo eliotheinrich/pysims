@@ -1,12 +1,13 @@
 #include "RandomCliffordSimulator.h"
 #include "QuantumCHPState.h"
+#include "QuantumGraphState.h"
 #include <iostream>
 
 RandomCliffordSimulator::RandomCliffordSimulator(uint system_size, float mzr_prob, uint gate_width, CliffordType simulator_type) 
 	: init_mzr_prob(mzr_prob), gate_width(gate_width), initial_offset(false) {
 	switch (simulator_type) {
 		case CHP : state = new QuantumCHPState(system_size); break;
-		case GraphSim : std::cout << "Graph state not implemented yet.\n"; break;
+		case GraphSim : state = new QuantumGraphState(system_size); break;
 	}
 }
 

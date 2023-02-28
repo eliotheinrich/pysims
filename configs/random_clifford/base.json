@@ -3,8 +3,8 @@
 	"clifford_state": "chp",
 	"circuit_type": "random_clifford",
 
-	"system_sizes": [10],
-	"partition_sizes": [2, 8],
+	"system_size": [10],
+	"partition_size": [2, 8],
 	"iparams": [{"gate_width": 2}, {"gate_width": 2}, {"gate_width": 2}, {"gate_width": 2},
 				{"gate_width": 2}, {"gate_width": 2}, {"gate_width": 2}, {"gate_width": 2}],
 	"fparams": [{"mzr_prob": 0.08}, {"mzr_prob": 0.12}, {"mzr_prob": 0.14}, {"mzr_prob": 0.15}, 

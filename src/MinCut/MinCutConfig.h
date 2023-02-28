@@ -14,7 +14,7 @@
 #define DEFAULT_SPACING 1u
 #define DEFAULT_TEMPORAL_AVG true
 
-class MinCutConfig : public TimeConfig, public Entropy {
+class MinCutConfig : public EntropyConfig {
 	private:
 		std::minstd_rand *rng;
 		Graph *state;
@@ -24,7 +24,6 @@ class MinCutConfig : public TimeConfig, public Entropy {
 		bool offset;
 
 		virtual void init_state();
-		virtual std::map<std::string, Sample> take_samples();
 
 	public:
 		MinCutConfig(Params &params);
@@ -32,10 +31,8 @@ class MinCutConfig : public TimeConfig, public Entropy {
 		int rand() { return (*rng)(); }
 		float randf() { return double((*rng)())/double(RAND_MAX); }
 
-		// Implementing TimeConfig
+		// Implementing EntropyConfig
 		virtual void timesteps(uint num_steps);
-
-		// Implementing Entropy
 		virtual float entropy(std::vector<uint> &sites) const;
 
 		static std::vector<MinCutConfig*> load_json(nlohmann::json data);

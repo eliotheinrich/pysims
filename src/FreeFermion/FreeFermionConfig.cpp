@@ -36,7 +36,7 @@ std::vector<FreeFermionConfig*> FreeFermionConfig::load_json(std::string filenam
             for (auto json_fparams : data["fparams"]) {
                 params.set("p1", json_fparams["p1"]);
                 params.set("p2", json_fparams["p2"]);
-                params.set("beta", json_fparams["beta"]);
+            params.set("beta", json_fparams["beta"]);
                 params.set("filling_fraction", json_fparams["filling_fraction"]);
                 configs.push_back(new FreeFermionConfig(params));
             }
@@ -46,17 +46,11 @@ std::vector<FreeFermionConfig*> FreeFermionConfig::load_json(std::string filenam
     return configs;
 }
 
-FreeFermionConfig::FreeFermionConfig(Params &p) : TimeConfig(p), Entropy(p) { 
+FreeFermionConfig::FreeFermionConfig(Params &p) : EntropyConfig(p) { 
     p1 = fparams["p1"];
     p2 = fparams["p2"];
     beta = fparams["beta"];
     filling_fraction = fparams["filling_fraction"];
-}
-
-std::map<std::string, Sample> FreeFermionConfig::take_samples() {
-    std::map<std::string, Sample> sample;
-    sample.emplace("entropy", spatially_averaged_entropy());
-    return sample;
 }
 
 void init_state() {

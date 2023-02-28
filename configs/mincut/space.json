@@ -3,8 +3,8 @@
 	"circuit_type": "mincut",
 	"num_runs": 10,
 
-	"system_sizes": [64],
-	"partition_sizes": [2, 4, 6, 8, 10, 12, 14, 16, 20, 22, 24, 26, 32],
+	"system_size": [64],
+	"partition_size": [2, 4, 6, 8, 10, 12, 14, 16, 20, 22, 24, 26, 32],
 	"fparams": [{"mzr_prob": 0.5}],
 
 	"temporal_avg": true,

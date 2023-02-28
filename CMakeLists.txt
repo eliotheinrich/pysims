@@ -18,6 +18,7 @@ set(NLOHMANN_DIR $ENV{NLOHMANN_DIR})
 
 add_library(simulator 
     src/Simulator.hpp
+    src/Graph.cpp
 )
 target_include_directories(simulator PUBLIC ${CTPL_DIR} ${DF_DIR})
 target_link_libraries(simulator -pthread)

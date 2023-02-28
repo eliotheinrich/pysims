@@ -1,10 +1,9 @@
 #include "Graph.h"
 #include <random>
 #include <climits>
-#include <algorithm>
 
 Graph::Graph(const Graph *g) : Graph() {
-	for (uint i = 0; i < g->num_vertices; i++) add_vertex();
+	for (uint i = 0; i < g->num_vertices; i++) add_vertex(DEFAULT_VAL);
 
 	for (uint i = 0; i < g->num_vertices; i++) {
 		for (auto const &[j, w] : g->edges[i]) add_directed_edge(i, j, w);
@@ -26,6 +25,7 @@ std::string Graph::to_string() const {
 void Graph::remove_vertex(uint v) {
 	num_vertices--;
 	edges.erase(edges.begin() + v);
+	vals.erase(vals.begin() + v);
 	for (uint i = 0; i < num_vertices; i++) edges[i].erase(v);
 
 	for (uint i = 0; i < num_vertices; i++) {
@@ -103,23 +103,24 @@ void Graph::local_complement(uint v) {
 	}
 }
 
-/*
-Graph<bool> Graph::partition(std::vector<uint> &nodes) const {
-	std::set nodess(nodes);
+
+Graph Graph::partition(std::vector<uint> &nodes) const {
+	std::set<uint> nodess;
+	std::copy(nodes.begin(), nodes.end(), std::inserter(nodess, nodess.end()));
 	Graph new_graph;
 	std::map<uint, uint> new_vertices;
 
-	for (auto const v : set) {
-		if (!degree(v)) continue;
+	for (const uint a : nodess) {
+		if (!degree(a)) continue;
 
-		new_vertices.emplace(v, new_vertices.size());
-		new_graph.add_vertex(true);
-		for (auto const b : edges[v]) {
+		new_vertices.emplace(a, new_vertices.size());
+		new_graph.add_vertex(1);
+		for (auto const &[b, _] : edges[a]) {
 			if (nodess.count(b)) continue;
 
 			if (!new_vertices.count(b)) {
 				new_vertices.emplace(b, new_vertices.size());
-				new_graph.add_vertex(false);
+				new_graph.add_vertex(0);
 			}
 
 			new_graph.add_edge(new_vertices[a], new_vertices[b]);
@@ -141,7 +142,6 @@ Graph<bool> Graph::partition(std::vector<uint> &nodes) const {
 
 	return new_graph;
 }
-*/
 
 std::pair<bool, std::vector<uint>> Graph::path(uint s, uint t) const {
 	std::vector<uint> stack;
@@ -180,9 +180,9 @@ std::pair<bool, std::vector<uint>> Graph::path(uint s, uint t) const {
 }
 
 int Graph::max_flow(std::vector<uint> &sources, std::vector<uint> &sinks) {
-	add_vertex();
+	add_vertex(DEFAULT_VAL);
 	uint s = num_vertices - 1;
-	add_vertex();
+	add_vertex(DEFAULT_VAL);
 	uint t = num_vertices - 1;
 
 	for (auto i : sources) add_directed_edge(s, i, INT_MAX);

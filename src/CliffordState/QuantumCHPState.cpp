@@ -3,7 +3,7 @@
 #include <assert.h>
 #include <algorithm>
 
-QuantumCHPState::QuantumCHPState(uint num_qubits) : num_qubits(num_qubits), 
+QuantumCHPState::QuantumCHPState(uint num_qubits) : CliffordState(), num_qubits(num_qubits), 
                                                     tableau(Tableau(num_qubits)) {}
 
 

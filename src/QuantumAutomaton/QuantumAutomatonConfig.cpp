@@ -20,8 +20,9 @@ std::vector<QuantumAutomatonConfig*> QuantumAutomatonConfig::load_json(json data
     params.set("measurement_freq", (int) data.value("measurement_freq", DEFAULT_MEASUREMENT_FREQ));
     params.set("temporal_avg", (int) data.value("temporal_avg", DEFAULT_TEMPORAL_AVG));
     params.set("num_runs", (int) data.value("num_runs", DEFAULT_NUM_RUNS));
-
     params.set("spacing", (int) data.value("spacing", DEFAULT_SPACING));
+
+
     params.set("clifford_state", (int) parse_clifford_type(data.value("clifford_state", DEFAULT_CLIFFORD_STATE)));
     
     for (int system_size : data["system_sizes"]) {
@@ -43,13 +44,7 @@ void QuantumAutomatonConfig::init_state() {
     simulator = new QuantumAutomatonSimulator(system_size, mzr_prob, simulator_type);
 }
 
-std::map<std::string, Sample> QuantumAutomatonConfig::take_samples() {
-    std::map<std::string, Sample> sample;
-    sample.emplace("entropy", spatially_averaged_entropy());
-    return sample;
-}
-
-QuantumAutomatonConfig::QuantumAutomatonConfig(Params &params) : TimeConfig(params), Entropy(params) {
+QuantumAutomatonConfig::QuantumAutomatonConfig(Params &params) : EntropyConfig(params) {
     simulator_type = (CliffordType) params.geti("clifford_state");
 	mzr_prob = params.getf("mzr_prob");
 }

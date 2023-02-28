@@ -10,7 +10,7 @@
 #define DEFAULT_SPACING 1u
 #define DEFAULT_TEMPORAL_AVG true
 
-class FreeFermionConfig : public TimeConfig, public Entropy {
+class FreeFermionConfig : EntropyConfig {
     private:
         float p1;
         float p2;
@@ -27,8 +27,8 @@ class FreeFermionConfig : public TimeConfig, public Entropy {
 
         FreeFermionConfig(Params &p);
 
+        // Implementing requirements for EntropyConfig
         virtual float entropy(std::vector<uint> &sites) { return simulator->entropy(sites); }
-        virtual void init_state();
         virtual void timesteps(uint num_steps);
 
 };

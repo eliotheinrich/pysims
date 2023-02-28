@@ -1,12 +1,17 @@
 #include "QuantumAutomatonSimulator.h"
 #include "QuantumCHPState.h"
+#include "QuantumGraphState.h"
 #include <iostream>
 #include <assert.h>
 
-QuantumAutomatonSimulator::QuantumAutomatonSimulator(uint system_size, float mzr_prob, CliffordType simulator_type) : mzr_prob(mzr_prob) {
+QuantumAutomatonSimulator::QuantumAutomatonSimulator(Params &params) : EntropySimulator(params) {
+	mzr_prob = params.getf("mzr_prob");
+	clifford_type = (CliffordType) params.geti("clifford_type", DEFAULT_CLIFFORD_TYPE);
+	system_size = params.geti("system_size");
+
 	switch (simulator_type) {
 		case CHP : state = new QuantumCHPState(system_size); break;
-		case GraphSim : std::cout << "Graph state not implemented yet.\n"; break;
+		case GraphSim : state = new QuantumGraphState(system_size); break;
 	}
 
 	// Initially polarize in x-direction

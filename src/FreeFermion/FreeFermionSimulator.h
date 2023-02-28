@@ -9,7 +9,7 @@
 #include "Simulator.hpp"
 
 
-class FreeFermionSimulator : public Simulator, public Entropy {
+class FreeFermionSimulator : public EntropyConfig {
     private:
         Eigen::MatrixXcd propagator;
 
