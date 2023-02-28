@@ -4,24 +4,26 @@
 #include "Simulator.hpp"
 #include "CliffordState.hpp"
 
+#define DEFAULT_CLIFFORD_TYPE "chp"
+
 class RandomCliffordSimulator : public Simulator, public Entropy {
 	private:
 		CliffordState *state;
-		bool initial_offset;
+		CliffordType clifford_type;
 
-		virtual float mzr_prob(uint i)=0;
-	
-	protected:
 		float init_mzr_prob;
 		uint gate_width;
 
+		bool initial_offset;
+
+		virtual float mzr_prob(uint i)=0;
 	public:
-		RandomCliffordSimulator() {}
 		RandomCliffordSimulator(uint system_size, float mzr_prob, uint gate_width, CliffordType simulator_type);
 		~RandomCliffordSimulator();
 
-		virtual float entropy(std::vector<uint> &qubits) const { return state->entropy(qubits); }
+		virtual void init_state();
 
+		virtual float entropy(std::vector<uint> &qubits) const { return state->entropy(qubits); }
 		virtual void timesteps(uint num_steps);
 };
 

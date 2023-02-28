@@ -36,7 +36,7 @@ std::vector<FreeFermionConfig*> FreeFermionConfig::load_json(std::string filenam
             for (auto json_fparams : data["fparams"]) {
                 params.set("p1", json_fparams["p1"]);
                 params.set("p2", json_fparams["p2"]);
-            params.set("beta", json_fparams["beta"]);
+                params.set("beta", json_fparams["beta"]);
                 params.set("filling_fraction", json_fparams["filling_fraction"]);
                 configs.push_back(new FreeFermionConfig(params));
             }

@@ -1,21 +1,25 @@
 #include "FreeFermionSimulator.h"
 #include <iostream>
 
-template <typename T>
-void print_vector(std::vector<T>& v) {
-    std::cout << "[";
-    for (auto t : v) {
-        std::cout << t << ", ";
-    }
-    std::cout << "]\n";
+FreeFermionSimulator::FreeFermionSimulator(Params &params) : EntropySimulator(params) {
+    system_size = params.geti("system_size");
+    p1 = params.getf("p1");
+    p2 = params.getf("p2");
+    beta = params.getf("beta");
+    filling_fraction = params.getf("filling_fraction");
+
+    rng = new std::minstd_rand(std::rand());
+
+    num_particles = filling_fraction * system_size;
+}
+
+FreeFermionSimulator::~FreeFermionSimulator() {
+    delete rng;
 }
 
 
-FreeFermionSimulator::FreeFermionSimulator() {}
-
-FreeFermionSimulator::FreeFermionSimulator(uint system_size, float p1, float p2, float beta, float filling_fraction) : system_size(system_size), p1(p1), p2(p2), beta(beta) {
-    this->num_particles = filling_fraction * system_size;
-    this->propagator = Eigen::MatrixXcd::Identity(system_size, system_size);
+void FreeFermionSimulator::init_state() {
+    propagator = Eigen::MatrixXcd::Identity(system_size, system_size);
 }
 
 int FreeFermionSimulator::get_num_particles() {
@@ -23,7 +27,7 @@ int FreeFermionSimulator::get_num_particles() {
 }
 
 float FreeFermionSimulator::kappa() {
-    float r = float((rng)())/float(RAND_MAX);
+    float r = float((*rng)())/float(RAND_MAX);
     if (r < p1) {
         return 1.;
     } else {
@@ -32,7 +36,7 @@ float FreeFermionSimulator::kappa() {
 }
 
 float FreeFermionSimulator::lambda() {
-    float r = float((rng)())/float(RAND_MAX);
+    float r = float((*rng)())/float(RAND_MAX);
     if (r < p2) {
         return 1.;
     } else {

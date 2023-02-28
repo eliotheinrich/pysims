@@ -9,8 +9,7 @@ class DrivenRandomCliffordSimulator : public RandomCliffordSimulator {
 		virtual float mzr_prob(uint i) { return init_mzr_prob; } //std::exp(-entropy(std::vector<uint>{i})); }
 
 	public:
-		DrivenRandomCliffordSimulator(uint system_size, float mzr_prob, uint gate_width, CliffordType clifford_state)
-		 : RandomCliffordSimulator(system_size, mzr_prob, gate_width, clifford_state) {}
+		DrivenRandomCliffordSimulator(Params &params) : RandomCliffordSimulator(Params &params) {}
 };
 
 #endif

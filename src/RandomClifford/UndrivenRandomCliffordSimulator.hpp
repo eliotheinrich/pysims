@@ -8,8 +8,7 @@ class UndrivenRandomCliffordSimulator : public RandomCliffordSimulator {
 		virtual float mzr_prob(uint i) { return init_mzr_prob; }
 
 	public:
-		UndrivenRandomCliffordSimulator(uint system_size, float mzr_prob, uint gate_width, CliffordType clifford_state)
-		 : RandomCliffordSimulator(system_size, mzr_prob, gate_width, clifford_state) {}
+		UndrivenRandomCliffordSimulator(Params &params) : RandomCliffordSimulator(Params &params) {}
 };
 
 #endif

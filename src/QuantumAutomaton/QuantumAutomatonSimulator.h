@@ -4,15 +4,19 @@
 #include "Simulator.hpp"
 #include "CliffordState.hpp"
 
+#define DEFAULT_CLIFFORD_STATE "chp"
+
 class QuantumAutomatonSimulator : public EntropySimulator {
 	private:
 		CliffordState *state;
+		CliffordType clifford_type;
 		float mzr_prob;
 
 	public:
-		QuantumAutomatonSimulator() : {};
 		QuantumAutomatonSimulator(Params &params);
 		~QuantumAutomatonSimulator();
+
+		virtual void init_state();
 
 		virtual float entropy(std::vector<uint> &qubits) const { return state->entropy(qubits); }
 		

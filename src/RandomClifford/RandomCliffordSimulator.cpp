@@ -3,8 +3,14 @@
 #include "QuantumGraphState.h"
 #include <iostream>
 
-RandomCliffordSimulator::RandomCliffordSimulator(uint system_size, float mzr_prob, uint gate_width, CliffordType simulator_type) 
-	: init_mzr_prob(mzr_prob), gate_width(gate_width), initial_offset(false) {
+RandomCliffordSimulator::RandomCliffordSimulator(Params &params) : EntropyConfig(params) {
+	clifford_type = parse_clifford_type(params.gets("clifford_type", DEFAULT_CLIFFORD_TYPE));
+	init_mzr_prob = params.getf("mzr_prob");
+	gate_width = params.geti("gate_width");
+	initial_offset = false;
+}
+
+void RandomCliffordSimulator::init_state() {
 	switch (simulator_type) {
 		case CHP : state = new QuantumCHPState(system_size); break;
 		case GraphSim : state = new QuantumGraphState(system_size); break;

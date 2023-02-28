@@ -5,11 +5,13 @@
 #include <assert.h>
 
 QuantumAutomatonSimulator::QuantumAutomatonSimulator(Params &params) : EntropySimulator(params) {
+	clifford_type = parse_clifford_type(params.gets("clifford_type", DEFAULT_CLIFFORD_TYPE));
 	mzr_prob = params.getf("mzr_prob");
-	clifford_type = (CliffordType) params.geti("clifford_type", DEFAULT_CLIFFORD_TYPE);
 	system_size = params.geti("system_size");
+}
 
-	switch (simulator_type) {
+void QuantumAutomatonSimulator::init_state() {
+	switch (clifford_type) {
 		case CHP : state = new QuantumCHPState(system_size); break;
 		case GraphSim : state = new QuantumGraphState(system_size); break;
 	}
@@ -55,4 +57,10 @@ void QuantumAutomatonSimulator::timesteps(uint num_steps) {
 			}
 		}
 	}
+}
+
+std::map<std::string, Sample> QuantumAutomatonSimulator::take_samples() const {
+	std::map<std::string, Sample> sample;
+	sample.emplace("entropy", spatially_averaged_entropy());
+	return sample;
 }

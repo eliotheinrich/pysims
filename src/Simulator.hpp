@@ -24,6 +24,7 @@ static void print_vector(std::vector<T> v) {
 
 class Simulator {
     public:
+        virtual void init_state();
         virtual void timesteps(uint num_steps)=0;
         virtual std::map<std::string, Sample> take_samples()=0;
 };
@@ -32,8 +33,6 @@ class TimeConfig : public Config {
     private:
         Simulator *simulator;
         uint nruns;
-
-        virtual void init_simulator()=0;
 
     public:
         uint sampling_timesteps;
@@ -52,7 +51,7 @@ class TimeConfig : public Config {
         virtual uint get_nruns() const { return nruns; }
 
         void compute(DataSlide *slide) {
-            init_simulator();
+            simulator->init_state();
 
             simulator->timesteps(equilibration_timesteps);
 

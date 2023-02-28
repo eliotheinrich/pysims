@@ -9,7 +9,7 @@
 #include "Simulator.hpp"
 
 
-class FreeFermionSimulator : public EntropyConfig {
+class FreeFermionSimulator : public EntropySimulator {
     private:
         Eigen::MatrixXcd propagator;
 
@@ -18,14 +18,14 @@ class FreeFermionSimulator : public EntropyConfig {
         float beta;
         float p1;
         float p2;
-        std::minstd_rand rng;
-
+        std::minstd_rand *rng;
 
     public:
-        FreeFermionSimulator();
-        FreeFermionSimulator(uint system_size, float p1, float p2, float beta, float filling_fraction);
+        FreeFermionSimulator(Params &params);
         ~FreeFermionSimulator();
-        
+
+        virtual void init_state();
+
         int get_num_particles();
 
         float kappa();
@@ -33,7 +33,7 @@ class FreeFermionSimulator : public EntropyConfig {
 
         void real_timestep();
         void imag_timestep();
-        void timesteps(uint num_timesteps);
+        virtual void timesteps(uint num_timesteps);
 
         Eigen::MatrixXcd correlation_function() const;
 

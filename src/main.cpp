@@ -1,6 +1,10 @@
-#include "QuantumAutomatonConfig.h"
-#include "RandomCliffordConfig.h"
-#include "MinCutConfig.h"
+//#include "QuantumAutomatonConfig.h"
+//#include "RandomCliffordConfig.h"
+//#include "MinCutConfig.h"
+
+#include "QuantumAutomatonSimulator.h"
+#include "RandomCliffordSimulator.h"
+#include "MinCutSimulator.h"
 
 #include <DataFrame.hpp>
 #include <nlohmann/json.hpp>
