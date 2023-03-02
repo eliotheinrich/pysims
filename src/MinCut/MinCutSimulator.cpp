@@ -15,6 +15,10 @@ MinCutSimulator::~MinCutSimulator() {
 	delete rng;
 }
 
+std::string MinCutSimulator::to_string() const {
+	return state->to_string();
+}
+
 float MinCutSimulator::entropy(std::vector<uint> &qubits) const {
 	assert(qubits.size() % 2 == 0);
 	uint num_vertices = state->num_vertices;
@@ -27,9 +31,21 @@ float MinCutSimulator::entropy(std::vector<uint> &qubits) const {
 	for (auto q : qubits)
 		if (q % 2 == 0) subsystem_a.push_back(q/2 + d);
 
-	std::vector<uint> subsystem_b(system_size/2);
-	std::iota(subsystem_b.begin(), subsystem_b.end(), d);
-	std::remove_if(subsystem_b.begin(), subsystem_b.end(), [&subsystem_a](uint q){ return !(q < subsystem_a.front() || q > subsystem_a.back()); } );
+	uint q1 = subsystem_a.front();
+	uint q2 = subsystem_a.back();
+
+	std::vector<uint> subsystem_b;
+	for (uint i = d; i < d + system_size/2; i++) {
+		if ((i < q1) || (i > q2)) subsystem_b.push_back(i);
+	}
+	//std::iota(subsystem_b.begin(), subsystem_b.end(), d);
+//std::cout << "subsystem_a: "; for (auto s : subsystem_a) std::cout << s << " ";
+//std::cout << "\n";
+//std::cout << "subsystem_b: "; for (auto s : subsystem_b) std::cout << s << " ";
+//std::cout << "\n";
+	//std::remove_if(subsystem_b.begin(), subsystem_b.end(), [&subsystem_a](uint q){ return !(q < subsystem_a.front() || q > subsystem_a.back()); } );
+//std::cout << "subsystem_b: "; for (auto s : subsystem_b) std::cout << s << " ";
+//std::cout << "\n";
 
 	return state->max_flow(subsystem_a, subsystem_b);
 }
@@ -49,6 +65,7 @@ void MinCutSimulator::timesteps(uint num_steps) {
 			uint v2 = (row - 1)*num_new_vertices + col;
 			uint v3 = (row - 1)*num_new_vertices + next_col;
 
+			//std::cout << "mzr_prob: " << mzr_prob << std::endl;
 			if (randf() < 1. - mzr_prob) state->add_edge(v1, v2);
 			if (randf() < 1. - mzr_prob) state->add_edge(v1, v3);
 		}

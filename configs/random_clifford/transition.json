@@ -1,6 +1,6 @@
 {
 	"run_name": "transition_rc",
-	"clifford_state": "chp",
+	"clifford_type": "chp",
 	"circuit_type": "random_clifford",
 	"num_runs": 10,
 

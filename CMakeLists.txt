@@ -1,6 +1,9 @@
 cmake_minimum_required(VERSION 3.11.4)
 project(FreeFermion)
 
+find_package(Boost 1.40 COMPONENTS program_options REQUIRED)
+include_directories(${Boost_INCLUDE_DIR})
+
 set(CMAKE_CXX_STANDARD 17)
 if (NOT CMAKE_BUILD_TYPE)
     set(CMAKE_BUILD_TYPE Release)
@@ -20,7 +23,7 @@ add_library(simulator
     src/Simulator.hpp
     src/Graph.cpp
 )
-target_include_directories(simulator PUBLIC ${CTPL_DIR} ${DF_DIR})
+target_include_directories(simulator PUBLIC ${CTPL_DIR} ${DF_DIR} ${NLOHMANN_DIR})
 target_link_libraries(simulator -pthread)
 set_target_properties(simulator PROPERTIES LINKER_LANGUAGE CXX)
 
@@ -46,3 +49,13 @@ target_include_directories(main PRIVATE
     ${NLOHMANN_DIR}
 )
 target_link_libraries(main PRIVATE quantum_automaton random_clifford mincut)
+
+
+add_executable(test src/test.cpp)
+target_include_directories(test PRIVATE
+    src
+    ${MC_DIR}
+    ${DF_DIR}
+    ${NLOHMANN_DIR}
+)
+target_link_libraries(test PRIVATE mincut)

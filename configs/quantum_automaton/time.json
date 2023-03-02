@@ -1,15 +1,15 @@
 {
 	"run_name": "time_qa",
-	"clifford_state": "chp",
+	"clifford_type": "chp",
 	"circuit_type": "quantum_automaton",
-	"num_runs": 1000,
+	"num_runs": 1,
 
 	"system_size": [256],
 	"partition_size": [128],
-	"fparams": [{"mzr_prob": 0.138}],
+	"fparams": [{"mzr_prob": 0.138}, {"mzr_prob": 0.15}],
 
 	"temporal_avg": false,
-	"sampling_timesteps": 500,
+	"sampling_timesteps": 5,
 	"measurement_freq": 5,
 
 	"spacing": 5,

@@ -29,10 +29,7 @@ class QuantumGraphState : public CliffordState {
 		static const uint CLIFFORD_PRODUCTS[24][24];
 		static const uint CZ_LOOKUP[24][24][2][3];
 
-
-
 		uint num_qubits;
-		Graph *graph;
 
 		void apply_gater(uint a, uint gate_id);
 		void apply_gatel(uint a, uint gate_id);
@@ -46,6 +43,8 @@ class QuantumGraphState : public CliffordState {
 
 
 	public:
+		Graph *graph;
+
         QuantumGraphState(uint num_qubits);
         ~QuantumGraphState() {}
 
@@ -61,6 +60,7 @@ class QuantumGraphState : public CliffordState {
 
         virtual void cz_gate(uint a, uint b);
         virtual bool mzr(uint a);
+		virtual bool mzr_forced(uint a, bool outcome);
 
         virtual float entropy(std::vector<uint> &qubits) const;
 

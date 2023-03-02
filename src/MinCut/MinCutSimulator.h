@@ -17,16 +17,18 @@ class MinCutSimulator : public EntropySimulator {
 		bool offset;
 
 	public:
-		virtual void init_state();
-
 		MinCutSimulator(Params &params);
 		~MinCutSimulator();
+
+		std::string to_string() const;
 
 		int rand() { return (*rng)(); }
 		float randf() { return double((*rng)())/double(RAND_MAX); }
 
+		virtual void init_state();
 		virtual void timesteps(uint num_steps);
 		virtual float entropy(std::vector<uint> &sites) const;
+		virtual Simulator* clone(Params &params) { return new MinCutSimulator(params); }
 };
 
 static const uint mod(int a, int b) {

@@ -1,27 +1,23 @@
-#include "RandomCliffordSimulator.h"
+#include "ClusterRandomCliffordSimulator.h"
 #include "QuantumCHPState.h"
 #include "QuantumGraphState.h"
 #include <iostream>
 
-RandomCliffordSimulator::RandomCliffordSimulator(Params &params) : EntropySimulator(params) {
-	clifford_type = parse_clifford_type(params.gets("clifford_type", DEFAULT_CLIFFORD_TYPE));
+ClusterRandomCliffordSimulator::ClusterRandomCliffordSimulator(Params &params) : EntropySimulator(params) {
 	mzr_prob = params.getf("mzr_prob");
 	gate_width = params.geti("gate_width");
 	initial_offset = false;
 }
 
-void RandomCliffordSimulator::init_state() {
-	switch (clifford_type) {
-		case CliffordType::CHP : state = new QuantumCHPState(system_size); break;
-		case CliffordType::GraphSim : state = new QuantumGraphState(system_size); break;
-	}
+void ClusterRandomCliffordSimulator::init_state() {
+	state = new QuantumGraphState(system_size);
 }
 
-RandomCliffordSimulator::~RandomCliffordSimulator() {
+ClusterRandomCliffordSimulator::~ClusterRandomCliffordSimulator() {
 	delete state;
 }
 
-void RandomCliffordSimulator::timesteps(uint num_steps) {
+void ClusterRandomCliffordSimulator::timesteps(uint num_steps) {
 	uint num_qubits = state->system_size();
 	assert(num_qubits % gate_width == 0);
 	assert(gate_width % 2 == 0); // So that offset is a whole number
@@ -44,7 +40,8 @@ void RandomCliffordSimulator::timesteps(uint num_steps) {
 		// Apply measurements
 		for (uint j = 0; j < num_qubits; j++) {
 			if (state->randf() < mzr_prob) {
-				state->mzr(j);
+				std::set<uint> cluster = state->graph->component(j);
+				for (auto k : cluster) state->mzr(k);
 			}
 		}
 
@@ -53,5 +50,3 @@ void RandomCliffordSimulator::timesteps(uint num_steps) {
 
 	initial_offset = offset_layer;
 }
-
-

@@ -13,7 +13,7 @@ Graph::Graph(const Graph *g) : Graph() {
 std::string Graph::to_string() const {
 	std::string s = "";
 	for (uint i = 0; i < num_vertices; i++) {
-		s += "[" + std::to_string(i) + "] -> ";
+		s += "[" + std::to_string(vals[i]) + "] " + std::to_string(i) + " -> ";
 		for (auto const&[v, w] : edges[i]) {
 			s += "(" + std::to_string(v) + ": "  + std::to_string(w) + ") ";
 		}
@@ -68,7 +68,7 @@ void Graph::add_weighted_edge(uint v1, uint v2, int w) {
 }
 
 void Graph::remove_directed_edge(uint v1, uint v2) {
-	edges[v1].erase(v1);
+	edges[v1].erase(v2);
 }
 
 void Graph::remove_edge(uint v1, uint v2) {

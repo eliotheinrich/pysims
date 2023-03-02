@@ -12,8 +12,8 @@ QuantumAutomatonSimulator::QuantumAutomatonSimulator(Params &params) : EntropySi
 
 void QuantumAutomatonSimulator::init_state() {
 	switch (clifford_type) {
-		case CHP : state = new QuantumCHPState(system_size); break;
-		case GraphSim : state = new QuantumGraphState(system_size); break;
+		case CliffordType::CHP : state = new QuantumCHPState(system_size); break;
+		case CliffordType::GraphSim : state = new QuantumGraphState(system_size); break;
 	}
 
 	// Initially polarize in x-direction
@@ -57,10 +57,4 @@ void QuantumAutomatonSimulator::timesteps(uint num_steps) {
 			}
 		}
 	}
-}
-
-std::map<std::string, Sample> QuantumAutomatonSimulator::take_samples() const {
-	std::map<std::string, Sample> sample;
-	sample.emplace("entropy", spatially_averaged_entropy());
-	return sample;
 }

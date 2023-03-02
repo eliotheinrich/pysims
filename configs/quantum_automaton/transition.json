@@ -1,6 +1,6 @@
 {
 	"run_name": "transition_qa",
-	"clifford_state": "chp",
+	"clifford_type": "chp",
 	"circuit_type": "quantum_automaton",
 	"num_runs": 10,
 

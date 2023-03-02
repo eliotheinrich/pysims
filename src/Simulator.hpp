@@ -24,9 +24,10 @@ static void print_vector(std::vector<T> v) {
 
 class Simulator {
     public:
-        virtual void init_state();
+        virtual Simulator* clone(Params &params)=0;
         virtual void timesteps(uint num_steps)=0;
         virtual std::map<std::string, Sample> take_samples()=0;
+        virtual void init_state()=0;
 };
 
 class TimeConfig : public Config {
@@ -39,6 +40,10 @@ class TimeConfig : public Config {
         uint equilibration_timesteps;
         uint measurement_freq;
         bool temporal_avg;
+
+        void init_simulator(Simulator *sim) {
+            simulator = sim;
+        }
 
         TimeConfig(Params &params) : Config(params) {
             nruns = params.geti("num_runs", DEFAULT_NUM_RUNS);
@@ -85,6 +90,12 @@ class TimeConfig : public Config {
                     }
                 }
             }
+        }
+
+        virtual Config* clone() {
+            TimeConfig* config = new TimeConfig(params);
+            config->simulator = simulator->clone(params);
+            return config;
         }
 };
 
@@ -219,7 +230,7 @@ class MutualInformationSimulator : public Simulator, public Entropy {
         }
 
     public:
-        MutualInformationConfig(Params &params) : Entropy(params) {
+        MutualInformationSimulator(Params &params) : Entropy(params) {
             num_bins = params.geti("num_bins");
             min_eta = params.getf("min_eta");
             max_eta = params.getf("max_eta");
@@ -239,13 +250,14 @@ class MutualInformationSimulator : public Simulator, public Entropy {
                     float entropy1 = entropy_table[x1];
                     float entropy2 = entropy_table[x3];
                     float entropy3 = entropy(combined_sites);
-                    float I = entropy1 + entropy2 - entropy3;
+                    Sample I = Sample(entropy1 + entropy2 - entropy3);
 
                     std::string key = "I_" + std::to_string(x1) + "_" + std::to_string(x3);
                     if (sample.count(key)) { 
                         sample[key] = Sample(I);
                     } else {
-                        sample[key] = sample[key].combine(Sample(I));
+                        Sample s = Sample(I);
+                        sample[key] = sample[key].combine(I);
                     }
                 }
             }

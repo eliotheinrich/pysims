@@ -39,9 +39,20 @@ void QuantumCHPState::cz_gate(uint a, uint b) {
 }
 
 bool QuantumCHPState::mzr(uint a) {
-    bool outcome = rand() % 2 == 0;
+    bool outcome = rand() % 2;
     tableau.mzr(a, outcome);
     return outcome;
+}
+
+bool QuantumCHPState::mzr_forced(uint a, bool outcome) {
+    auto deterministic = tableau.mzr_deterministic(a);
+    bool outcome_random = deterministic.first;
+    if (outcome_random) {
+        tableau.mzr(a, outcome);
+        return true;
+    } else {
+        return mzr(a) == outcome;
+    }
 }
 
 float QuantumCHPState::entropy(std::vector<uint> &qubits) const {
@@ -99,6 +110,6 @@ float QuantumCHPState::entropy(std::vector<uint> &qubits) const {
         }
     }
     float s = rank - partition_size;
-if (s > 1000) std::cout << "rank = " << rank << ", partition_size = " << partition_size << std::endl;
+
     return rank - partition_size;
 }

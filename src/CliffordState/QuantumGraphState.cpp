@@ -204,8 +204,6 @@ const uint QuantumGraphState::CZ_LOOKUP[24][24][2][3] =
 	{{1, 23, 20}, {0, 23, 20}}, {{1, 0, 10}, {0, 20, 10}}, {{1, 0, 8}, {0, 20, 8}}, {{1, 23, 23}, {0, 23, 23}}}};
 
 
-
-
 QuantumGraphState::QuantumGraphState(uint num_qubits) : CliffordState(), num_qubits(num_qubits) {
 	graph = new Graph();
 	for (uint i = 0; i < num_qubits; i++) graph->add_vertex(HGATE);
@@ -312,7 +310,9 @@ void QuantumGraphState::myr_graph(uint a, bool outcome) {
 
 	for (auto i : ngbh) {
 		for (auto j : ngbh) {
-			graph->toggle_edge(i, j);
+			if (i < j) {
+				graph->toggle_edge(i, j);
+			}
 		}
 	}
 }
@@ -377,14 +377,28 @@ void QuantumGraphState::cz_gate(uint a, uint b) {
 	if (lookup[0] != graph->contains_edge(a, b)) graph->toggle_edge(a, b);
 }
 
+bool QuantumGraphState::mzr_forced(uint a, bool outcome) {
+	uint basis = CONJUGATION_TABLE[graph->get_val(a)];
+	bool positive = basis > 3;
+
+	if ((basis == 1) || (basis == 4)) {
+		if (graph->degree(a) == 0) return (!positive == outcome);
+	}
+
+	if      ((basis == 1) || (basis == 4)) mxr_graph(a, outcome ^ positive);
+	else if ((basis == 2) || (basis == 5)) myr_graph(a, outcome ^ positive);
+	else if ((basis == 3) || (basis == 6)) mzr_graph(a, outcome ^ positive);
+
+	return true;	
+}
+
+
 bool QuantumGraphState::mzr(uint a) {
 	uint basis = CONJUGATION_TABLE[graph->get_val(a)];
-	int positive = basis > 3;
-	bool outcome;
+	bool positive = basis > 3;
+	bool outcome = rand() % 2;
 	if ((basis == 1) || (basis == 4)) {
 		if (graph->degree(a) == 0) return positive;
-	} else {
-		outcome = rand() % 2;
 	}
 
 	if      ((basis == 1) || (basis == 4)) mxr_graph(a, outcome);

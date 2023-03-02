@@ -1,6 +1,6 @@
 {
 	"run_name": "base_qa",
-	"clifford_state": "chp",
+	"clifford_type": "chp",
 	"circuit_type": "quantum_automaton",
 
 	"system_size": [256],
