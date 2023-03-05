@@ -1,4 +1,5 @@
 #include "QuantumGraphState.h"
+#include <climits>
 
 		
 const uint QuantumGraphState::ZGATES[4] = {IDGATE, ZGATE, SGATE, SDGATE};
@@ -204,7 +205,7 @@ const uint QuantumGraphState::CZ_LOOKUP[24][24][2][3] =
 	{{1, 23, 20}, {0, 23, 20}}, {{1, 0, 10}, {0, 20, 10}}, {{1, 0, 8}, {0, 20, 8}}, {{1, 23, 23}, {0, 23, 23}}}};
 
 
-QuantumGraphState::QuantumGraphState(uint num_qubits) : CliffordState(), num_qubits(num_qubits) {
+QuantumGraphState::QuantumGraphState(uint num_qubits, int seed) : CliffordState(seed), num_qubits(num_qubits) {
 	graph = new Graph();
 	for (uint i = 0; i < num_qubits; i++) graph->add_vertex(HGATE);
 }
@@ -415,15 +416,21 @@ float QuantumGraphState::entropy(std::vector<uint> &qubits) const {
 		if (bipartite_graph.get_val(i)) s--;
 	}
 
+//std::cout << "Starting: s = " << s << ", \n" << to_string() << "\n";
+//std::cout << "Bipartite graph: \n" << bipartite_graph.to_string() << std::endl;
+
 	while (bipartite_graph.num_vertices > 0) {
 		uint del_node = bipartite_graph.num_vertices - 1;
 		uint del_node_degree = bipartite_graph.degree(del_node);
 		bool del_node_val = bipartite_graph.get_val(del_node);
+//std::cout << "Deleting " << del_node << " with degree " << del_node_degree << std::endl;
 		if (del_node_degree == 0) {
+//std::cout << "isolated vertex\n";
 			if (!del_node_val) s -= 2;
 			else s -= 1;
 			bipartite_graph.remove_vertex(del_node);
 		} else if (del_node_degree == 1) {
+//std::cout << "single neighbor\n";
 			uint neighbor = bipartite_graph.neighbors(del_node)[0];
 			if (del_node_val) {
 				std::vector<uint> del_nodes;
@@ -443,9 +450,10 @@ float QuantumGraphState::entropy(std::vector<uint> &qubits) const {
 				s -= 2;
 			}
 		} else {
+//std::cout << "multiple neighbors\n";
 			bool found_pivot = false;
 			uint pivot = 0;
-			uint min_degree = 0;
+			uint min_degree = INT_MAX;
 			for (auto neighbor : bipartite_graph.neighbors(del_node)) {
 				uint deg = bipartite_graph.degree(neighbor);
 
@@ -458,6 +466,7 @@ float QuantumGraphState::entropy(std::vector<uint> &qubits) const {
 
 			// there is no valid pivot, so graph is a simple tree; clear it.
 			if (!found_pivot) {
+//std::cout << "no pivot\n";
 				std::vector<uint> neighbors = bipartite_graph.neighbors(del_node);
 				std::reverse(neighbors.begin(), neighbors.end());
 
@@ -469,6 +478,7 @@ float QuantumGraphState::entropy(std::vector<uint> &qubits) const {
 				if (del_node_val) s -= 2*del_node_degree;
 				else s -= 1*del_node_degree;
 			} else {
+//std::cout << "pivoting on " << pivot << "\n";
 				for (auto neighbor : bipartite_graph.neighbors(del_node)) {
 					if (neighbor != pivot) {
 						std::vector<uint> pivot_neighbors = bipartite_graph.neighbors(pivot);
@@ -484,6 +494,7 @@ float QuantumGraphState::entropy(std::vector<uint> &qubits) const {
 		}
 	}
 
+//std::cout << "s = " << s << std::endl;
 	return s;
 }
 

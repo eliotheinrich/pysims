@@ -7,13 +7,14 @@ RandomCliffordSimulator::RandomCliffordSimulator(Params &params) : EntropySimula
 	clifford_type = parse_clifford_type(params.gets("clifford_type", DEFAULT_CLIFFORD_TYPE));
 	mzr_prob = params.getf("mzr_prob");
 	gate_width = params.geti("gate_width");
+	random_seed = params.geti("random_seed", DEFAULT_SEED);
 	initial_offset = false;
 }
 
 void RandomCliffordSimulator::init_state() {
 	switch (clifford_type) {
-		case CliffordType::CHP : state = new QuantumCHPState(system_size); break;
-		case CliffordType::GraphSim : state = new QuantumGraphState(system_size); break;
+		case CliffordType::CHP : state = new QuantumCHPState(system_size, random_seed); break;
+		case CliffordType::GraphSim : state = new QuantumGraphState(system_size, random_seed); break;
 	}
 }
 

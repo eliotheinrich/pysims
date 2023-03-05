@@ -13,7 +13,7 @@ class QuantumCHPState : public CliffordState {
         Tableau tableau;
 
     public:
-        QuantumCHPState(uint num_qubits);
+        QuantumCHPState(uint num_qubits, int seed=-1);
         ~QuantumCHPState() {}
 
         virtual std::string to_string() const;

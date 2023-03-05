@@ -5,12 +5,14 @@
 #include "CliffordState.hpp"
 
 #define DEFAULT_CLIFFORD_TYPE "chp"
+#define DEFAULT_SEED -1
 
 class QuantumAutomatonSimulator : public EntropySimulator {
 	private:
 		CliffordState *state;
 		CliffordType clifford_type;
 		float mzr_prob;
+		int random_seed;
 
 	public:
 		QuantumAutomatonSimulator(Params &params);

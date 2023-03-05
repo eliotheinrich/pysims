@@ -262,7 +262,10 @@ class CliffordState: public Entropy {
         }
 
     public:
-        CliffordState() : rng(std::minstd_rand(std::rand())) {}
+        CliffordState(int seed=-1) : rng(std::minstd_rand(std::rand())) {
+            if (seed == -1) rng = std::minstd_rand(std::rand());
+            else rng = std::minstd_rand(seed);
+        }
         virtual uint system_size() const=0;
         uint rand() {
             return this->rng();

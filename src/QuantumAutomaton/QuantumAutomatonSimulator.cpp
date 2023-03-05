@@ -8,12 +8,13 @@ QuantumAutomatonSimulator::QuantumAutomatonSimulator(Params &params) : EntropySi
 	clifford_type = parse_clifford_type(params.gets("clifford_type", DEFAULT_CLIFFORD_TYPE));
 	mzr_prob = params.getf("mzr_prob");
 	system_size = params.geti("system_size");
+	random_seed = params.geti("random_seed", DEFAULT_SEED);
 }
 
 void QuantumAutomatonSimulator::init_state() {
 	switch (clifford_type) {
-		case CliffordType::CHP : state = new QuantumCHPState(system_size); break;
-		case CliffordType::GraphSim : state = new QuantumGraphState(system_size); break;
+		case CliffordType::CHP : state = new QuantumCHPState(system_size, random_seed); break;
+		case CliffordType::GraphSim : state = new QuantumGraphState(system_size, random_seed); break;
 	}
 
 	// Initially polarize in x-direction

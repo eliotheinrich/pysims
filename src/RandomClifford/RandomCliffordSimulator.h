@@ -5,6 +5,7 @@
 #include "CliffordState.hpp"
 
 #define DEFAULT_CLIFFORD_TYPE "chp"
+#define DEFAULT_SEED -1
 
 class RandomCliffordSimulator : public EntropySimulator {
 	private:
@@ -12,7 +13,8 @@ class RandomCliffordSimulator : public EntropySimulator {
 		CliffordType clifford_type;
 		float mzr_prob;
 		uint gate_width;
-
+		
+		int random_seed;
 		bool initial_offset;
 
 	public:

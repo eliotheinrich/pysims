@@ -3,8 +3,9 @@
 #include <assert.h>
 #include <algorithm>
 
-QuantumCHPState::QuantumCHPState(uint num_qubits) : CliffordState(), num_qubits(num_qubits), 
-                                                    tableau(Tableau(num_qubits)) {}
+QuantumCHPState::QuantumCHPState(uint num_qubits, int seed) : CliffordState(seed), num_qubits(num_qubits), 
+                                                              tableau(Tableau(num_qubits)) {
+}
 
 
 std::string QuantumCHPState::to_string() const {

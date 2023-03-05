@@ -45,7 +45,7 @@ class QuantumGraphState : public CliffordState {
 	public:
 		Graph *graph;
 
-        QuantumGraphState(uint num_qubits);
+        QuantumGraphState(uint num_qubits, int seed=-1);
         ~QuantumGraphState() {}
 
         virtual std::string to_string() const;

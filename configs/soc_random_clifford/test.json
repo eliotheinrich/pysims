@@ -1,0 +1,21 @@
+{
+	"run_name": "test_rc",
+	"circuit_type": "soc_random_clifford",
+	"num_runs": 100,
+
+	"system_size": [50],
+	"partition_size": [2, 4, 8, 12, 16, 20, 24],
+	"iparams": [{"gate_width": 2}, {"gate_width": 2}, {"gate_width": 2}, {"gate_width": 2},
+				{"gate_width": 2}, {"gate_width": 2}, {"gate_width": 2}, {"gate_width": 2}],
+	"fparams": [{"mzr_prob": 0.0001}, {"mzr_prob": 0.0005}, {"mzr_prob": 0.001}, {"mzr_prob": 0.005},
+				{"mzr_prob": 0.01},   {"mzr_prob": 0.05},   {"mzr_prob": 0.1},   {"mzr_prob": 0.3}],
+
+	"temporal_avg": true,
+	"sampling_timesteps": 500,
+	"equilibration_timesteps": 1000,
+	"measurement_freq": 5,
+
+	"spacing": 5,
+
+	"filename": "soc_random_clifford.json"
+}

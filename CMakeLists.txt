@@ -54,8 +54,9 @@ target_link_libraries(main PRIVATE quantum_automaton random_clifford mincut)
 add_executable(test src/test.cpp)
 target_include_directories(test PRIVATE
     src
+    ${CLIFFORD_DIR}
     ${MC_DIR}
     ${DF_DIR}
     ${NLOHMANN_DIR}
 )
-target_link_libraries(test PRIVATE mincut)
+target_link_libraries(test PRIVATE mincut clifford_state)
