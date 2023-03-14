@@ -24,7 +24,8 @@ class QuantumAutomatonSimulator : public EntropySimulator {
 		
 		void timestep(bool offset, bool gate_type);
 		virtual void timesteps(uint num_steps);
-		virtual std::unique_ptr<Simulator> clone(Params &params) { return std::unique_ptr<Simulator>(new QuantumAutomatonSimulator(params)); }
+
+		CLONE(Simulator, QuantumAutomatonSimulator)
 };
 
 #endif

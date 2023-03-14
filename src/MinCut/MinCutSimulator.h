@@ -24,7 +24,8 @@ class MinCutSimulator : public EntropySimulator {
 
 		virtual void timesteps(uint num_steps);
 		virtual float entropy(std::vector<uint> &sites) const;
-		virtual std::unique_ptr<Simulator> clone(Params &params) { return std::unique_ptr<Simulator>(new MinCutSimulator(params)); }
+
+		CLONE(Simulator, MinCutSimulator)
 };
 
 #endif

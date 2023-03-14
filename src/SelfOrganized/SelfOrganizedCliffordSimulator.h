@@ -31,7 +31,8 @@ class SelfOrganizedCliffordSimulator : public EntropySimulator {
 		void unitary(uint i);
 		void timestep();
 		virtual void timesteps(uint num_steps);
-		virtual std::unique_ptr<Simulator> clone(Params &params) { return std::unique_ptr<Simulator>(new SelfOrganizedCliffordSimulator(params)); }
+
+		CLONE(Simulator, SelfOrganizedCliffordSimulator)
 };
 
 #endif

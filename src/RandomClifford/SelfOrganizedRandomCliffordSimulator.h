@@ -32,8 +32,9 @@ class SelfOrganizedRandomCliffordSimulator : public EntropySimulator {
 
 		virtual float entropy(std::vector<uint> &qubits) const { return state->entropy(qubits); }
 		virtual void timesteps(uint num_steps);
-		virtual std::unique_ptr<Simulator> clone(Params &params) { return std::unique_ptr<Simulator>(new SelfOrganizedRandomCliffordSimulator(params)); }
 		virtual std::map<std::string, Sample> take_samples();
+
+		CLONE(Simulator, SelfOrganizedRandomCliffordSimulator)
 };
 
 #endif

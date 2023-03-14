@@ -26,7 +26,8 @@ class RandomCliffordSimulator : public EntropySimulator {
 
 		virtual float entropy(std::vector<uint> &qubits) const { return state->entropy(qubits); }
 		virtual void timesteps(uint num_steps);
-		virtual std::unique_ptr<Simulator> clone(Params &params) { return std::unique_ptr<Simulator>(new RandomCliffordSimulator(params)); }
+
+		CLONE(Simulator, RandomCliffordSimulator)
 };
 
 #endif

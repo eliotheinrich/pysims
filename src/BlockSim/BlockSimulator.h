@@ -36,8 +36,9 @@ class BlockSimulator : public Simulator {
         virtual void timesteps(uint num_steps);
         std::string to_string() const;
 
-        virtual std::unique_ptr<Simulator> clone(Params &params) { return std::unique_ptr<Simulator>(new BlockSimulator(params)); }
         virtual std::map<std::string, Sample> take_samples();
+
+        CLONE(Simulator, BlockSimulator)
 };
 
 #endif
