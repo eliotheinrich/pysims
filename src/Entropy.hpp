@@ -3,6 +3,7 @@
 
 #include <iostream>
 #include <DataFrame.hpp>
+#include <Simulator.hpp>
 #include <algorithm>
 #include <numeric>
 #include <math.h>
@@ -14,90 +15,6 @@ static void print_vector(std::vector<T> v) {
         std::cout << t << ", ";
     } std::cout << "]\n";
 }
-
-#define DEFAULT_NUM_RUNS 1u
-#define DEFAULT_EQUILIBRATION_STEPS 0u
-#define DEFAULT_SAMPLING_TIMESTEPS 0u
-#define DEFAULT_MEASUREMENT_FREQ 1u
-#define DEFAULT_SPACING 1u
-#define DEFAULT_TEMPORAL_AVG true
-
-class Simulator {
-    public:
-        virtual Simulator* clone(Params &params)=0;
-        virtual void timesteps(uint num_steps)=0;
-        virtual std::map<std::string, Sample> take_samples()=0;
-        virtual void init_state()=0;
-};
-
-class TimeConfig : public Config {
-    private:
-        Simulator *simulator;
-        uint nruns;
-
-    public:
-        uint sampling_timesteps;
-        uint equilibration_timesteps;
-        uint measurement_freq;
-        bool temporal_avg;
-
-        void init_simulator(Simulator *sim) {
-            simulator = sim;
-        }
-
-        TimeConfig(Params &params) : Config(params) {
-            nruns = params.geti("num_runs", DEFAULT_NUM_RUNS);
-            equilibration_timesteps = params.geti("equilibration_timesteps", DEFAULT_EQUILIBRATION_STEPS);
-            sampling_timesteps = params.geti("sampling_timesteps", DEFAULT_SAMPLING_TIMESTEPS);
-            measurement_freq = params.geti("measurement_freq", DEFAULT_MEASUREMENT_FREQ);
-            temporal_avg = (bool) params.geti("temporal_avg", DEFAULT_TEMPORAL_AVG);
-        }
-
-        virtual uint get_nruns() const { return nruns; }
-
-        void compute(DataSlide *slide) {
-            simulator->init_state();
-
-            simulator->timesteps(equilibration_timesteps);
-
-            int num_timesteps, num_intervals;
-            if (sampling_timesteps == 0) {
-                num_timesteps = 0;
-                num_intervals = 1;
-            } else {
-                num_timesteps = measurement_freq;
-                num_intervals = sampling_timesteps/measurement_freq;
-            }
-
-
-            std::map<std::string, std::vector<Sample>> samples;
-
-            for (int t = 0; t < num_intervals; t++) {
-                simulator->timesteps(num_timesteps);
-                std::map<std::string, Sample> sample = simulator->take_samples();
-                for (auto const &[key, val] : sample) {
-                    samples[key].push_back(val);
-                }
-            }
-
-            for (auto const &[key, ksamples] : samples) {
-                slide->add_data(key);
-                if (temporal_avg) {
-                    slide->push_data(key, Sample::collapse(ksamples));
-                } else {
-                    for (auto s : ksamples) {
-                        slide->push_data(key, s);
-                    }
-                }
-            }
-        }
-
-        virtual Config* clone() {
-            TimeConfig* config = new TimeConfig(params);
-            config->simulator = simulator->clone(params);
-            return config;
-        }
-};
 
 class Entropy {
     public:
@@ -152,7 +69,8 @@ class Entropy {
 
 class EntropySimulator : public Simulator, public Entropy {
     public:
-        EntropySimulator(Params &p) : Entropy(p) {}
+        EntropySimulator(Params &params) : Simulator(params), Entropy(params) {}
+
         virtual std::map<std::string, Sample> take_samples() {
             std::map<std::string, Sample> sample;
             sample.emplace("entropy", spatially_averaged_entropy());
@@ -219,8 +137,8 @@ class MutualInformationSimulator : public Simulator, public Entropy {
         std::vector<float> compute_entropy_table() {
             std::vector<float> table;
 
-            for (int x1 = 0; x1 < system_size; x1++) {
-                int x2 = (x1 + partition_size) % system_size;
+            for (uint x1 = 0; x1 < system_size; x1++) {
+                uint x2 = (x1 + partition_size) % system_size;
 
                 std::vector<uint> sites = to_interval(x1, x2);
                 table.push_back(entropy(sites));
@@ -230,7 +148,7 @@ class MutualInformationSimulator : public Simulator, public Entropy {
         }
 
     public:
-        MutualInformationSimulator(Params &params) : Entropy(params) {
+        MutualInformationSimulator(Params &params) : Simulator(params), Entropy(params) {
             num_bins = params.geti("num_bins");
             min_eta = params.getf("min_eta");
             max_eta = params.getf("max_eta");
@@ -240,10 +158,10 @@ class MutualInformationSimulator : public Simulator, public Entropy {
             std::map<std::string, Sample> sample;
 
             std::vector<float> entropy_table = compute_entropy_table();
-            for (int x1 = 0; x1 < system_size; x1++) {
-                for (int x3 = 0; x3 < system_size; x3++) {
-                    int x2 = (x1 + partition_size) % system_size;
-                    int x4 = (x3 + partition_size) % system_size;
+            for (uint x1 = 0; x1 < system_size; x1++) {
+                for (uint x3 = 0; x3 < system_size; x3++) {
+                    uint x2 = (x1 + partition_size) % system_size;
+                    uint x4 = (x3 + partition_size) % system_size;
 
                     std::vector<uint> combined_sites = to_combined_interval(x1, x2, x3, x4);
 
@@ -256,7 +174,6 @@ class MutualInformationSimulator : public Simulator, public Entropy {
                     if (sample.count(key)) { 
                         sample[key] = Sample(I);
                     } else {
-                        Sample s = Sample(I);
                         sample[key] = sample[key].combine(I);
                     }
                 }
@@ -266,5 +183,12 @@ class MutualInformationSimulator : public Simulator, public Entropy {
         }
 
 };
+
+// TODO find a better place for this to live
+static inline const uint mod(int a, int b) {
+	int c = a % b;
+	return (c < 0) ? c + b : c;
+}
+
 
 #endif

@@ -9,8 +9,8 @@ if (NOT CMAKE_BUILD_TYPE)
     set(CMAKE_BUILD_TYPE Release)
 endif()
 
-set(CMAKE_CXX_FLAGS_DEBUG "-g")
-set(CMAKE_CXX_FLAGS_RELEASE "-O3")
+set(CMAKE_CXX_FLAGS_DEBUG "-g -Wall")
+set(CMAKE_CXX_FLAGS_RELEASE "-O3 -Wall")
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin)
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/lib)
 
@@ -19,44 +19,43 @@ set(CTPL_DIR $ENV{CTPL_DIR})
 set(DF_DIR $ENV{DF_DIR})
 set(NLOHMANN_DIR $ENV{NLOHMANN_DIR})
 
+set(DF_DEPENDENCIES ${DF_DIR} ${CTPL_DIR} ${NLOHMANN_DIR})
+
 add_library(simulator 
-    src/Simulator.hpp
+    src/Entropy.hpp
     src/Graph.cpp
 )
-target_include_directories(simulator PUBLIC ${CTPL_DIR} ${DF_DIR} ${NLOHMANN_DIR})
+target_include_directories(simulator PUBLIC ${DF_DEPENDENCIES})
 target_link_libraries(simulator -pthread)
 set_target_properties(simulator PROPERTIES LINKER_LANGUAGE CXX)
 
 set(CLIFFORD_DIR ${CMAKE_SOURCE_DIR}/src/CliffordState)
-add_subdirectory(${CLIFFORD_DIR})
 set(QA_DIR ${CMAKE_SOURCE_DIR}/src/QuantumAutomaton)
-add_subdirectory(${QA_DIR})
 set(RC_DIR ${CMAKE_SOURCE_DIR}/src/RandomClifford)
-add_subdirectory(${RC_DIR})
 set(FF_DIR ${CMAKE_SOURCE_DIR}/src/FreeFermion)
-add_subdirectory(${FF_DIR})
 set(MC_DIR ${CMAKE_SOURCE_DIR}/src/MinCut)
-add_subdirectory(${MC_DIR})
+set(BS_DIR ${CMAKE_SOURCE_DIR}/src/BlockSim)
+set(SOC_DIR ${CMAKE_SOURCE_DIR}/src/SelfOrganized)
+
+set(MODEL_DIRS ${CLIFFORD_DIR} ${QA_DIR} ${RC_DIR} ${FF_DIR} ${MC_DIR} ${BS_DIR} ${SOC_DIR})
+set(SIMULATOR_LIBS quantum_automaton random_clifford mincut blocksim self_organized)
+foreach(DIR IN LISTS MODEL_DIRS) 
+    add_subdirectory(${DIR})
+endforeach()
 
 add_executable(main src/main.cpp)
 target_include_directories(main PRIVATE 
     src 
-    ${CLIFFORD_DIR}
-    ${QA_DIR}
-    ${RC_DIR}
-    ${MC_DIR}
-    ${DF_DIR} 
-    ${NLOHMANN_DIR}
+    ${DF_DEPENDENCIES}
+    ${MODEL_DIRS}
 )
-target_link_libraries(main PRIVATE quantum_automaton random_clifford mincut)
+target_link_libraries(main PRIVATE ${SIMULATOR_LIBS})
 
 
 add_executable(test src/test.cpp)
 target_include_directories(test PRIVATE
     src
-    ${CLIFFORD_DIR}
-    ${MC_DIR}
-    ${DF_DIR}
-    ${NLOHMANN_DIR}
+    ${DF_DEPENDENCIES}
+    ${MODEL_DIRS}
 )
-target_link_libraries(test PRIVATE mincut clifford_state)
+target_link_libraries(test PRIVATE ${SIMULATOR_LIBS})

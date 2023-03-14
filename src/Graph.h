@@ -20,7 +20,7 @@ class Graph {
 
 		Graph() : num_vertices(0) {}
 		Graph(uint num_vertices) : num_vertices(0) { for (uint i = 0; i < num_vertices; i++) add_vertex(DEFAULT_VAL); }
-		Graph(const Graph *g);
+		Graph(const Graph &g);
 
 		std::string to_string() const;
 
@@ -72,7 +72,7 @@ class Graph {
 
 		std::pair<bool, std::vector<uint>> path(uint s, uint t) const;
 
-		int max_flow(std::vector<uint> &sources, std::vector<uint> &sinks);
+		int max_flow(std::vector<uint> &sources, std::vector<uint> &sinks) const;
 		int max_flow(uint s, uint t) const;
 
 		std::set<uint> component(uint i) const;
@@ -81,6 +81,7 @@ class Graph {
 		std::vector<uint> compute_degree_counts() const;
 		std::vector<uint> compute_neighbor_degree_counts() const;
 		float average_component_size() const;
+		uint max_component_size() const;
 		float local_clustering_coefficient(uint v) const;
 		float global_clustering_coefficient() const;
 		float percolation_probability() const;

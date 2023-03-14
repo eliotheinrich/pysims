@@ -18,11 +18,9 @@ class FreeFermionSimulator : public EntropySimulator {
         float beta;
         float p1;
         float p2;
-        std::minstd_rand *rng;
 
     public:
         FreeFermionSimulator(Params &params);
-        ~FreeFermionSimulator();
 
         virtual void init_state();
 

@@ -1,0 +1,15 @@
+{
+	"run_name": "test_bs",
+	"circuit_type": "blocksim",
+	"num_runs": 10,
+
+	"system_size": [10],
+	"prob": [0.5],
+
+	"temporal_avg": true,
+	"sampling_timesteps": 0,
+	"equilibration_timesteps": 100,
+	"measurement_freq": 5,
+
+	"filename": "test_bs.json"
+}

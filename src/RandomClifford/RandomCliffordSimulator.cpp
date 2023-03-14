@@ -13,13 +13,9 @@ RandomCliffordSimulator::RandomCliffordSimulator(Params &params) : EntropySimula
 
 void RandomCliffordSimulator::init_state() {
 	switch (clifford_type) {
-		case CliffordType::CHP : state = new QuantumCHPState(system_size, random_seed); break;
-		case CliffordType::GraphSim : state = new QuantumGraphState(system_size, random_seed); break;
+		case CliffordType::CHP : state = std::unique_ptr<CliffordState>(new QuantumCHPState(system_size, random_seed)); break;
+		case CliffordType::GraphSim : state = std::unique_ptr<CliffordState>(new QuantumGraphState(system_size, random_seed)); break;
 	}
-}
-
-RandomCliffordSimulator::~RandomCliffordSimulator() {
-	delete state;
 }
 
 void RandomCliffordSimulator::timesteps(uint num_steps) {

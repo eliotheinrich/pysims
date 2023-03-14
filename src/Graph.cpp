@@ -2,11 +2,11 @@
 #include <random>
 #include <climits>
 
-Graph::Graph(const Graph *g) : Graph() {
-	for (uint i = 0; i < g->num_vertices; i++) add_vertex(DEFAULT_VAL);
+Graph::Graph(const Graph &g) : Graph() {
+	for (uint i = 0; i < g.num_vertices; i++) add_vertex(DEFAULT_VAL);
 
-	for (uint i = 0; i < g->num_vertices; i++) {
-		for (auto const &[j, w] : g->edges[i]) add_directed_edge(i, j, w);
+	for (uint i = 0; i < g.num_vertices; i++) {
+		for (auto const &[j, w] : g.edges[i]) add_directed_edge(i, j, w);
 	}
 }
 
@@ -179,25 +179,23 @@ std::pair<bool, std::vector<uint>> Graph::path(uint s, uint t) const {
 	return std::pair(false, std::vector<uint>());
 }
 
-int Graph::max_flow(std::vector<uint> &sources, std::vector<uint> &sinks) {
-	add_vertex(DEFAULT_VAL);
+int Graph::max_flow(std::vector<uint> &sources, std::vector<uint> &sinks) const {
+	Graph g(*this);
+	g.add_vertex(DEFAULT_VAL);
 	uint s = num_vertices - 1;
-	add_vertex(DEFAULT_VAL);
+	g.add_vertex(DEFAULT_VAL);
 	uint t = num_vertices - 1;
 
-	for (auto i : sources) add_directed_edge(s, i, INT_MAX);
-	for (auto i : sinks) add_directed_edge(i, t, INT_MAX);
+	for (auto i : sources) g.add_directed_edge(s, i, INT_MAX);
+	for (auto i : sinks) g.add_directed_edge(i, t, INT_MAX);
 
-	int flow = Graph::max_flow(s, t);
-
-	remove_vertex(t);
-	remove_vertex(s);
+	int flow = g.max_flow(s, t);
 
 	return flow;
 }
 
 int Graph::max_flow(uint s, uint t) const {
-	Graph residual_graph(this);
+	Graph residual_graph(*this);
 
 	for (uint i = 0; i < num_vertices; i++) {
 		for (auto const &[w, _] : residual_graph.edges[i]) {
@@ -277,6 +275,26 @@ float Graph::average_component_size() const {
 	for (uint i = 0; i < num_vertices; i++) to_check.insert(i);
 	float avg = 0.;
 
+	while (!to_check.empty()) {
+		uint i = *to_check.begin(); // pop
+		to_check.erase(to_check.begin());
+
+		auto connected_component = component(i);
+		uint component_size = connected_component.size();
+		for (auto v : connected_component) {
+			if (to_check.count(v)) to_check.erase(v);
+		}
+
+		avg += component_size*component_size;
+	}
+
+	return avg/num_vertices;
+}
+
+uint Graph::max_component_size() const {
+	std::set<uint> to_check;
+	for (uint i = 0; i < num_vertices; i++) to_check.insert(i);
+
 	uint max_cluster_size = 0;
 
 	while (!to_check.empty()) {
@@ -289,11 +307,9 @@ float Graph::average_component_size() const {
 		for (auto v : connected_component) {
 			if (to_check.count(v)) to_check.erase(v);
 		}
-
-		avg += component_size*component_size;
 	}
 
-	return avg/num_vertices;
+	return max_cluster_size;
 }
 
 float Graph::local_clustering_coefficient(uint i) const {

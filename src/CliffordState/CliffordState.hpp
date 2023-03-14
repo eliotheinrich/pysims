@@ -2,7 +2,7 @@
 #define CLIFFORDSIM_H
 
 #include "Tableau.h"
-#include "Simulator.hpp"
+#include "Entropy.hpp"
 #include <random>
 #include <deque>
 #include <algorithm>
@@ -10,7 +10,7 @@
 
 enum CliffordType { CHP, GraphSim };
 
-static CliffordType parse_clifford_type(std::string s) {
+static inline CliffordType parse_clifford_type(std::string s) {
     if (s == "chp") return CliffordType::CHP;
     else if (s == "graph") return CliffordType::GraphSim;
     else {
@@ -127,11 +127,6 @@ class CliffordState: public Entropy {
         void random_clifford_iteration(std::deque<uint> &qubits) {
             uint num_qubits = qubits.size();
 
-
-//std::cout << "Random clifford iter on ";
-//for (auto q : qubits) std::cout << q << " ";
-//std::cout << "State = \n" << to_string() << std::endl;
-
             // If only acting on one qubit, can easily lookup from a table
             if (num_qubits == 1) {
                 single_qubit_random_clifford(qubits[0], rand() % 24);
@@ -144,11 +139,8 @@ class CliffordState: public Entropy {
                 p2 = PauliString::rand(num_qubits, &rng);
             }
 
-//std::cout << p1.to_string(true) << " " << p2.to_string(true) << std::endl;
-
             Tableau tableau = Tableau(num_qubits, std::vector<PauliString>{p1, p2});
 
-//std::cout << "Step one\n";
             // Step one
             for (uint i = 0; i < num_qubits; i++) {
                 if (tableau.z(0, i)) {
@@ -162,7 +154,6 @@ class CliffordState: public Entropy {
                 }
             }
 
-//std::cout << "Step two\n";
             // Step two
             std::vector<uint> nonzero_idx;
             for (uint i = 0; i < num_qubits; i++) {
@@ -171,7 +162,6 @@ class CliffordState: public Entropy {
                 }
             }
             while (nonzero_idx.size() > 1) {
-//print_vector(nonzero_idx);
                 for (uint j = 0; j < nonzero_idx.size()/2; j++) {
                     uint q1 = nonzero_idx[2*j];
                     uint q2 = nonzero_idx[2*j+1];
@@ -180,9 +170,8 @@ class CliffordState: public Entropy {
                 }
 
                 remove_even_indices(nonzero_idx);
-//print_vector(nonzero_idx);
             }
-//std::cout << "Step three\n";
+
             // Step three
             uint ql = nonzero_idx[0];
             if (ql != 0) {
@@ -200,7 +189,7 @@ class CliffordState: public Entropy {
                     }
                 }
             }
-//std::cout << "Step four\n";
+
             // Step four
             PauliString z1_p(num_qubits);
             z1_p.set_z(0, true);
@@ -212,7 +201,6 @@ class CliffordState: public Entropy {
                 tableau.h_gate(0);
                 h_gate(qubits[0]);
 
-//std::cout << "Repeat step one\n";
                 // Repeat step one
                 for (uint i = 0; i < num_qubits; i++) {
                     if (tableau.z(1, i)) {
@@ -226,7 +214,6 @@ class CliffordState: public Entropy {
                     }
                 }
 
-//std::cout << "Repeat step two\n";
                 // ... and step two
                 nonzero_idx.clear();
                 for (uint i = 0; i < num_qubits; i++) {
@@ -250,7 +237,6 @@ class CliffordState: public Entropy {
                 h_gate(qubits[0]);
             }
 
-//std::cout << "Step five\n";
             // Step five: correct phase
             if (tableau.r(0) && tableau.r(1)) {
                 y_gate(qubits[0]);
@@ -266,10 +252,15 @@ class CliffordState: public Entropy {
             if (seed == -1) rng = std::minstd_rand(std::rand());
             else rng = std::minstd_rand(seed);
         }
+
+        virtual ~CliffordState() {}
+
         virtual uint system_size() const=0;
+
         uint rand() {
             return this->rng();
         }
+
         float randf() {
             return float(rand())/float(RAND_MAX);
         }
@@ -328,6 +319,7 @@ class CliffordState: public Entropy {
         }
 
         void random_clifford(std::vector<uint> &qubits) {
+            for (auto q : qubits) assert(q < system_size());
             uint num_qubits = qubits.size();
             std::deque<uint> dqubits(num_qubits);
             std::copy(qubits.begin(), qubits.end(), dqubits.begin());

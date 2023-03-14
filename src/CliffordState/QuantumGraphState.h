@@ -43,13 +43,12 @@ class QuantumGraphState : public CliffordState {
 
 
 	public:
-		Graph *graph;
+		Graph graph;
 
         QuantumGraphState(uint num_qubits, int seed=-1);
-        ~QuantumGraphState() {}
 
         virtual std::string to_string() const;
-        virtual uint system_size() const;
+        virtual uint system_size() const { return num_qubits; }
 
         virtual void h_gate(uint a);
         virtual void s_gate(uint a);

@@ -2,29 +2,22 @@
 #include <assert.h>
 
 void MinCutSimulator::init_state() {
-	state = new Graph(system_size/2);
-	rng = new std::minstd_rand(std::rand());
+	state = Graph(system_size/2);
 }
 
 MinCutSimulator::MinCutSimulator(Params &params) : EntropySimulator(params) {
 	mzr_prob = params.getf("mzr_prob");
 }
 
-MinCutSimulator::~MinCutSimulator() {
-	delete state;
-	delete rng;
-}
-
 std::string MinCutSimulator::to_string() const {
-	return state->to_string();
+	return state.to_string();
 }
 
 float MinCutSimulator::entropy(std::vector<uint> &qubits) const {
 	assert(qubits.size() % 2 == 0);
-	uint num_vertices = state->num_vertices;
+	uint num_vertices = state.num_vertices;
 
 	uint tsteps = num_vertices/(system_size/2) - 1;
-	uint subsystem_size = qubits.size()/2;
 	uint d = tsteps*system_size/2;
 
 	std::vector<uint> subsystem_a;
@@ -38,23 +31,15 @@ float MinCutSimulator::entropy(std::vector<uint> &qubits) const {
 	for (uint i = d; i < d + system_size/2; i++) {
 		if ((i < q1) || (i > q2)) subsystem_b.push_back(i);
 	}
-	//std::iota(subsystem_b.begin(), subsystem_b.end(), d);
-//std::cout << "subsystem_a: "; for (auto s : subsystem_a) std::cout << s << " ";
-//std::cout << "\n";
-//std::cout << "subsystem_b: "; for (auto s : subsystem_b) std::cout << s << " ";
-//std::cout << "\n";
-	//std::remove_if(subsystem_b.begin(), subsystem_b.end(), [&subsystem_a](uint q){ return !(q < subsystem_a.front() || q > subsystem_a.back()); } );
-//std::cout << "subsystem_b: "; for (auto s : subsystem_b) std::cout << s << " ";
-//std::cout << "\n";
 
-	return state->max_flow(subsystem_a, subsystem_b);
+	return state.max_flow(subsystem_a, subsystem_b);
 }
 
 void MinCutSimulator::timesteps(uint num_steps) {
 	for (uint t = 0; t < num_steps; t++) {
-		uint num_vertices = state->num_vertices;
+		uint num_vertices = state.num_vertices;
 		uint num_new_vertices = system_size/2;
-		for (uint i = 0; i < num_new_vertices; i++) state->add_vertex();
+		for (uint i = 0; i < num_new_vertices; i++) state.add_vertex();
 
 		for (uint i = 0; i < num_new_vertices; i++) {
 			uint v1 = num_vertices + i;
@@ -66,8 +51,8 @@ void MinCutSimulator::timesteps(uint num_steps) {
 			uint v3 = (row - 1)*num_new_vertices + next_col;
 
 			//std::cout << "mzr_prob: " << mzr_prob << std::endl;
-			if (randf() < 1. - mzr_prob) state->add_edge(v1, v2);
-			if (randf() < 1. - mzr_prob) state->add_edge(v1, v3);
+			if (randf() < 1. - mzr_prob) state.add_edge(v1, v2);
+			if (randf() < 1. - mzr_prob) state.add_edge(v1, v3);
 		}
 
 	}

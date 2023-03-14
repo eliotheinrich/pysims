@@ -98,9 +98,9 @@ Tableau::Tableau(uint num_qubits) : num_qubits(num_qubits),
 }
 
 Tableau::Tableau(uint num_qubits, std::vector<PauliString> rows) : num_qubits(num_qubits),
-                                                                   rows(rows),
                                                                    track_destabilizers(false),
-                                                                   print_ops(false) {};
+                                                                   print_ops(false),
+                                                                   rows(rows) {}
 
 std::string Tableau::to_string() const {
     std::string s = "";

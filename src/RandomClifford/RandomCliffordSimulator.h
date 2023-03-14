@@ -1,7 +1,8 @@
 #ifndef RC_SIM_H
 #define RC_SIM_H
+
 #include <DataFrame.hpp>
-#include "Simulator.hpp"
+#include "Entropy.hpp"
 #include "CliffordState.hpp"
 
 #define DEFAULT_CLIFFORD_TYPE "chp"
@@ -9,7 +10,8 @@
 
 class RandomCliffordSimulator : public EntropySimulator {
 	private:
-		CliffordState *state;
+		std::unique_ptr<CliffordState> state;
+
 		CliffordType clifford_type;
 		float mzr_prob;
 		uint gate_width;
@@ -19,13 +21,12 @@ class RandomCliffordSimulator : public EntropySimulator {
 
 	public:
 		RandomCliffordSimulator(Params &params);
-		~RandomCliffordSimulator();
 
 		virtual void init_state();
 
 		virtual float entropy(std::vector<uint> &qubits) const { return state->entropy(qubits); }
 		virtual void timesteps(uint num_steps);
-		virtual Simulator* clone(Params &params) { return new RandomCliffordSimulator(params); }
+		virtual std::unique_ptr<Simulator> clone(Params &params) { return std::unique_ptr<Simulator>(new RandomCliffordSimulator(params)); }
 };
 
 #endif

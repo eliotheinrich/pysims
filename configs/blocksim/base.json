@@ -1,0 +1,17 @@
+{
+	"run_name": "base_bs",
+	"circuit_type": "blocksim",
+	"num_runs": 100,
+
+	"system_size": [128, 256],
+	"prob": [0.0, 0.001, 0.002, 0.004, 0.006, 0.008, 0.01, 0.02, 0.03, 0.1, 0.2, 0.3, 0.4, 0.5],
+	"random_sites": [true],
+	"avalanche_type": [0, 1, 2],
+
+	"temporal_avg": true,
+	"sampling_timesteps": 1000,
+	"equilibration_timesteps": 500,
+	"measurement_freq": 5,
+
+	"filename": "base_bs.json"
+}

@@ -14,22 +14,15 @@ std::string QuantumCHPState::to_string() const {
     return s;
 }
 
-uint QuantumCHPState::system_size() const {
-    return num_qubits;
-}
-
 void QuantumCHPState::h_gate(uint a) {
-//std::cout << "h " << a << std::endl;
     tableau.h_gate(a);
 }
 
 void QuantumCHPState::s_gate(uint a) {
-//std::cout << "s " << a << std::endl;
     tableau.s_gate(a);
 }
 
 void QuantumCHPState::cx_gate(uint a, uint b) {
-//std::cout << "cx " << a << " " << b << std::endl;
     tableau.cx_gate(a, b);
 }
 
@@ -110,7 +103,7 @@ float QuantumCHPState::entropy(std::vector<uint> &qubits) const {
             rank++;
         }
     }
-    float s = rank - partition_size;
 
+    //std::cout << "rank = " << rank << ", partition_size = " << partition_size << std::endl;
     return rank - partition_size;
 }

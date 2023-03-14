@@ -5,12 +5,11 @@
 #include <DataFrame.hpp>
 #include <nlohmann/json.hpp>
 #include <random>
-#include "Simulator.hpp"
+#include "Entropy.hpp"
 
 class MinCutSimulator : public EntropySimulator {
 	private:
-		std::minstd_rand *rng;
-		Graph *state;
+		Graph state;
 
 		float mzr_prob;
 
@@ -18,22 +17,14 @@ class MinCutSimulator : public EntropySimulator {
 
 	public:
 		MinCutSimulator(Params &params);
-		~MinCutSimulator();
 
 		std::string to_string() const;
 
-		int rand() { return (*rng)(); }
-		float randf() { return double((*rng)())/double(RAND_MAX); }
-
 		virtual void init_state();
+
 		virtual void timesteps(uint num_steps);
 		virtual float entropy(std::vector<uint> &sites) const;
-		virtual Simulator* clone(Params &params) { return new MinCutSimulator(params); }
+		virtual std::unique_ptr<Simulator> clone(Params &params) { return std::unique_ptr<Simulator>(new MinCutSimulator(params)); }
 };
-
-static const uint mod(int a, int b) {
-	int c = a % b;
-	return (c < 0) ? c + b : c;
-}
 
 #endif

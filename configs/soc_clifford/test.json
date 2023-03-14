@@ -1,0 +1,22 @@
+{
+	"run_name": "test_rc",
+	"circuit_type": "soc_clifford",
+	"num_runs": 10,
+
+	"random_sites": false,
+
+	"system_size": [10],
+	"partition_size": [5],
+	"mzr_prob":     [0.2, 0.4],
+	"unitary_prob": [1.0],
+
+	"temporal_avg": true,
+	"sampling_timesteps": 0,
+	"equilibration_timesteps": 353,
+	"measurement_freq": 5,
+	"random_seed": -1,
+
+	"spacing": 5,
+
+	"filename": "_test.json"
+}

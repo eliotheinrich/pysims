@@ -12,7 +12,6 @@ class PauliString {
         bool phase;
 
         PauliString(uint num_qubits);
-        ~PauliString() {}
 
         static PauliString rand(uint num_qubits, std::minstd_rand *r);
 		PauliString copy();
@@ -47,7 +46,6 @@ class Tableau {
 
         Tableau(uint num_qubits);
         Tableau(uint num_qubits, std::vector<PauliString> rows);
-        ~Tableau() {}
 
         uint num_rows() const { if (track_destabilizers) { return rows.size() - 1; } else { return rows.size(); }}
         std::string to_string() const;

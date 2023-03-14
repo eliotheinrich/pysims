@@ -8,15 +8,8 @@ FreeFermionSimulator::FreeFermionSimulator(Params &params) : EntropySimulator(pa
     beta = params.getf("beta");
     filling_fraction = params.getf("filling_fraction");
 
-    rng = new std::minstd_rand(std::rand());
-
     num_particles = filling_fraction * system_size;
 }
-
-FreeFermionSimulator::~FreeFermionSimulator() {
-    delete rng;
-}
-
 
 void FreeFermionSimulator::init_state() {
     propagator = Eigen::MatrixXcd::Identity(system_size, system_size);
@@ -27,7 +20,7 @@ int FreeFermionSimulator::get_num_particles() {
 }
 
 float FreeFermionSimulator::kappa() {
-    float r = float((*rng)())/float(RAND_MAX);
+    float r = randf();
     if (r < p1) {
         return 1.;
     } else {
@@ -36,7 +29,7 @@ float FreeFermionSimulator::kappa() {
 }
 
 float FreeFermionSimulator::lambda() {
-    float r = float((*rng)())/float(RAND_MAX);
+    float r = randf();
     if (r < p2) {
         return 1.;
     } else {

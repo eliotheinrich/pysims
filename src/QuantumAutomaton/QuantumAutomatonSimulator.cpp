@@ -13,17 +13,13 @@ QuantumAutomatonSimulator::QuantumAutomatonSimulator(Params &params) : EntropySi
 
 void QuantumAutomatonSimulator::init_state() {
 	switch (clifford_type) {
-		case CliffordType::CHP : state = new QuantumCHPState(system_size, random_seed); break;
-		case CliffordType::GraphSim : state = new QuantumGraphState(system_size, random_seed); break;
+		case CliffordType::CHP : state = std::unique_ptr<CliffordState>(new QuantumCHPState(system_size, random_seed)); break;
+		case CliffordType::GraphSim : state = std::unique_ptr<CliffordState>(new QuantumGraphState(system_size, random_seed)); break;
 	}
 
 	// Initially polarize in x-direction
 	for (uint i = 0; i < system_size; i++)
 		state->h_gate(i);
-}
-
-QuantumAutomatonSimulator::~QuantumAutomatonSimulator() {
-	delete state;
 }
 
 void QuantumAutomatonSimulator::timestep(bool offset, bool gate_type) {

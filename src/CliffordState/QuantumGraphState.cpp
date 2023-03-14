@@ -206,23 +206,23 @@ const uint QuantumGraphState::CZ_LOOKUP[24][24][2][3] =
 
 
 QuantumGraphState::QuantumGraphState(uint num_qubits, int seed) : CliffordState(seed), num_qubits(num_qubits) {
-	graph = new Graph();
-	for (uint i = 0; i < num_qubits; i++) graph->add_vertex(HGATE);
+	graph = Graph();
+	for (uint i = 0; i < num_qubits; i++) graph.add_vertex(HGATE);
 }
 
 void QuantumGraphState::apply_gatel(uint a, uint gate_id) {
-	graph->set_val(a, CLIFFORD_PRODUCTS[gate_id][graph->get_val(a)]);
+	graph.set_val(a, CLIFFORD_PRODUCTS[gate_id][graph.get_val(a)]);
 }
 
 void QuantumGraphState::apply_gater(uint a, uint gate_id) {
-	graph->set_val(a, CLIFFORD_PRODUCTS[graph->get_val(a)][gate_id]);
+	graph.set_val(a, CLIFFORD_PRODUCTS[graph.get_val(a)][gate_id]);
 }
 
 void QuantumGraphState::local_complement(uint a) {
-	graph->local_complement(a);
+	graph.local_complement(a);
 
 	apply_gater(a, SQRTXDGATE);
-	for (auto e : graph->neighbors(a)) {
+	for (auto e : graph.neighbors(a)) {
 		apply_gater(e, SQRTZGATE);
 	}
 }
@@ -230,11 +230,11 @@ void QuantumGraphState::local_complement(uint a) {
 void QuantumGraphState::remove_vop(uint a, uint b) {
 	uint vop_decomp[5];
 	for (uint i = 0; i < 5; i ++) {
-		vop_decomp[i] = CLIFFORD_DECOMPS[graph->get_val(a)][i];
+		vop_decomp[i] = CLIFFORD_DECOMPS[graph.get_val(a)][i];
 	}
 	uint c = b;
 
-	for (auto e : graph->neighbors(a)) {
+	for (auto e : graph.neighbors(a)) {
 		if (e != b) {
 			c = e;
 			break;
@@ -248,17 +248,17 @@ void QuantumGraphState::remove_vop(uint a, uint b) {
 }
 
 bool QuantumGraphState::isolated(uint a, uint b) {
-	uint deg = graph->degree(a);
+	uint deg = graph.degree(a);
 	if (deg == 0) return true;
-	if (deg == 1) return graph->contains_edge(a, b);
+	if (deg == 1) return graph.contains_edge(a, b);
 	return false;
 }
 
 void QuantumGraphState::mxr_graph(uint a, bool outcome) {
-	uint b = graph->neighbors(a)[0];
+	uint b = graph.neighbors(a)[0];
 
-	std::vector<uint> ngbh_a = graph->neighbors(a);
-	std::vector<uint> ngbh_b = graph->neighbors(b);
+	std::vector<uint> ngbh_a = graph.neighbors(a);
+	std::vector<uint> ngbh_b = graph.neighbors(b);
 	
 	if (outcome) {
 		apply_gater(a, ZGATE);
@@ -279,7 +279,7 @@ void QuantumGraphState::mxr_graph(uint a, bool outcome) {
 
 	for (auto c : ngbh_a) {
 		for (auto d : ngbh_b) {
-			graph->toggle_edge(c, d);
+			graph.toggle_edge(c, d);
 		}
 	}
 
@@ -287,7 +287,7 @@ void QuantumGraphState::mxr_graph(uint a, bool outcome) {
 		if (std::binary_search(ngbh_b.begin(), ngbh_b.end(), c)) {
 			for (auto d : ngbh_a) {
 				if (std::binary_search(ngbh_b.begin(), ngbh_b.end(), d)) {
-					graph->toggle_edge(c, d);
+					graph.toggle_edge(c, d);
 				}
 			}
 		}
@@ -295,14 +295,14 @@ void QuantumGraphState::mxr_graph(uint a, bool outcome) {
 
 	for (auto d : ngbh_a) {
 		if (d != b) {
-			graph->toggle_edge(b, d);
+			graph.toggle_edge(b, d);
 		}
 	}
 }
 
 void QuantumGraphState::myr_graph(uint a, bool outcome) {
 	uint gate_id = outcome ? SQRTZDGATE : SQRTZGATE;
-	std::vector<uint> ngbh = graph->neighbors(a);
+	std::vector<uint> ngbh = graph.neighbors(a);
 
 	for (auto n : ngbh) apply_gater(n, gate_id);
 	apply_gater(a, gate_id);
@@ -312,17 +312,17 @@ void QuantumGraphState::myr_graph(uint a, bool outcome) {
 	for (auto i : ngbh) {
 		for (auto j : ngbh) {
 			if (i < j) {
-				graph->toggle_edge(i, j);
+				graph.toggle_edge(i, j);
 			}
 		}
 	}
 }
 
 void QuantumGraphState::mzr_graph(uint a, bool outcome) {
-	std::vector<uint> ngbh = graph->neighbors(a);
+	std::vector<uint> ngbh = graph.neighbors(a);
 
 	for (auto n : ngbh) {
-		graph->remove_edge(a, n);
+		graph.remove_edge(a, n);
 		if (outcome) apply_gater(n, ZGATE);
 	}
 
@@ -331,10 +331,8 @@ void QuantumGraphState::mzr_graph(uint a, bool outcome) {
 }
 
 std::string QuantumGraphState::to_string() const {
-	return graph->to_string();
+	return graph.to_string();
 }
-
-uint QuantumGraphState::system_size() const { return num_qubits; }
 
 void QuantumGraphState::x_gate(uint a) {
 	assert(a < num_qubits);
@@ -370,20 +368,20 @@ void QuantumGraphState::cz_gate(uint a, uint b) {
 
 	uint lookup[3];
 	for (uint i = 0; i < 3; i ++) {
-		lookup[i] = CZ_LOOKUP[graph->get_val(a)][graph->get_val(b)][graph->contains_edge(a, b)][i];
+		lookup[i] = CZ_LOOKUP[graph.get_val(a)][graph.get_val(b)][graph.contains_edge(a, b)][i];
 	}
-	graph->set_val(a, lookup[1]);
-	graph->set_val(b, lookup[2]);
+	graph.set_val(a, lookup[1]);
+	graph.set_val(b, lookup[2]);
 
-	if (lookup[0] != graph->contains_edge(a, b)) graph->toggle_edge(a, b);
+	if (lookup[0] != graph.contains_edge(a, b)) graph.toggle_edge(a, b);
 }
 
 bool QuantumGraphState::mzr_forced(uint a, bool outcome) {
-	uint basis = CONJUGATION_TABLE[graph->get_val(a)];
+	uint basis = CONJUGATION_TABLE[graph.get_val(a)];
 	bool positive = basis > 3;
 
 	if ((basis == 1) || (basis == 4)) {
-		if (graph->degree(a) == 0) return (!positive == outcome);
+		if (graph.degree(a) == 0) return (!positive == outcome);
 	}
 
 	if      ((basis == 1) || (basis == 4)) mxr_graph(a, outcome ^ positive);
@@ -395,11 +393,11 @@ bool QuantumGraphState::mzr_forced(uint a, bool outcome) {
 
 
 bool QuantumGraphState::mzr(uint a) {
-	uint basis = CONJUGATION_TABLE[graph->get_val(a)];
+	uint basis = CONJUGATION_TABLE[graph.get_val(a)];
 	bool positive = basis > 3;
 	bool outcome = rand() % 2;
 	if ((basis == 1) || (basis == 4)) {
-		if (graph->degree(a) == 0) return positive;
+		if (graph.degree(a) == 0) return positive;
 	}
 
 	if      ((basis == 1) || (basis == 4)) mxr_graph(a, outcome);
@@ -410,27 +408,22 @@ bool QuantumGraphState::mzr(uint a) {
 }
 
 float QuantumGraphState::entropy(std::vector<uint> &qubits) const {
-	Graph bipartite_graph = graph->partition(qubits);
+	Graph bipartite_graph = graph.partition(qubits);
 	float s = 2*bipartite_graph.num_vertices;
 	for (uint i = 0; i < bipartite_graph.num_vertices; i++) {
 		if (bipartite_graph.get_val(i)) s--;
 	}
 
-//std::cout << "Starting: s = " << s << ", \n" << to_string() << "\n";
-//std::cout << "Bipartite graph: \n" << bipartite_graph.to_string() << std::endl;
-
 	while (bipartite_graph.num_vertices > 0) {
 		uint del_node = bipartite_graph.num_vertices - 1;
 		uint del_node_degree = bipartite_graph.degree(del_node);
 		bool del_node_val = bipartite_graph.get_val(del_node);
-//std::cout << "Deleting " << del_node << " with degree " << del_node_degree << std::endl;
+
 		if (del_node_degree == 0) {
-//std::cout << "isolated vertex\n";
 			if (!del_node_val) s -= 2;
 			else s -= 1;
 			bipartite_graph.remove_vertex(del_node);
 		} else if (del_node_degree == 1) {
-//std::cout << "single neighbor\n";
 			uint neighbor = bipartite_graph.neighbors(del_node)[0];
 			if (del_node_val) {
 				std::vector<uint> del_nodes;
@@ -450,7 +443,6 @@ float QuantumGraphState::entropy(std::vector<uint> &qubits) const {
 				s -= 2;
 			}
 		} else {
-//std::cout << "multiple neighbors\n";
 			bool found_pivot = false;
 			uint pivot = 0;
 			uint min_degree = INT_MAX;
@@ -466,7 +458,6 @@ float QuantumGraphState::entropy(std::vector<uint> &qubits) const {
 
 			// there is no valid pivot, so graph is a simple tree; clear it.
 			if (!found_pivot) {
-//std::cout << "no pivot\n";
 				std::vector<uint> neighbors = bipartite_graph.neighbors(del_node);
 				std::reverse(neighbors.begin(), neighbors.end());
 
@@ -478,7 +469,6 @@ float QuantumGraphState::entropy(std::vector<uint> &qubits) const {
 				if (del_node_val) s -= 2*del_node_degree;
 				else s -= 1*del_node_degree;
 			} else {
-//std::cout << "pivoting on " << pivot << "\n";
 				for (auto neighbor : bipartite_graph.neighbors(del_node)) {
 					if (neighbor != pivot) {
 						std::vector<uint> pivot_neighbors = bipartite_graph.neighbors(pivot);
@@ -494,7 +484,6 @@ float QuantumGraphState::entropy(std::vector<uint> &qubits) const {
 		}
 	}
 
-//std::cout << "s = " << s << std::endl;
 	return s;
 }
 
