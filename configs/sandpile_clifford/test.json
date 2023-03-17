@@ -1,6 +1,6 @@
 {
 	"run_name": "test_rc",
-	"circuit_type": "soc_clifford",
+	"circuit_type": "sandpile_clifford",
 	"num_runs": 10,
 
 	"random_sites": true,

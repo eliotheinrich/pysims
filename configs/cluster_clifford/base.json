@@ -1,6 +1,6 @@
 {
 	"run_name": "test_rc",
-	"circuit_type": "soc_random_clifford",
+	"circuit_type": "cluster_clifford",
 	"soc_type": [0, 1, 2],
 	"num_runs": 5,
 
@@ -16,5 +16,5 @@
 
 	"spacing": 5,
 
-	"filename": "soc_random_clifford.json"
+	"filename": "base_cluster.json"
 }

@@ -1,18 +1,18 @@
 {
-	"run_name": "space_mc",
+	"run_name": "mincut",
 	"circuit_type": "mincut",
+
 	"num_runs": 10,
 
 	"system_size": [64],
 	"partition_size": [2, 4, 6, 8, 10, 12, 14, 16, 20, 22, 24, 26, 32],
-	"fparams": [{"mzr_prob": 0.5}],
+	"mzr_prob": 0.5, 
 
-	"temporal_avg": true,
-	"equilibration_timesteps": 50, 
+	"temporal_avg": false,
 	"sampling_timesteps": 200,
 	"measurement_freq": 2,
 
 	"spacing": 2,
 
-	"filename": "space_mc_256.json"
+	"filename": "mincut_256.json"
 }

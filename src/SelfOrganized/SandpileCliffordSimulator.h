@@ -1,5 +1,5 @@
-#ifndef SOC_CLIFFORD_SIM_H
-#define SOC_CLIFFORD_SIM_H
+#ifndef SANDPILE_CLIFFORD_SIM_H
+#define SANDPILE_CLIFFORD_SIM_H
 
 #include <DataFrame.hpp>
 #include "Entropy.hpp"
@@ -7,8 +7,9 @@
 
 #define DEFAULT_RANDOM_SITES true
 #define DEFAULT_BOUNDARY_CONDITIONS 0
+#define DEFAULT_FEEDBACK_MODE 0
 
-class SelfOrganizedCliffordSimulator : public Simulator {
+class SandpileCliffordSimulator : public Simulator {
 	private:
 		std::unique_ptr<QuantumCHPState> state;
 
@@ -19,11 +20,22 @@ class SelfOrganizedCliffordSimulator : public Simulator {
 
 		bool random_sites;
 		int boundary_conditions;
+		int feedback_mode;
 
 		int cum_entropy(uint i) const;
 
+		void feedback(int ds1, int ds2, uint q);
+
+		void left_boundary();
+		void right_boundary();
+
+		void mzr(uint i);
+		void unitary(uint i);
+		
+		void timestep();
+
 	public:
-		SelfOrganizedCliffordSimulator(Params &params);
+		SandpileCliffordSimulator(Params &params);
 
 		virtual void init_state() { 
 			state = std::unique_ptr<QuantumCHPState>(new QuantumCHPState(system_size)); 
@@ -31,13 +43,9 @@ class SelfOrganizedCliffordSimulator : public Simulator {
 
 		virtual std::map<std::string, Sample> take_samples();
 
-		void mzr(uint i);
-		void unitary(uint i);
-		
-		void timestep();
 		virtual void timesteps(uint num_steps);
 
-		CLONE(Simulator, SelfOrganizedCliffordSimulator)
+		CLONE(Simulator, SandpileCliffordSimulator)
 };
 
 #endif

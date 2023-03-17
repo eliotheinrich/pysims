@@ -4,7 +4,7 @@
 
 	"system_size": [50],
 	"partition_size": [2, 4, 8, 12],
-	"fparams": [{"mzr_prob": 0.5}],
+	"mzr_prob": 0.5,
 
 	"temporal_avg": true,
 	"sampling_timesteps": 1000,

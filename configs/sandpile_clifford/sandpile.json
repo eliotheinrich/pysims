@@ -1,21 +1,22 @@
 {
-	"run_name": "test_rc",
-	"circuit_type": "soc_clifford",
-	"num_runs": 100,
+	"run_name": "sandpile",
+	"circuit_type": "sandpile_clifford",
+	"num_runs": 25,
 
 	"random_sites": [false, true],
 	"boundary_conditions": [0, 2],
+	"feedback_mode": [0, 1, 2],
 
 	"system_size": 200,
 	"unitary_prob": [0.05, 0.1, 0.12, 0.15, 0.16, 0.17, 0.18, 0.19, 0.2, 0.21, 0.22, 0.23, 0.24, 0.25, 0.3, 1.0],
 	"mzr_prob": 1.0,
 
-	"temporal_avg": true,
-	"sampling_timesteps": 600,
-	"equilibration_timesteps": 600,
+	"temporal_avg": false,
+	"sampling_timesteps": 1200,
+	"equilibration_timesteps": 0,
 	"measurement_freq": 5,
 
 	"spacing": 5,
 
-	"filename": "space_soc.json"
+	"filename": "sandpile.json"
 }

@@ -6,10 +6,8 @@
 
 	"system_size": [26],
 	"partition_size": [2, 4, 6, 8, 10, 12],
-	"iparams": [{"gate_width": 2}, {"gate_width": 2}, {"gate_width": 2}, {"gate_width": 2},
-				{"gate_width": 2}, {"gate_width": 2}, {"gate_width": 2}, {"gate_width": 2}],
-	"fparams": [{"mzr_prob": 0.03}, {"mzr_prob": 0.05}, {"mzr_prob": 0.1}, {"mzr_prob": 0.14}, 
-				{"mzr_prob": 0.16}, {"mzr_prob": 0.18}, {"mzr_prob": 0.2}, {"mzr_prob": 0.25}],
+	"gate_width": 2,
+	"mzr_prob": [0.03, 0.05, 0.1, 0.14, 0.16, 0.18, 0.2, 0.25], 
 
 	"temporal_avg": true,
 	"sampling_timesteps": 100,
