@@ -6,15 +6,19 @@
 #include "QuantumCHPState.h"
 
 #define DEFAULT_RANDOM_SITES true
+#define DEFAULT_BOUNDARY_CONDITIONS 0
 
-class SelfOrganizedCliffordSimulator : public EntropySimulator {
+class SelfOrganizedCliffordSimulator : public Simulator {
 	private:
 		std::unique_ptr<QuantumCHPState> state;
 
 		float unitary_prob;
 		float mzr_prob;
 
+		uint system_size;
+
 		bool random_sites;
+		int boundary_conditions;
 
 		int cum_entropy(uint i) const;
 
@@ -25,10 +29,11 @@ class SelfOrganizedCliffordSimulator : public EntropySimulator {
 			state = std::unique_ptr<QuantumCHPState>(new QuantumCHPState(system_size)); 
 		}
 
-		virtual float entropy(std::vector<uint> &qubits) const { return state->entropy(qubits); }
+		virtual std::map<std::string, Sample> take_samples();
 
 		void mzr(uint i);
 		void unitary(uint i);
+		
 		void timestep();
 		virtual void timesteps(uint num_steps);
 

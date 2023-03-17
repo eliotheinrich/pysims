@@ -9,6 +9,8 @@ QuantumAutomatonSimulator::QuantumAutomatonSimulator(Params &params) : EntropySi
 	mzr_prob = params.getf("mzr_prob");
 	system_size = params.geti("system_size");
 	random_seed = params.geti("random_seed", DEFAULT_SEED);
+
+	vsample_idx = 0;
 }
 
 void QuantumAutomatonSimulator::init_state() {
@@ -18,28 +20,23 @@ void QuantumAutomatonSimulator::init_state() {
 	}
 
 	// Initially polarize in x-direction
-	for (uint i = 0; i < system_size; i++)
-		state->h_gate(i);
+	for (uint i = 0; i < system_size; i++) state->h_gate(i);
 }
 
 void QuantumAutomatonSimulator::timestep(bool offset, bool gate_type) {
-	uint num_qubits = state->system_size();
-	for (uint i = 0; i < num_qubits/2; i++) {
-		uint qubit1 = offset ? (2*i + 1) % num_qubits : 2*i;
-		uint qubit2 = offset ? (2*i + 2) % num_qubits : (2*i + 1) % num_qubits;
+	for (uint i = 0; i < system_size/2; i++) {
+		uint qubit1 = offset ? (2*i + 1) % system_size : 2*i;
+		uint qubit2 = offset ? (2*i + 2) % system_size : (2*i + 1) % system_size;
 
-		if (state->rand() % 2 == 0) 
-			std::swap(qubit1, qubit2);
+		if (state->rand() % 2 == 0) std::swap(qubit1, qubit2);
 
-		if (gate_type)
-			state->cz_gate(qubit1, qubit2);
-		else
-			state->cx_gate(qubit1, qubit2);
+		if (gate_type) state->cz_gate(qubit1, qubit2);
+		else state->cx_gate(qubit1, qubit2);
 	}
 }
 
 void QuantumAutomatonSimulator::timesteps(uint num_steps) {
-	assert(state->system_size() % 2 == 0);
+	assert(system_size % 2 == 0);
 
 	for (uint i = 0; i < num_steps; i++) {
 		timestep(false, false); // no offset, cx
@@ -47,7 +44,7 @@ void QuantumAutomatonSimulator::timesteps(uint num_steps) {
 		timestep(true, false);  // offset,    cx
 		timestep(true, true);   // offset,    cz
 
-		for (uint j = 0; j < state->system_size(); j++) {
+		for (uint j = 0; j < system_size; j++) {
 			if (state->randf() < mzr_prob) {
 				state->mzr(j);
 				state->h_gate(j);

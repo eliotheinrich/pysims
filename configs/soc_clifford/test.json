@@ -3,11 +3,11 @@
 	"circuit_type": "soc_clifford",
 	"num_runs": 10,
 
-	"random_sites": false,
+	"random_sites": true,
 
 	"system_size": [10],
 	"partition_size": [5],
-	"mzr_prob":     [0.2, 0.4],
+	"mzr_prob":     [0.2],
 	"unitary_prob": [1.0],
 
 	"temporal_avg": true,

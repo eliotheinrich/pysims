@@ -4,31 +4,28 @@
 #include "SelfOrganizedCliffordSimulator.h"
 #include "MinCutSimulator.h"
 #include "BlockSimulator.h"
+#include "DebugSimulator.hpp"
 
 #include <DataFrame.hpp>
 #include <nlohmann/json.hpp>
 #include <iostream>
 #include <memory>
 
-using namespace std;
 using json = nlohmann::json;
 
-#include "QuantumCHPState.h"
-#include "QuantumGraphState.h"
-
 void defaultf() {
-    cout << "Default behavior\n";
+    std::cout << "Default behavior\n";
 }
 
-bool file_valid(string filename) {
+bool file_valid(std::string filename) {
     uint strlen = filename.length();
     if (strlen < 6) { return false; }
     
-    string extension = filename.substr(strlen - 5, strlen);
-    string json_ext = ".json";
+    std::string extension = filename.substr(strlen - 5, strlen);
+    std::string json_ext = ".json";
     if (extension != json_ext) { return false; }
 
-    ifstream f(filename);
+    std::ifstream f(filename);
 
     return f.good();
 }
@@ -39,13 +36,13 @@ int main(int argc, char *argv[]) {
         return 1;
     }
 
-    if (argc != 3) cout << "Incorrect arguments.\n";
+    if (argc != 3) std::cout << "Incorrect arguments.\n";
 
-    string filename = argv[1];
+    std::string filename = argv[1];
     uint num_threads = std::stoi(argv[2]);
     bool valid = file_valid(filename);
     if (!valid) {
-        cout << "Cannot find " << filename << "; aborting.\n";
+        std::cout << "Cannot find " << filename << "; aborting.\n";
         return 1;
     }
 

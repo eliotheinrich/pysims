@@ -65,6 +65,23 @@ class Entropy {
             return spatially_averaged_entropy(system_size, partition_size, spacing);
         }
 
+
+        std::vector<Sample> entropy_surface() const {
+            std::vector<Sample> surface;
+
+            std::vector<uint> sites;
+            for (uint i = 0; i < system_size; i++) {
+                sites.push_back(i);
+                for (uint j = 0; j < system_size; j++) {
+                    std::vector<uint> _sites(sites);
+                    std::transform(_sites.begin(), _sites.end(), _sites.begin(), [system_size=system_size, j=j](uint q) { return (q + j) % system_size; } );
+                    surface.push_back(entropy(_sites));
+                }
+            }
+
+            return surface;
+        }
+
 };
 
 class EntropySimulator : public Simulator, public Entropy {

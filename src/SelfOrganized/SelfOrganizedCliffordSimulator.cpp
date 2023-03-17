@@ -1,13 +1,15 @@
 #include "SelfOrganizedCliffordSimulator.h"
-#include "QuantumCHPState.h"
 #include <cmath>
 #include <numeric>
 
-SelfOrganizedCliffordSimulator::SelfOrganizedCliffordSimulator(Params &params) : EntropySimulator(params) {
+SelfOrganizedCliffordSimulator::SelfOrganizedCliffordSimulator(Params &params) : Simulator(params) {
 	mzr_prob = params.getf("mzr_prob");
 	unitary_prob = params.getf("unitary_prob");
 
+	boundary_conditions = params.geti("boundary_conditions", DEFAULT_BOUNDARY_CONDITIONS);
 	random_sites = params.geti("random_sites", DEFAULT_RANDOM_SITES);
+
+	system_size = params.geti("system_size");
 }
 
 void SelfOrganizedCliffordSimulator::mzr(uint i) {
@@ -37,7 +39,15 @@ void SelfOrganizedCliffordSimulator::timesteps(uint num_steps) {
 }
 
 void SelfOrganizedCliffordSimulator::timestep() {
-	unitary(0);
+	if (boundary_conditions == 0) { // pbc
+		std::vector<uint> qubits{0, 1};
+		state->random_clifford(qubits);
+	} else if (boundary_conditions == 1) { //obc1
+
+	} else if (boundary_conditions == 2) { // obc2
+		std::vector<uint> qubits{0, 1};
+		state->random_clifford(qubits);
+	}
 	for (uint i = 1; i < system_size-1; i++) {
 		uint q1;
 		if (random_sites) q1 = state->rand() % (system_size - 2) + 1;
@@ -63,16 +73,38 @@ void SelfOrganizedCliffordSimulator::timestep() {
 		//std::cout << "ds = " << ds1 << " " << ds2 << std::endl;
 
 		if      ((ds1 == -1) && (ds2 == -1)) mzr(q1);
-		//else if ((ds1 == -1) && (ds2 == 0))  mzr(q); // Forgotten case
+		else if ((ds1 == -1) && (ds2 == 0))  unitary(q1); // Forgotten case
 		else if ((ds1 == -1) && (ds2 == 1))  mzr(q1);
-		//else if ((ds1 == 0) && (ds2 == -1))  mzr(q); // Forgotten case
+		else if ((ds1 == 0) && (ds2 == -1))  unitary(q1); // Forgotten case
 		else if ((ds1 == 0) && (ds2 == 0))   unitary(q1);
 		else if ((ds1 == 0) && (ds2 == 1))   unitary(q1);
 		else if ((ds1 == 1) && (ds2 == -1))  mzr(q1);
 		else if ((ds1 == 1) && (ds2 == 0))   unitary(q1);
 		else if ((ds1 == 1) && (ds2 == 1))   unitary(q1);
+		else {
+			std::cout << "Detected |slope| > 1\n";
+			assert(false);
+		}
 
 		//std::cout << "s = " << cum_entropy(q0) << " " << cum_entropy(q1) << " " << cum_entropy(q2) << "\n\n";
 	}
-	unitary(system_size-2);
+
+	if (boundary_conditions == 0) { // pbc
+		std::vector<uint> qubits{system_size-1, 0};
+		state->random_clifford(qubits);
+	} else if (boundary_conditions == 1) { //obc1
+
+	} else if (boundary_conditions == 2) { // obc2
+		std::vector<uint> qubits{system_size-2, system_size-1};
+		state->random_clifford(qubits);
+	}
+}
+
+std::map<std::string, Sample> SelfOrganizedCliffordSimulator::take_samples() {
+	std::map<std::string, Sample> samples;
+	for (uint i = 0; i < system_size; i++) {
+		samples.emplace("entropy_" + std::to_string(i), cum_entropy(i));
+	}
+
+	return samples;
 }
