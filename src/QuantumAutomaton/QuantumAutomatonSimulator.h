@@ -6,14 +6,15 @@
 #include "CliffordState.hpp"
 
 #define DEFAULT_CLIFFORD_TYPE "chp"
-#define DEFAULT_SEED -1
+#define DEFAULT_SAMPLE_SURFACE false
 
 class QuantumAutomatonSimulator : public EntropySimulator {
 	private:
 		std::unique_ptr<CliffordState> state;
 		CliffordType clifford_type;
 		float mzr_prob;
-		int random_seed;
+
+		bool sample_surface;
 
 		int vsample_idx;
 
@@ -25,8 +26,10 @@ class QuantumAutomatonSimulator : public EntropySimulator {
 		virtual float entropy(std::vector<uint> &qubits) const { return state->entropy(qubits); }
 		virtual std::map<std::string, std::vector<Sample>> take_vector_samples() {
 			std::map<std::string, std::vector<Sample>> sample;
-			sample.emplace("surface_" + std::to_string(vsample_idx), entropy_surface());
-			vsample_idx++;
+			if (sample_surface) {
+				sample.emplace("surface_" + std::to_string(vsample_idx), entropy_surface());
+				vsample_idx++;
+			}
 
 			return sample;
 		}

@@ -181,10 +181,11 @@ std::pair<bool, std::vector<uint>> Graph::path(uint s, uint t) const {
 
 int Graph::max_flow(std::vector<uint> &sources, std::vector<uint> &sinks) const {
 	Graph g(*this);
+
 	g.add_vertex(DEFAULT_VAL);
-	uint s = num_vertices - 1;
+	uint s = g.num_vertices - 1;
 	g.add_vertex(DEFAULT_VAL);
-	uint t = num_vertices - 1;
+	uint t = g.num_vertices - 1;
 
 	for (auto i : sources) g.add_directed_edge(s, i, INT_MAX);
 	for (auto i : sinks) g.add_directed_edge(i, t, INT_MAX);
@@ -241,7 +242,7 @@ std::vector<uint> Graph::compute_degree_counts() const {
 }
 
 std::vector<uint> Graph::compute_neighbor_degree_counts() const {
-	// TODO thread safety
+	// TODO thread safety?
 	std::minstd_rand rng(std::rand());
 	std::vector<uint> counts(num_vertices, 0);
 	for (uint i = 0; i < num_vertices; i++) {

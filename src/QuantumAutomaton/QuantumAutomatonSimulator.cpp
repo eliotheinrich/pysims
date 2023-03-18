@@ -8,15 +8,15 @@ QuantumAutomatonSimulator::QuantumAutomatonSimulator(Params &params) : EntropySi
 	clifford_type = parse_clifford_type(params.gets("clifford_type", DEFAULT_CLIFFORD_TYPE));
 	mzr_prob = params.getf("mzr_prob");
 	system_size = params.geti("system_size");
-	random_seed = params.geti("random_seed", DEFAULT_SEED);
+	sample_surface = params.geti("sample_surface", DEFAULT_SAMPLE_SURFACE);
 
 	vsample_idx = 0;
 }
 
 void QuantumAutomatonSimulator::init_state() {
 	switch (clifford_type) {
-		case CliffordType::CHP : state = std::unique_ptr<CliffordState>(new QuantumCHPState(system_size, random_seed)); break;
-		case CliffordType::GraphSim : state = std::unique_ptr<CliffordState>(new QuantumGraphState(system_size, random_seed)); break;
+		case CliffordType::CHP : state = std::unique_ptr<CliffordState>(new QuantumCHPState(system_size)); break;
+		case CliffordType::GraphSim : state = std::unique_ptr<CliffordState>(new QuantumGraphState(system_size)); break;
 	}
 
 	// Initially polarize in x-direction

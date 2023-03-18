@@ -9,25 +9,26 @@ ClusterCliffordSimulator::ClusterCliffordSimulator(Params &params) : EntropySimu
 
 	cluster_threshold = params.getf("cluster_threshold", DEFAULT_CLUSTER_THRESHOLD);
 
-	circuit_type = params.geti("circuit", DEFAULT_CIRCUIT);
-	soc_type = params.geti("soc_type");
+	circuit_type = parse_circuit_type(params.gets("circuit", DEFAULT_CIRCUIT_TYPE));
+	feedback_type = parse_feedback_type(params.gets("feedback_type"));
 
 	gate_width = params.geti("gate_width");
+
+	avalanche_size = 0;
 
 	initial_offset = false;
 }
 
 void ClusterCliffordSimulator::init_state() {
-	avalanche_size = Sample();
 	state = std::unique_ptr<QuantumGraphState>(new QuantumGraphState(system_size));
-	if (circuit_type == 1) {
+	if (circuit_type == CircuitType::QuantumAutomaton) { // quantum automaton circuit must be polarized
 		for (uint i = 0; i < system_size; i++) state->h_gate(i);
 	}
 }
 
 void ClusterCliffordSimulator::mzr(uint q) {
 	state->mzr(q);
-	if (circuit_type == 1) state->h_gate(q);
+	if (circuit_type == CircuitType::QuantumAutomaton) state->h_gate(q);
 }
 
 void ClusterCliffordSimulator::random_measure() {
@@ -38,15 +39,15 @@ void ClusterCliffordSimulator::random_measure() {
 	}
 }
 
-void ClusterCliffordSimulator::cluster_measure() {
+void ClusterCliffordSimulator::cluster_mzr() {
 	if (randf() > mzr_prob) return;
 
 	uint q = rand() % system_size;
 	std::set<uint> cluster = state->graph.component(q);
+	avalanche_size = cluster.size();
 	for (auto k : cluster) {
 		mzr(k);
 	}
-	avalanche_size = avalanche_size.combine(Sample(cluster.size()));
 }
 
 void ClusterCliffordSimulator::p_adjust() {
@@ -59,16 +60,13 @@ void ClusterCliffordSimulator::p_adjust() {
 	mzr_prob = 1./(1. + std::exp(-x));
 }
 
-
 void ClusterCliffordSimulator::mzr_feedback() {
 	// Apply measurements
-	if (soc_type == 0) { // No feedback
-		random_measure();
-	} else if (soc_type == 1) { // Measure nodes in cluster
-		cluster_measure();
-	} else if (soc_type == 2) { // Adjust p based on max cluster size
-		p_adjust();
-	} 
+	switch (feedback_type) {
+		case (FeedbackType::NoFeedback): random_measure(); break;
+		case (FeedbackType::ClusterMzr): cluster_mzr(); break;
+		case (FeedbackType::PAdjust): p_adjust(); break;
+	}
 }
 
 
@@ -126,23 +124,18 @@ void ClusterCliffordSimulator::rc_timesteps(uint num_steps) {
 }
 
 void ClusterCliffordSimulator::timesteps(uint num_steps) {
-	if (circuit_type == 0) { // Random clifford gates
-		rc_timesteps(num_steps);
-	} else if (circuit_type == 1) { // Quantum automaton
-		qa_timesteps(num_steps);
-	} else {
-		std::cout << "Invalid circuit type " << circuit_type << std::endl;
-		assert(false);
+	switch (circuit_type) {
+		case (CircuitType::RandomClifford): rc_timesteps(num_steps); break;
+		case (CircuitType::QuantumAutomaton): qa_timesteps(num_steps); break;
 	}
 }
 
 std::map<std::string, Sample> ClusterCliffordSimulator::take_samples() {
 	std::map<std::string, Sample> data;
 	for (auto const &[key, val] : EntropySimulator::take_samples()) data.emplace(key, val);
-	if (soc_type == 1) {
+	if (feedback_type == FeedbackType::ClusterMzr) {
 		data.emplace("avalanche_size", avalanche_size);
-		avalanche_size = Sample();
-	} else if (soc_type == 2) {
+	} else if (feedback_type == FeedbackType::PAdjust) {
 		data.emplace("mzr_prob_f", mzr_prob);
 	}
 	data.emplace("max_cluster_size", state->graph.max_component_size());

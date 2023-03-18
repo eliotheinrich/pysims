@@ -77,7 +77,7 @@ int main(int argc, char *argv[]) {
     }
 
     ParallelCompute pc(std::move(configs));
-    DataFrame df = pc.compute(num_threads, true);
+    DataFrame df = pc.compute(num_threads, false);
     df.write_json(data_prefix + data_filename);
     std::cout << "Finishing job\n";
 }

@@ -33,7 +33,6 @@ class CliffordState: public Entropy {
     private:
         std::minstd_rand rng;
 
-
         void single_qubit_random_clifford(uint a, uint r) {
             if (r == 1) {
                 x_gate(a);
@@ -248,7 +247,7 @@ class CliffordState: public Entropy {
         }
 
     public:
-        CliffordState(int seed=-1) : rng(std::minstd_rand(std::rand())) {
+        CliffordState(int seed=-1) {
             if (seed == -1) rng = std::minstd_rand(std::rand());
             else rng = std::minstd_rand(seed);
         }

@@ -4,8 +4,8 @@
 	"num_runs": 25,
 
 	"random_sites": [false, true],
-	"boundary_conditions": [0, 2],
-	"feedback_mode": [0, 1, 2],
+	"boundary_conditions": ["pbc", "obc2"],
+	"feedback_mode": ["mode1", "mode2", "mode3"],
 
 	"system_size": 200,
 	"unitary_prob": [0.05, 0.1, 0.12, 0.15, 0.16, 0.17, 0.18, 0.19, 0.2, 0.21, 0.22, 0.23, 0.24, 0.25, 0.3, 0.6],

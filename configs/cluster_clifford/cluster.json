@@ -2,8 +2,8 @@
 	"run_name": "cluster_threshold_rc",
 	"circuit_type": "cluster_clifford",
 
-	"circuit": [0, 1],
-	"soc_type": 2,
+	"circuit": ["quantum_automaton", "random_clifford"],
+	"feedback_type": "p_adjust",
 	"num_runs": 5,
 
 	"system_size": [100],
