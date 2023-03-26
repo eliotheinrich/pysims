@@ -2,6 +2,15 @@
 #include "QuantumGraphState.h"
 #include <iostream>
 
+static GSCircuitType parse_gscircuit_type(std::string s) {
+	if (s == "random_clifford") return GSCircuitType::GSRandomClifford;
+	else if (s == "quantum_automaton") return GSCircuitType::GSQuantumAutomaton;
+	else {
+		std::cout << "Invalid circuit type: " << s << std::endl;
+		assert(false);
+	}
+}
+
 GraphCliffordSimulator::GraphCliffordSimulator(Params &params) : EntropySimulator(params) {
 	mzr_prob = params.get<float>("mzr_prob");
 

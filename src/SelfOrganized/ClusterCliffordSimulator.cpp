@@ -3,6 +3,25 @@
 #include "QuantumGraphState.h"
 #include <iostream>
 
+static CircuitType parse_circuit_type(std::string s) {
+	if (s == "random_clifford") return CircuitType::RandomClifford;
+	else if (s == "quantum_automaton") return CircuitType::QuantumAutomaton;
+	else {
+		std::cout << "Invalid circuit type: " << s << std::endl;
+		assert(false);
+	}
+}
+
+static FeedbackType parse_feedback_type(std::string s) {
+	if (s == "no_feedback") return FeedbackType::NoFeedback;
+	else if (s == "cluster_mzr") return FeedbackType::ClusterMzr;
+	else if (s == "p_adjust") return FeedbackType::PAdjust;
+	else {
+		std::cout << "Invalid feedback type: " << s << std::endl;
+		assert(false);
+	}
+}
+
 ClusterCliffordSimulator::ClusterCliffordSimulator(Params &params) : EntropySimulator(params) {
 	mzr_prob = params.get<float>("mzr_prob");
 	x = std::log(mzr_prob/(1. - mzr_prob));

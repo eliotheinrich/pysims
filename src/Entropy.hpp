@@ -8,6 +8,8 @@
 #include <numeric>
 #include <math.h>
 
+#define DEFAULT_SAMPLE_SURFACE_AVALANCHE false
+
 template <typename T>
 static void print_vector(std::vector<T> v) {
     std::cout << "[";
@@ -104,7 +106,7 @@ class EntropySimulator : public Simulator, public Entropy {
         EntropySimulator(Params &params) : Simulator(params), Entropy(params), 
                                            sample_all_partition_sizes(partition_size == 0),
                                            _entropy_surface(std::vector<uint>(system_size, 0)) {
-            sample_surface_avalanche = params.geti("sample_surface_avalanche", DEFAULT_SAMPLE_SURFACE_AVALANCHE);
+            sample_surface_avalanche = params.get<int>("sample_surface_avalanche", DEFAULT_SAMPLE_SURFACE_AVALANCHE);
         }
 
         virtual std::map<std::string, Sample> take_samples() {

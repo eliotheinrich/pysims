@@ -13,15 +13,6 @@ enum AvalancheType {
     Uphill
 };
 
-static AvalancheType parse_avalanche_type(std::string s) {
-    if      (s == "waterline") return AvalancheType::Waterline;
-    else if (s == "uphill") return AvalancheType::Uphill;
-    else {
-        std::cout << "Unsupported avalanche type: " << s << std::endl;
-        assert(false);
-    }
-}
-
 #define DEFAULT_AVALANCHE_TYPE "waterline"
 
 class BlockSimulator : public Simulator {

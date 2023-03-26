@@ -9,9 +9,8 @@ if (NOT CMAKE_BUILD_TYPE)
     set(CMAKE_BUILD_TYPE Release)
 endif()
 
-message("Build type: ${CMAKE_BUILD_TYPE}")
-
-set(CMAKE_CXX_FLAGS_DEBUG "-g -Wall")
+set(CMAKE_DEBUG_POSTFIX "d")
+set(CMAKE_CXX_FLAGS_DEBUG "-g -pg -Wall")
 set(CMAKE_CXX_FLAGS_RELEASE "-O3 -Wall")
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin)
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/lib)
@@ -29,7 +28,7 @@ add_library(simulator
 )
 target_include_directories(simulator PUBLIC ${DF_DEPENDENCIES})
 target_link_libraries(simulator -pthread)
-set_target_properties(simulator PROPERTIES LINKER_LANGUAGE CXX)
+set_target_properties(simulator PROPERTIES LINKER_LANGUAGE CXX DEBUG_POSTFIX ${CMAKE_DEBUG_POSTFIX})
 
 set(CLIFFORD_DIR ${CMAKE_SOURCE_DIR}/src/CliffordState)
 set(QA_DIR ${CMAKE_SOURCE_DIR}/src/QuantumAutomaton)
@@ -47,13 +46,18 @@ foreach(DIR IN LISTS MODEL_DIRS)
     add_subdirectory(${DIR})
 endforeach()
 
-add_executable(main_var src/main.cpp)
-target_include_directories(main_var PRIVATE 
+foreach(LIB IN LISTS SIMULATOR_LIBS)
+    set_target_properties(${LIB} PROPERTIES DEBUG_POSTFIX ${CMAKE_DEBUG_POSTFIX})
+endforeach()
+
+add_executable(main src/main.cpp)
+target_include_directories(main PRIVATE 
     src 
     ${DF_DEPENDENCIES}
     ${MODEL_DIRS}
 )
-target_link_libraries(main_var PRIVATE ${SIMULATOR_LIBS})
+set_target_properties(main PROPERTIES DEBUG_POSTFIX ${CMAKE_DEBUG_POSTFIX})
+target_link_libraries(main PRIVATE ${SIMULATOR_LIBS})
 
 
 add_executable(test src/test.cpp)

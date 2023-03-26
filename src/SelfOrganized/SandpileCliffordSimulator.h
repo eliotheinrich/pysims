@@ -13,16 +13,6 @@ enum BoundaryCondition {
 	Open2
 };
 
-static BoundaryCondition parse_boundary_condition(std::string s) {
-	if (s == "pbc") return BoundaryCondition::Periodic;
-	else if (s == "obc1") return BoundaryCondition::Open1;
-	else if (s == "obc2") return BoundaryCondition::Open2;
-	else {
-		std::cout << "Invalid boundary condition: " << s << std::endl;
-		assert(false);
-	}
-}
-
 #define DEFAULT_BOUNDARY_CONDITIONS "pbc"
 #define DEFAULT_FEEDBACK_MODE 22
 

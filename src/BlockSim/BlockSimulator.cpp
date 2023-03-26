@@ -1,5 +1,14 @@
 #include "BlockSimulator.h"
 
+static AvalancheType parse_avalanche_type(std::string s) {
+    if      (s == "waterline") return AvalancheType::Waterline;
+    else if (s == "uphill") return AvalancheType::Uphill;
+    else {
+        std::cout << "Unsupported avalanche type: " << s << std::endl;
+        assert(false);
+    }
+}
+
 BlockSimulator::BlockSimulator(Params &params) : Simulator(params) {
     system_size = params.get<int>("system_size");
     pm = params.get<float>("pm");
