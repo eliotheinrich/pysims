@@ -30,7 +30,7 @@ script = [f"#!/usr/bin/tcsh",
 		  f"./{executable} /data/heinriea/cliffordsim/{config_path} {ncores}"]
 
 script = '\n'.join(script)
-print(script)
+
 with open('job_tmp.sl', 'w') as f:
 	f.write(script)
 

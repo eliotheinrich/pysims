@@ -89,9 +89,23 @@ class Entropy {
 class EntropySimulator : public Simulator, public Entropy {
     private:
         bool sample_all_partition_sizes;
+        bool sample_surface_avalanche;
+        std::vector<uint> _entropy_surface;
+
+        uint cum_entropy(uint i) {
+            std::vector<uint> sites(i+1);
+            std::iota(sites.begin(), sites.end(), 0);
+
+            return std::round(entropy(sites));
+        }
+
 
     public:
-        EntropySimulator(Params &params) : Simulator(params), Entropy(params), sample_all_partition_sizes(partition_size == 0) {}
+        EntropySimulator(Params &params) : Simulator(params), Entropy(params), 
+                                           sample_all_partition_sizes(partition_size == 0),
+                                           _entropy_surface(std::vector<uint>(system_size, 0)) {
+            sample_surface_avalanche = params.geti("sample_surface_avalanche", DEFAULT_SAMPLE_SURFACE_AVALANCHE);
+        }
 
         virtual std::map<std::string, Sample> take_samples() {
             std::map<std::string, Sample> sample;
@@ -102,8 +116,23 @@ class EntropySimulator : public Simulator, public Entropy {
             } else {
                 sample.emplace("entropy", spatially_averaged_entropy());
             }
+
+            if (sample_surface_avalanche) {
+                std::vector<uint> new_surface(system_size, 0);
+                for (uint i = 0; i < system_size; i++) new_surface[i] = cum_entropy(i);
+
+                uint avalanche_size = 0;
+                for (uint i = 0; i < system_size; i++) {
+                    if (new_surface[i] != _entropy_surface[i]) avalanche_size++;
+                }
+
+                _entropy_surface = new_surface;
+                sample.emplace("avalanche_size", avalanche_size);
+            }
+
             return sample;
         }
+
 };
 
 class MutualInformationSimulator : public Simulator, public Entropy {
