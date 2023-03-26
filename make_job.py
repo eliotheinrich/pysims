@@ -21,7 +21,7 @@ script = [f"#!/usr/bin/tcsh",
 		  f"#SBATCH --mem={memory}                     # Job memory request",
 		  f"#SBATCH --time={time}               # Time limit hrs:min:sec",
 		  f"cd ~/cliffordsim/bin/tmp",
-		  f"./main /data/heinriea/cliffordsim/{config_path} 30"]
+		  f"./main_var /data/heinriea/cliffordsim/{config_path} 30"]
 
 script = '\n'.join(script)
 

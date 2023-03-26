@@ -47,13 +47,13 @@ foreach(DIR IN LISTS MODEL_DIRS)
     add_subdirectory(${DIR})
 endforeach()
 
-add_executable(main src/main.cpp)
-target_include_directories(main PRIVATE 
+add_executable(main_var src/main.cpp)
+target_include_directories(main_var PRIVATE 
     src 
     ${DF_DEPENDENCIES}
     ${MODEL_DIRS}
 )
-target_link_libraries(main PRIVATE ${SIMULATOR_LIBS})
+target_link_libraries(main_var PRIVATE ${SIMULATOR_LIBS})
 
 
 add_executable(test src/test.cpp)

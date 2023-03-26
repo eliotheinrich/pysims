@@ -1,5 +1,5 @@
 {
-	"description": "Taking another look at our BlockSim, in particular the pdf of avalanche sizes",
+	"description": "Taking another look at our BlockSim, in particular the pdf of avalanche sizes (datafield)",
 	"circuit_type": "blocksim",
 	"num_runs": 100,
 
@@ -14,5 +14,5 @@
 	"equilibration_timesteps": 0,
 	"measurement_freq": 10,
 
-	"filename": "blocksim_nn.json"
+	"filename": "blocksim_df.json"
 }
