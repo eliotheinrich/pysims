@@ -20,8 +20,6 @@ ncores = args.ncores[0]
 executable = args.executable[0]
 partition = args.partition[0]
 
-print(job_name, config_path, memory, time, ncores, executable)
-
 script = [f"#!/usr/bin/tcsh",
 		  f"#SBATCH --partition={partition}",
 		  f"#SBATCH --job-name={job_name}    # Job name",
