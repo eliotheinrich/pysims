@@ -40,7 +40,7 @@ void BlockSimulator::unitary_timestep() {
         else q = i;
         //std::cout << "qu = " << q << std::endl;
         
-        if (rand() < pu) unitary_stack(q);
+        if (randf() < pu) unitary_stack(q);
     }
 //std::cout << "After unitary: " << to_string() << std::endl;
 }
@@ -72,7 +72,7 @@ void BlockSimulator::projective_timestep() {
         else q = i;
 
         //std::cout << "qp = " << q << std::endl;
-        if ((slope(q) == 1) && rand() < pm) {
+        if ((slope(q) == 1) && randf() < pm) {
             switch (avalanche_type) {
                 case (AvalancheType::Waterline): waterline_avalanche(q); break;
                 case (AvalancheType::Uphill): uphill_avalanche(q); break;
