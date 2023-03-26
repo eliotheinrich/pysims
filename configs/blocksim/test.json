@@ -14,5 +14,5 @@
 	"equilibration_timesteps": 0,
 	"measurement_freq": 10,
 
-	"filename": "blocksim_n.json"
+	"filename": "testblocksim.json"
 }
