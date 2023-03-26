@@ -5,10 +5,10 @@
 #include <assert.h>
 
 QuantumAutomatonSimulator::QuantumAutomatonSimulator(Params &params) : EntropySimulator(params) {
-	clifford_type = parse_clifford_type(params.gets("clifford_type", DEFAULT_CLIFFORD_TYPE));
-	mzr_prob = params.getf("mzr_prob");
-	system_size = params.geti("system_size");
-	sample_surface = params.geti("sample_surface", DEFAULT_SAMPLE_SURFACE);
+	clifford_type = parse_clifford_type(params.get<std::string>("clifford_type", DEFAULT_CLIFFORD_TYPE));
+	mzr_prob = params.get<float>("mzr_prob");
+	system_size = params.get<int>("system_size");
+	sample_surface = params.get<int>("sample_surface", DEFAULT_SAMPLE_SURFACE);
 
 	vsample_idx = 0;
 }

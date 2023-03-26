@@ -1,15 +1,18 @@
 {
-	"run_name": "test_bs",
+	"description": "Testing blocksim",
 	"circuit_type": "blocksim",
-	"num_runs": 10,
+	"num_runs": 5,
 
 	"system_size": [10],
-	"prob": [0.5],
+	"pm": [0.001, 0.002, 0.004],
+	"pu": [0.02, 0.03, 0.1],
+	"random_sites": true,
+	"avalanche_type": "waterline",
 
 	"temporal_avg": true,
-	"sampling_timesteps": 0,
-	"equilibration_timesteps": 100,
-	"measurement_freq": 5,
+	"sampling_timesteps": 5000,
+	"equilibration_timesteps": 0,
+	"measurement_freq": 10,
 
-	"filename": "test_bs.json"
+	"filename": "blocksim_n.json"
 }

@@ -22,12 +22,14 @@ class Entropy {
         uint partition_size;
         uint spacing;
 
+        bool sample_all_partition_sizes;
+
         Entropy() {}
 
         Entropy(Params &params) {
-            system_size = params.geti("system_size");
-            partition_size = params.geti("partition_size");
-            spacing = params.geti("spacing", DEFAULT_SPACING);
+            system_size = params.get<int>("system_size");
+            partition_size = params.get<int>("partition_size", 0); // A partition_size value of 0 will result in measuring every possible partition size
+            spacing = params.get<int>("spacing", DEFAULT_SPACING);
         }
 
         virtual float entropy(std::vector<uint> &sites) const=0;
@@ -85,12 +87,21 @@ class Entropy {
 };
 
 class EntropySimulator : public Simulator, public Entropy {
+    private:
+        bool sample_all_partition_sizes;
+
     public:
-        EntropySimulator(Params &params) : Simulator(params), Entropy(params) {}
+        EntropySimulator(Params &params) : Simulator(params), Entropy(params), sample_all_partition_sizes(partition_size == 0) {}
 
         virtual std::map<std::string, Sample> take_samples() {
             std::map<std::string, Sample> sample;
-            sample.emplace("entropy", spatially_averaged_entropy());
+            if (sample_all_partition_sizes) {
+                for (uint i = 0; i < system_size; i++) {
+                    sample.emplace("entropy_" + std::to_string(i), spatially_averaged_entropy(system_size, i, spacing));
+                }
+            } else {
+                sample.emplace("entropy", spatially_averaged_entropy());
+            }
             return sample;
         }
 };
@@ -166,9 +177,9 @@ class MutualInformationSimulator : public Simulator, public Entropy {
 
     public:
         MutualInformationSimulator(Params &params) : Simulator(params), Entropy(params) {
-            num_bins = params.geti("num_bins");
-            min_eta = params.getf("min_eta");
-            max_eta = params.getf("max_eta");
+            num_bins = params.get<int>("num_bins");
+            min_eta = params.get<float>("min_eta");
+            max_eta = params.get<float>("max_eta");
         }
 
         virtual std::map<std::string, Sample> take_samples() {

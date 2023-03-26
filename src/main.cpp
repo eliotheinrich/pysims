@@ -4,6 +4,7 @@
 #include "ClusterCliffordSimulator.h"
 #include "MinCutSimulator.h"
 #include "BlockSimulator.h"
+#include "GraphCliffordSimulator.h"
 #include "DebugSimulator.hpp"
 
 #include <DataFrame.hpp>
@@ -67,6 +68,7 @@ int main(int argc, char *argv[]) {
         else if (circuit_type == "sandpile_clifford") sim = std::unique_ptr<Simulator>(new SandpileCliffordSimulator(param));
         else if (circuit_type == "mincut") sim = std::unique_ptr<Simulator>(new MinCutSimulator(param));
         else if (circuit_type == "blocksim") sim = std::unique_ptr<Simulator>(new BlockSimulator(param));
+        else if (circuit_type == "graphsim") sim = std::unique_ptr<Simulator>(new GraphCliffordSimulator(param));
         else {
             defaultf();
             return 0;
@@ -77,7 +79,7 @@ int main(int argc, char *argv[]) {
     }
 
     ParallelCompute pc(std::move(configs));
-    DataFrame df = pc.compute(num_threads, false);
+    DataFrame df = pc.compute(num_threads, true);
     df.write_json(data_prefix + data_filename);
     std::cout << "Finishing job\n";
-}
+} 

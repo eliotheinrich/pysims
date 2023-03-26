@@ -4,9 +4,9 @@
 #include <iostream>
 
 RandomCliffordSimulator::RandomCliffordSimulator(Params &params) : EntropySimulator(params) {
-	clifford_type = parse_clifford_type(params.gets("clifford_type", DEFAULT_CLIFFORD_TYPE));
-	mzr_prob = params.getf("mzr_prob");
-	gate_width = params.geti("gate_width");
+	clifford_type = parse_clifford_type(params.get<std::string>("clifford_type", DEFAULT_CLIFFORD_TYPE));
+	mzr_prob = params.get<float>("mzr_prob");
+	gate_width = params.get<int>("gate_width");
 
 	initial_offset = false;
 }

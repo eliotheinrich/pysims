@@ -6,7 +6,7 @@ void MinCutSimulator::init_state() {
 }
 
 MinCutSimulator::MinCutSimulator(Params &params) : EntropySimulator(params) {
-	mzr_prob = params.getf("mzr_prob");
+	mzr_prob = params.get<float>("mzr_prob");
 }
 
 std::string MinCutSimulator::to_string() const {

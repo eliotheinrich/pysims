@@ -4,15 +4,16 @@
 #include <iostream>
 
 ClusterCliffordSimulator::ClusterCliffordSimulator(Params &params) : EntropySimulator(params) {
-	mzr_prob = params.getf("mzr_prob");
+	mzr_prob = params.get<float>("mzr_prob");
 	x = std::log(mzr_prob/(1. - mzr_prob));
 
-	cluster_threshold = params.getf("cluster_threshold", DEFAULT_CLUSTER_THRESHOLD);
+	cluster_threshold = params.get<float>("cluster_threshold", DEFAULT_CLUSTER_THRESHOLD);
 
-	circuit_type = parse_circuit_type(params.gets("circuit", DEFAULT_CIRCUIT_TYPE));
-	feedback_type = parse_feedback_type(params.gets("feedback_type"));
+	circuit_type = parse_circuit_type(params.get<std::string>("circuit", DEFAULT_CIRCUIT_TYPE));
+	feedback_type = parse_feedback_type(params.get<std::string>("feedback_type"));
+	dx = params.get<float>("dx", DEFAULT_DX);
 
-	gate_width = params.geti("gate_width");
+	gate_width = params.get<int>("gate_width");
 
 	avalanche_size = 0;
 
@@ -53,7 +54,6 @@ void ClusterCliffordSimulator::cluster_mzr() {
 void ClusterCliffordSimulator::p_adjust() {
 	random_measure();
 
-	float dx = 0.05;
 	if (float(state->graph.max_component_size())/system_size > cluster_threshold) x += dx;
 	else x -= dx;
 

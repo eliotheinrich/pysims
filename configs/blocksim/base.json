@@ -1,17 +1,18 @@
 {
-	"run_name": "base_bs",
+	"description": "Taking another look at our BlockSim, in particular the pdf of avalanche sizes",
 	"circuit_type": "blocksim",
 	"num_runs": 100,
 
 	"system_size": [128, 256],
-	"prob": [0.0, 0.001, 0.002, 0.004, 0.006, 0.008, 0.01, 0.02, 0.03, 0.1, 0.2, 0.3, 0.4, 0.5],
-	"random_sites": [true],
-	"avalanche_type": [0, 1, 2],
+	"pm": [0.001, 0.002, 0.004, 0.006, 0.008, 0.01, 0.02, 0.03, 0.1, 0.2, 0.3, 0.4, 0.5, 0.75, 1.0],
+	"pu": [0.001, 0.002, 0.004, 0.006, 0.008, 0.01, 0.02, 0.03, 0.1, 0.2, 0.3, 0.4, 0.5, 0.75, 1.0],
+	"random_sites": true,
+	"avalanche_type": "waterline",
 
 	"temporal_avg": true,
-	"sampling_timesteps": 1000,
-	"equilibration_timesteps": 500,
-	"measurement_freq": 5,
+	"sampling_timesteps": 5000,
+	"equilibration_timesteps": 0,
+	"measurement_freq": 10,
 
-	"filename": "base_bs.json"
+	"filename": "blocksim_nn.json"
 }

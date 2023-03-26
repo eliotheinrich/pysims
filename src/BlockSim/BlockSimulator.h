@@ -6,18 +6,35 @@
 #include <random>
 
 #define DEFAULT_RANDOM_SITE_SELECTION false
-#define DEFAULT_AVALANCHE_TYPE 0
+
+
+enum AvalancheType {
+    Waterline,
+    Uphill
+};
+
+static AvalancheType parse_avalanche_type(std::string s) {
+    if      (s == "waterline") return AvalancheType::Waterline;
+    else if (s == "uphill") return AvalancheType::Uphill;
+    else {
+        std::cout << "Unsupported avalanche type: " << s << std::endl;
+        assert(false);
+    }
+}
+
+#define DEFAULT_AVALANCHE_TYPE "waterline"
 
 class BlockSimulator : public Simulator {
     private:
         uint system_size;
-        float prob;
-        std::vector<uint> *surface;
+        float pu;
+        float pm;
+        std::vector<uint> surface;
 
         bool random_sites;
-        uint avalanche_type;
+        AvalancheType avalanche_type;
 
-        Sample avalanche_size;
+        std::vector<uint> avalanche_sizes;
 
         void unitary_timestep();
         void projective_timestep();
@@ -29,7 +46,6 @@ class BlockSimulator : public Simulator {
 
     public:
         BlockSimulator(Params &params);
-        ~BlockSimulator() { delete surface; }
 
         virtual void init_state();
 

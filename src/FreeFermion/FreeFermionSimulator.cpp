@@ -2,11 +2,11 @@
 #include <iostream>
 
 FreeFermionSimulator::FreeFermionSimulator(Params &params) : EntropySimulator(params) {
-    system_size = params.geti("system_size");
-    p1 = params.getf("p1");
-    p2 = params.getf("p2");
-    beta = params.getf("beta");
-    filling_fraction = params.getf("filling_fraction");
+    system_size = params.get<int>("system_size");
+    p1 = params.get<float>("p1");
+    p2 = params.get<float>("p2");
+    beta = params.get<float>("beta");
+    filling_fraction = params.get<float>("filling_fraction");
 
     num_particles = filling_fraction * system_size;
 }

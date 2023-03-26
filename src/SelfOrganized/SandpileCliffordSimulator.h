@@ -23,24 +23,8 @@ static BoundaryCondition parse_boundary_condition(std::string s) {
 	}
 }
 
-enum FeedbackMode {
-	Mode1,
-	Mode2,
-	Mode3
-};
-
-static FeedbackMode parse_feedback_mode(std::string s) {
-	if (s == "mode1") return FeedbackMode::Mode1;
-	else if (s == "mode2") return FeedbackMode::Mode2;
-	else if (s == "mode3") return FeedbackMode::Mode3;
-	else {
-		std::cout << "Invalid feedback mode: " << s << std::endl;
-		assert(false);
-	}
-}
-
 #define DEFAULT_BOUNDARY_CONDITIONS "pbc"
-#define DEFAULT_FEEDBACK_MODE "mode1"
+#define DEFAULT_FEEDBACK_MODE 22
 
 class SandpileCliffordSimulator : public Simulator {
 	private:
@@ -53,7 +37,9 @@ class SandpileCliffordSimulator : public Simulator {
 
 		bool random_sites;
 		BoundaryCondition boundary_condition;
-		FeedbackMode feedback_mode;
+		uint feedback_mode;
+
+		std::vector<uint> feedback_strategy;
 
 		int cum_entropy(uint i) const;
 

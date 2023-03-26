@@ -3,15 +3,47 @@
 #include <numeric>
 
 SandpileCliffordSimulator::SandpileCliffordSimulator(Params &params) : Simulator(params) {
-	mzr_prob = params.getf("mzr_prob");
-	unitary_prob = params.getf("unitary_prob");
+	mzr_prob = params.get<float>("mzr_prob");
+	unitary_prob = params.get<float>("unitary_prob");
 
-	boundary_condition = parse_boundary_condition(params.gets("boundary_conditions", DEFAULT_BOUNDARY_CONDITIONS));
-	feedback_mode = parse_feedback_mode(params.gets("feedback_mode", DEFAULT_FEEDBACK_MODE));
+	boundary_condition = parse_boundary_condition(params.get<std::string>("boundary_conditions", DEFAULT_BOUNDARY_CONDITIONS));
+	feedback_mode = params.get<int>("feedback_mode", DEFAULT_FEEDBACK_MODE);
 
-	random_sites = params.geti("random_sites", DEFAULT_RANDOM_SITES);
+	random_sites = params.get<int>("random_sites", DEFAULT_RANDOM_SITES);
 
-	system_size = params.geti("system_size");
+	system_size = params.get<int>("system_size");
+
+	if (feedback_mode == 0)       feedback_strategy = std::vector<uint>{1};
+	else if (feedback_mode == 1)  feedback_strategy = std::vector<uint>{1, 2};
+	else if (feedback_mode == 2)  feedback_strategy = std::vector<uint>{1, 3};
+	else if (feedback_mode == 3)  feedback_strategy = std::vector<uint>{1, 4};
+	else if (feedback_mode == 4)  feedback_strategy = std::vector<uint>{1, 5};
+	else if (feedback_mode == 5)  feedback_strategy = std::vector<uint>{1, 6};
+	else if (feedback_mode == 6)  feedback_strategy = std::vector<uint>{1, 2, 3};
+	else if (feedback_mode == 7)  feedback_strategy = std::vector<uint>{1, 2, 4};
+	else if (feedback_mode == 8)  feedback_strategy = std::vector<uint>{1, 2, 5};
+	else if (feedback_mode == 9)  feedback_strategy = std::vector<uint>{1, 2, 6};
+	else if (feedback_mode == 10) feedback_strategy = std::vector<uint>{1, 3, 4};
+	else if (feedback_mode == 11) feedback_strategy = std::vector<uint>{1, 3, 5};
+	else if (feedback_mode == 12) feedback_strategy = std::vector<uint>{1, 3, 6};
+	else if (feedback_mode == 13) feedback_strategy = std::vector<uint>{1, 4, 5};
+	else if (feedback_mode == 14) feedback_strategy = std::vector<uint>{1, 4, 6};
+	else if (feedback_mode == 15) feedback_strategy = std::vector<uint>{1, 5, 6};
+	else if (feedback_mode == 16) feedback_strategy = std::vector<uint>{1, 2, 3, 4};
+	else if (feedback_mode == 17) feedback_strategy = std::vector<uint>{1, 2, 3, 5};
+	else if (feedback_mode == 18) feedback_strategy = std::vector<uint>{1, 2, 3, 6};
+	else if (feedback_mode == 19) feedback_strategy = std::vector<uint>{1, 2, 4, 5};
+	else if (feedback_mode == 20) feedback_strategy = std::vector<uint>{1, 2, 4, 6};
+	else if (feedback_mode == 21) feedback_strategy = std::vector<uint>{1, 2, 5, 6};
+	else if (feedback_mode == 22) feedback_strategy = std::vector<uint>{1, 3, 4, 5};
+	else if (feedback_mode == 23) feedback_strategy = std::vector<uint>{1, 3, 4, 6};
+	else if (feedback_mode == 24) feedback_strategy = std::vector<uint>{1, 3, 5, 6};
+	else if (feedback_mode == 25) feedback_strategy = std::vector<uint>{1, 4, 5, 6};
+	else if (feedback_mode == 26) feedback_strategy = std::vector<uint>{1, 2, 3, 4, 5};
+	else if (feedback_mode == 27) feedback_strategy = std::vector<uint>{1, 2, 3, 4, 6};
+	else if (feedback_mode == 28) feedback_strategy = std::vector<uint>{1, 2, 3, 5, 6};
+	else if (feedback_mode == 29) feedback_strategy = std::vector<uint>{1, 2, 4, 5, 6};
+	else if (feedback_mode == 30) feedback_strategy = std::vector<uint>{1, 3, 4, 5, 6};
 }
 
 void SandpileCliffordSimulator::mzr(uint i) {
@@ -78,53 +110,21 @@ void SandpileCliffordSimulator::right_boundary() {
 
 
 void SandpileCliffordSimulator::feedback(int ds1, int ds2, uint q) {
-	switch (feedback_mode) {
-		case (FeedbackMode::Mode1):
-			if      ((ds1 == -1) && (ds2 == -1)) mzr(q);
-			else if ((ds1 == -1) && (ds2 == 0))  unitary(q); 
-			else if ((ds1 == -1) && (ds2 == 1))  mzr(q);
-			else if ((ds1 == 0) && (ds2 == -1))  unitary(q); 
-			else if ((ds1 == 0) && (ds2 == 0))   unitary(q);
-			else if ((ds1 == 0) && (ds2 == 1))   unitary(q);
-			else if ((ds1 == 1) && (ds2 == -1))  mzr(q);
-			else if ((ds1 == 1) && (ds2 == 0))   unitary(q);
-			else if ((ds1 == 1) && (ds2 == 1))   unitary(q);
-			else {
-				std::cout << "Detected |slope| > 1\n";
-				assert(false);
-			}
-			break;
-		case (FeedbackMode::Mode2):
-			if      ((ds1 == -1) && (ds2 == -1)) unitary(q); // Different from feedback0
-			else if ((ds1 == -1) && (ds2 == 0))  unitary(q); 
-			else if ((ds1 == -1) && (ds2 == 1))  mzr(q);
-			else if ((ds1 == 0) && (ds2 == -1))  unitary(q); 
-			else if ((ds1 == 0) && (ds2 == 0))   unitary(q);
-			else if ((ds1 == 0) && (ds2 == 1))   unitary(q);
-			else if ((ds1 == 1) && (ds2 == -1))  mzr(q);
-			else if ((ds1 == 1) && (ds2 == 0))   unitary(q);
-			else if ((ds1 == 1) && (ds2 == 1))   unitary(q);
-			else {
-				std::cout << "Detected |slope| > 1\n";
-				assert(false);
-			}
-			break;
-		case (FeedbackMode::Mode3):
-			if      ((ds1 == -1) && (ds2 == -1)) mzr(q);
-			else if ((ds1 == -1) && (ds2 == 0))  unitary(q); 
-			else if ((ds1 == -1) && (ds2 == 1))  mzr(q);
-			else if ((ds1 == 0) && (ds2 == -1))  unitary(q); 
-			else if ((ds1 == 0) && (ds2 == 0))   mzr(q);
-			else if ((ds1 == 0) && (ds2 == 1))   unitary(q);
-			else if ((ds1 == 1) && (ds2 == -1))  mzr(q);
-			else if ((ds1 == 1) && (ds2 == 0))   unitary(q);
-			else if ((ds1 == 1) && (ds2 == 1))   unitary(q);
-			else {
-				std::cout << "Detected |slope| > 1\n";
-				assert(false);
-			}
-			break;
-	}
+	uint shape;
+	if      ((ds1 == 0) && (ds2 == 0))   shape = 1;
+	else if ((ds1 == -1) && (ds2 == -1)) shape = 2;
+	else if ((ds1 == 1) && (ds2 == 1))   shape = 3;
+	else if ((ds1 == 0) && (ds2 == 1))   shape = 4;
+	else if ((ds1 == 1) && (ds2 == 0))   shape = 4;
+	else if ((ds1 == 0) && (ds2 == -1))  shape = 5;
+	else if ((ds1 == -1) && (ds2 == 0))  shape = 5;
+	else if ((ds1 == -1) && (ds2 == 1))  shape = 6;
+	else if ((ds1 == 1) && (ds2 == -1))  shape = 6;
+	else { std::cout << "Something has gone wrong.\n"; assert(false); }
+
+
+	if (std::count(feedback_strategy.begin(), feedback_strategy.end(), shape)) unitary(q);
+	else mzr(q);
 }
 
 void SandpileCliffordSimulator::timestep() {

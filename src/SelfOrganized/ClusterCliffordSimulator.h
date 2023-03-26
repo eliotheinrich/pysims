@@ -37,6 +37,7 @@ static FeedbackType parse_feedback_type(std::string s) {
 
 #define DEFAULT_CLUSTER_THRESHOLD 0.5
 #define DEFAULT_CIRCUIT_TYPE "random_clifford"
+#define DEFAULT_DX 0.05
 
 class ClusterCliffordSimulator : public EntropySimulator {
 	private:
@@ -49,6 +50,7 @@ class ClusterCliffordSimulator : public EntropySimulator {
 
 		uint gate_width;
 		float cluster_threshold;
+		float dx;
 
 		bool initial_offset;
 
