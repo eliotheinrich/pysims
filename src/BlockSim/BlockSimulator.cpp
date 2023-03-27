@@ -1,21 +1,11 @@
 #include "BlockSimulator.h"
 
-static AvalancheType parse_avalanche_type(std::string s) {
-    if      (s == "waterline") return AvalancheType::Waterline;
-    else if (s == "uphill") return AvalancheType::Uphill;
-    else {
-        std::cout << "Unsupported avalanche type: " << s << std::endl;
-        assert(false);
-    }
-}
-
 BlockSimulator::BlockSimulator(Params &params) : Simulator(params) {
     system_size = params.get<int>("system_size");
     pm = params.get<float>("pm");
     pu = params.get<float>("pu");
 
     random_sites = params.get<int>("random_sites", DEFAULT_RANDOM_SITE_SELECTION);
-    avalanche_type = parse_avalanche_type(params.get<std::string>("avalanche_type", DEFAULT_AVALANCHE_TYPE));
 }
 
 void BlockSimulator::init_state() {
@@ -36,42 +26,47 @@ int BlockSimulator::slope(uint i) const {
     return surface[i+1] - surface[i];
 }
 
-void BlockSimulator::unitary_stack(uint i) {
-    surface[i]++;
-    if ((std::abs(slope(i)) > 1) || (std::abs(slope(i-1)) > 1)) surface[i]--;
-}
+void BlockSimulator::avalanche(uint i) {
+    uint s1 = surface[i-1];
+    uint s2 = surface[i];
+    uint s3 = surface[i+1];
 
-void BlockSimulator::unitary_timestep() {
-//std::cout << "Before unitary stacking: " << to_string() << std::endl;
-    for (uint i = 1; i < system_size - 1; i++) {
-        uint q;
-        if (random_sites) q = rand() % (system_size - 2) + 1;
-        else q = i;
-        //std::cout << "qu = " << q << std::endl;
-        
-        if (randf() < pu) unitary_stack(q);
+    int ds1 = s1 - s2;
+    int ds2 = s3 - s2;
+
+	if       ((ds1 == 0) && (ds2 == 0))   {  // (1)
+
+    } else if ((ds1 == -1) && (ds2 == -1)) { // (2)
+        surface[i]--;
+        avalanche_sizes.push_back(1);
+    } else if ((ds1 == 1) && (ds2 == 1)) {  // (3)
+        // Both directions?
+    } else if ((ds1 == 0) && (ds2 == 1)) {  // (4)
+
+    } else if ((ds1 == 1) && (ds2 == 0)) {  // (4)
+
+    } else if ((ds1 == 0) && (ds2 == -1)) { // (5)
+        surface[i]--;
+        avalanche_sizes.push_back(1);
+    } else if ((ds1 == -1) && (ds2 == 0)) { // (5)
+        surface[i]--;
+		avalanche_sizes.push_back(1);
+    } else if ((ds1 == -1) && (ds2 == 1)) { // (6)
+        uint j = i + 1;
+        while (surface[j] > surface[i]) {
+            surface[j]--;
+            j++;
+        }
+        avalanche_sizes.push_back(j - i);
+    } else if ((ds1 == 1) && (ds2 == -1)) { // (6)
+        uint j = i - 1;
+        while (surface[j] > surface[i]) {
+            surface[j]--;
+            j--;
+        }
+
+        avalanche_sizes.push_back(i - j);
     }
-//std::cout << "After unitary: " << to_string() << std::endl;
-}
-
-void BlockSimulator::waterline_avalanche(uint i) {
-    uint j = i+1;
-    while (surface[j] > surface[i]) {
-        surface[j]--;
-        j++;
-    }
-
-    uint size = j - i;
-    avalanche_sizes.push_back(size);
-}
-
-void BlockSimulator::uphill_avalanche(uint i) {
-    uint j = i+1;
-    while (slope(j) == 1) j++;
-    for (uint k = i+1; k < j+1; k++) surface[k]--;
-
-    uint size = j - i;
-    avalanche_sizes.push_back(size);
 }
 
 void BlockSimulator::projective_timestep() {
@@ -80,13 +75,22 @@ void BlockSimulator::projective_timestep() {
         if (random_sites) q = rand() % (system_size - 2) + 1;
         else q = i;
 
-        //std::cout << "qp = " << q << std::endl;
-        if ((slope(q) == 1) && randf() < pm) {
-            switch (avalanche_type) {
-                case (AvalancheType::Waterline): waterline_avalanche(q); break;
-                case (AvalancheType::Uphill): uphill_avalanche(q); break;
-            }
-        }
+        if (randf() < pm) avalanche(q);
+    }
+}
+
+void BlockSimulator::unitary_stack(uint i) {
+    surface[i]++;
+    if ((std::abs(slope(i)) > 1) || (std::abs(slope(i-1)) > 1)) surface[i]--;
+}
+
+void BlockSimulator::unitary_timestep() {
+    for (uint i = 1; i < system_size - 1; i++) {
+        uint q;
+        if (random_sites) q = rand() % (system_size - 2) + 1;
+        else q = i;
+        
+        if (randf() < pu) unitary_stack(q);
     }
 }
 

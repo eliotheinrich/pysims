@@ -2,17 +2,17 @@
 	"description": "Testing avalanche sizes in random clifford circuit",
 	"clifford_type": "chp",
 	"circuit_type": "random_clifford",
-	"num_runs": 10,
+	"num_runs": 100,
 
 	"system_size": 100,
 	"partition_size": 50,
 	"sample_surface_avalanche": true,
 	"gate_width": 2,
-	"mzr_prob": [0.03, 0.05, 0.1, 0.14, 0.16, 0.18, 0.2, 0.25], 
+	"mzr_prob": [0.03, 0.05, 0.1, 0.14, 0.16, 0.18, 0.2, 0.25, 0.5, 1.0], 
 
-	"temporal_avg": true,
-	"sampling_timesteps": 300,
-	"equilibration_timesteps": 300,
+	"temporal_avg": false,
+	"sampling_timesteps": 10000,
+	"equilibration_timesteps": 1000,
 	"measurement_freq": 5,
 
 	"spacing": 5,

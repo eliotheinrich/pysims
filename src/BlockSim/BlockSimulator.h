@@ -7,14 +7,6 @@
 
 #define DEFAULT_RANDOM_SITE_SELECTION false
 
-
-enum AvalancheType {
-    Waterline,
-    Uphill
-};
-
-#define DEFAULT_AVALANCHE_TYPE "waterline"
-
 class BlockSimulator : public Simulator {
     private:
         uint system_size;
@@ -23,15 +15,13 @@ class BlockSimulator : public Simulator {
         std::vector<uint> surface;
 
         bool random_sites;
-        AvalancheType avalanche_type;
 
         std::vector<uint> avalanche_sizes;
 
         void unitary_timestep();
         void projective_timestep();
         int slope(uint i) const;
-        void uphill_avalanche(uint i);
-        void waterline_avalanche(uint i);
+        void avalanche(uint i);
 
         void unitary_stack(uint i);
 

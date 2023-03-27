@@ -1,0 +1,20 @@
+{
+	"description": "Test run for profiling",
+	"clifford_type": "chp",
+	"circuit_type": "random_clifford",
+	"num_runs": 1,
+
+	"system_size": [26],
+	"partition_size": [2, 4, 6, 8, 10, 12],
+	"gate_width": 2,
+	"mzr_prob": [0.03, 0.05, 0.1, 0.14, 0.16, 0.18, 0.2, 0.25], 
+
+	"temporal_avg": false,
+	"sampling_timesteps": 300,
+	"equilibration_timesteps": 0,
+	"measurement_freq": 5,
+
+	"spacing": 5,
+
+	"filename": "test_rc.json"
+}
