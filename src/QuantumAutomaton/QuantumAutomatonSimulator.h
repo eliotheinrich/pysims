@@ -5,12 +5,29 @@
 #include "Entropy.hpp"
 #include "CliffordState.hpp"
 
-#define DEFAULT_CLIFFORD_TYPE "chp"
-#define DEFAULT_SAMPLE_SURFACE false
+inline static void qa_layer(std::shared_ptr<CliffordState> state, bool offset, bool gate_type) {
+	uint system_size = state->system_size();
+	for (uint i = 0; i < system_size/2; i++) {
+		uint qubit1 = offset ? (2*i + 1) % system_size : 2*i;
+		uint qubit2 = offset ? (2*i + 2) % system_size : (2*i + 1) % system_size;
+
+		if (state->rand() % 2 == 0) std::swap(qubit1, qubit2);
+
+		if (gate_type) state->cz_gate(qubit1, qubit2);
+		else state->cx_gate(qubit1, qubit2);
+	}
+}
+
+inline static void qa_timestep(std::shared_ptr<CliffordState> state) {
+	qa_layer(state, false, false); // no offset, cx
+	qa_layer(state, false, true);  // no offset, cz
+	qa_layer(state, true, false);  // offset,    cx
+	qa_layer(state, true, true);   // offset,    cz
+}
 
 class QuantumAutomatonSimulator : public EntropySimulator {
 	private:
-		std::unique_ptr<CliffordState> state;
+		std::shared_ptr<CliffordState> state;
 		CliffordType clifford_type;
 		float mzr_prob;
 
@@ -34,7 +51,6 @@ class QuantumAutomatonSimulator : public EntropySimulator {
 			return sample;
 		}
 
-		void timestep(bool offset, bool gate_type);
 		virtual void timesteps(uint num_steps);
 
 		CLONE(Simulator, QuantumAutomatonSimulator)

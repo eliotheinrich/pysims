@@ -8,7 +8,6 @@
 #include <DataFrame.hpp>
 #include "Simulator.hpp"
 
-
 class FreeFermionSimulator : public EntropySimulator {
     private:
         Eigen::MatrixXcd propagator;

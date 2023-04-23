@@ -14,6 +14,8 @@
 	"equilibration_timesteps": 0,
 	"measurement_freq": 5,
 
+	"sample_mutual_information": true,
+
 	"spacing": 5,
 
 	"filename": "test_rc.json"

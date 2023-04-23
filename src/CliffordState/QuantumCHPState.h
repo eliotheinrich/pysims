@@ -23,7 +23,6 @@ class QuantumCHPState : public CliffordState {
         virtual void cx_gate(uint a, uint b);
         virtual void cz_gate(uint a, uint b);
         virtual bool mzr(uint a);
-        virtual bool mzr_forced(uint a, bool outcome);
 
         virtual float entropy(std::vector<uint> &qubits) const;
 };

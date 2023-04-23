@@ -1,6 +1,7 @@
 #include "QuantumAutomatonSimulator.h"
 #include "RandomCliffordSimulator.h"
 #include "SandpileCliffordSimulator.h"
+#include "BellSandpileSimulator.h"
 #include "ClusterCliffordSimulator.h"
 #include "MinCutSimulator.h"
 #include "BlockSimulator.h"
@@ -66,6 +67,7 @@ int main(int argc, char *argv[]) {
         else if (circuit_type == "random_clifford") sim = std::unique_ptr<Simulator>(new RandomCliffordSimulator(param));
         else if (circuit_type == "cluster_clifford") sim = std::unique_ptr<Simulator>(new ClusterCliffordSimulator(param));
         else if (circuit_type == "sandpile_clifford") sim = std::unique_ptr<Simulator>(new SandpileCliffordSimulator(param));
+        else if (circuit_type == "bell_sandpile") sim = std::unique_ptr<Simulator>(new BellSandpileSimulator(param));
         else if (circuit_type == "mincut") sim = std::unique_ptr<Simulator>(new MinCutSimulator(param));
         else if (circuit_type == "blocksim") sim = std::unique_ptr<Simulator>(new BlockSimulator(param));
         else if (circuit_type == "graphsim") sim = std::unique_ptr<Simulator>(new GraphCliffordSimulator(param));

@@ -3,6 +3,11 @@
 #include "QuantumGraphState.h"
 #include <iostream>
 
+#define DEFAULT_THRESHOLD 0.5
+#define DEFAULT_CIRCUIT_TYPE "random_clifford"
+#define DEFAULT_DX 0.05
+
+
 static CircuitType parse_circuit_type(std::string s) {
 	if (s == "random_clifford") return CircuitType::RandomClifford;
 	else if (s == "quantum_automaton") return CircuitType::QuantumAutomaton;
@@ -26,7 +31,7 @@ ClusterCliffordSimulator::ClusterCliffordSimulator(Params &params) : EntropySimu
 	mzr_prob = params.get<float>("mzr_prob");
 	x = std::log(mzr_prob/(1. - mzr_prob));
 
-	cluster_threshold = params.get<float>("cluster_threshold", DEFAULT_CLUSTER_THRESHOLD);
+	threshold = params.get<float>("threshold", DEFAULT_THRESHOLD);
 
 	circuit_type = parse_circuit_type(params.get<std::string>("circuit", DEFAULT_CIRCUIT_TYPE));
 	feedback_type = parse_feedback_type(params.get<std::string>("feedback_type"));
@@ -73,7 +78,7 @@ void ClusterCliffordSimulator::cluster_mzr() {
 void ClusterCliffordSimulator::p_adjust() {
 	random_measure();
 
-	if (float(state->graph.max_component_size())/system_size > cluster_threshold) x += dx;
+	if (float(state->graph.max_component_size())/system_size > threshold) x += dx;
 	else x -= dx;
 
 	mzr_prob = 1./(1. + std::exp(-x));

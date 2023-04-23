@@ -185,24 +185,28 @@ void Tableau::cx_gate(uint a, uint b) {
     }
 }
 
+// Returns a pair containing (1) wether the outcome of a measurement on qubit a is deterministic
+// and (2) the index on which the CHP algorithm performs rowsum if the mzr is random
 std::pair<bool, uint> Tableau::mzr_deterministic(uint a) {
     assert(track_destabilizers);
 
-    for (uint i = num_qubits; i < 2*num_qubits; i++) {
-        if (x(i, a)) { return std::pair(true, i); }
+    for (uint p = num_qubits; p < 2*num_qubits; p++) {
+        // Suitable p identified; outcome is random
+        if (x(p, a)) { return std::pair(false, p); }
     }
 
-    return std::pair(false, 0);
+    // No p found; outcome is deterministic
+    return std::pair(true, 0);
 }
 
 bool Tableau::mzr(uint a, bool outcome) {
 	assert(track_destabilizers);
 
     std::pair<bool, uint> result_deterministic = mzr_deterministic(a);
-    bool found_p = result_deterministic.first;
+    bool deterministic = result_deterministic.first;
     uint p = result_deterministic.second;
 
-    if (found_p) {
+    if (!deterministic) {
         for (uint i = 0; i < 2*num_qubits; i++) {
             if (i != p && x(i, a)) {
                 rowsum(i, p);

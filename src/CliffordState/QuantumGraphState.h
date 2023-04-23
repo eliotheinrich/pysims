@@ -20,11 +20,13 @@
 #define SQRTZDGATE 23
 
 
-
+// A simulator for quantum clifford states represented with graphs, as outlined in
+// https://arxiv.org/abs/quant-ph/0504117
 class QuantumGraphState : public CliffordState {
 	private:
 		static const uint ZGATES[4];
 		static const uint CONJUGATION_TABLE[24];
+		static const uint HERMITIAN_CONJUGATE_TABLE[24];
 		static const uint CLIFFORD_DECOMPS[24][5];
 		static const uint CLIFFORD_PRODUCTS[24][24];
 		static const uint CZ_LOOKUP[24][24][2][3];
@@ -59,7 +61,8 @@ class QuantumGraphState : public CliffordState {
 
         virtual void cz_gate(uint a, uint b);
         virtual bool mzr(uint a);
-		virtual bool mzr_forced(uint a, bool outcome);
+
+		void toggle_edge_gate(uint a, uint b);
 
         virtual float entropy(std::vector<uint> &qubits) const;
 

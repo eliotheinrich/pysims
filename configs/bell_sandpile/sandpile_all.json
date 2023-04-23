@@ -1,0 +1,25 @@
+{
+	"description": "Testing all Bell simulator",
+	"circuit_type": "bell_sandpile",
+	"num_runs": 10,
+
+	"random_sites": true, 
+	"sample_entropy": false,
+	"gate_type": 1,
+
+	"feedback_mode": [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30],
+	
+	"pm": [0.004, 0.006, 0.008, 0.01, 0.02, 0.03, 0.1, 0.2, 0.3, 0.4, 0.5, 0.75, 0.9],
+	"pu": [0.004, 0.006, 0.008, 0.01, 0.02, 0.03, 0.1, 0.2, 0.3, 0.4, 0.5, 0.75, 0.9],
+
+	"system_size": 100,
+
+	"temporal_avg": true,
+	"sampling_timesteps": 600,
+	"equilibration_timesteps": 600,
+	"measurement_freq": 5,
+
+	"spacing": 5,
+
+	"filename": "bell_sandpile_all2.json"
+}

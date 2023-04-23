@@ -38,17 +38,6 @@ bool QuantumCHPState::mzr(uint a) {
     return outcome;
 }
 
-bool QuantumCHPState::mzr_forced(uint a, bool outcome) {
-    auto deterministic = tableau.mzr_deterministic(a);
-    bool outcome_random = deterministic.first;
-    if (outcome_random) {
-        tableau.mzr(a, outcome);
-        return true;
-    } else {
-        return mzr(a) == outcome;
-    }
-}
-
 float QuantumCHPState::entropy(std::vector<uint> &qubits) const {
     uint system_size = this->system_size();
     uint partition_size = qubits.size();
@@ -104,6 +93,5 @@ float QuantumCHPState::entropy(std::vector<uint> &qubits) const {
         }
     }
 
-    //std::cout << "rank = " << rank << ", partition_size = " << partition_size << std::endl;
     return rank - partition_size;
 }

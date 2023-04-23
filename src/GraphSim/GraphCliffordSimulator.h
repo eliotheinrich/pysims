@@ -5,32 +5,32 @@
 #include "Entropy.hpp"
 #include "QuantumGraphState.h"
 
-enum GSCircuitType {
-	GSRandomClifford,
-	GSQuantumAutomaton
+enum GraphSimCircuitType {
+	GraphSimRandomClifford,
+	GraphSimQuantumAutomaton,
+	GraphSimUnitary,
 };
-
-#define DEFAULT_CIRCUIT_TYPE "random_clifford"
 
 class GraphCliffordSimulator : public EntropySimulator {
 	private:
-		GSCircuitType circuit_type;
+		GraphSimCircuitType circuit_type;
 
-		std::unique_ptr<QuantumGraphState> state;
+		std::shared_ptr<QuantumGraphState> state;
 		float mzr_prob;
 
 		uint gate_width;
-
 		bool initial_offset;
 
 		void mzr(uint q);
 
-		void qa_timestep(bool offset, bool gate_type);
+		void unitary_timesteps(uint num_steps);
 		void qa_timesteps(uint num_steps);
 		void rc_timesteps(uint num_steps);
 
-		float dist(int i, int j) const;
-		std::pair<float, float> avg_max_dist() const;
+		uint dist(int i, int j) const;
+		void add_distance_distribution(std::map<std::string, Sample> &samples) const;
+		void add_degree_distribution(std::map<std::string, Sample> &samples) const;
+		void add_avg_max_dist(std::map<std::string, Sample> &samples) const;
 
 
 	public:

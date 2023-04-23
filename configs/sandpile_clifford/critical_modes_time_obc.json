@@ -3,8 +3,8 @@
 	"circuit_type": "sandpile_clifford",
 	"num_runs": 1000,
 
-	"random_sites": false,
-	"boundary_conditions": "pbc",
+	"random_sites": true,
+	"boundary_conditions": "obc1",
 	"feedback_mode": [22, 26],
 
 	"system_size": 200,
@@ -18,5 +18,5 @@
 
 	"spacing": 5,
 
-	"filename": "sandpile_critical_time.json"
+	"filename": "sandpile_critical_time_obc_rand.json"
 }

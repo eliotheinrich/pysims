@@ -3,18 +3,19 @@
 	"circuit_type": "random_clifford",
 
 	"clifford_type": "chp",
-	"num_runs": 100,
-
-	"system_size": [256],
-	"partition_size": [1, 2, 3, 4, 5, 7, 10, 11, 13, 16, 18, 23, 26, 32, 39, 44, 50, 57, 65, 73, 84, 95, 109, 125, 143],
 	"gate_width": 2,
+	"num_runs": 60,
+
+	"system_size": [1024],
 	"mzr_prob": 0.16,
 
-	"temporal_avg": false,
-	"sampling_timesteps": 1000,
-	"measurement_freq": 2,
+	"temporal_avg": true,
+	"equilibration_timesteps": 2000,
+	"sampling_timesteps": 2000,
+	"measurement_freq": 5,
+	"sample_all_partition_sizes": true,
 	
 	"spacing": 5,
 
-	"filename": "random_clifford_256.json"
+	"filename": "random_clifford_1024.json"
 }

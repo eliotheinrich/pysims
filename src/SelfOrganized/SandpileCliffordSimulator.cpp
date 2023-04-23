@@ -2,7 +2,14 @@
 #include <cmath>
 #include <numeric>
 
-static BoundaryCondition parse_boundary_condition(std::string s) {
+#define DEFAULT_BOUNDARY_CONDITIONS "pbc"
+#define DEFAULT_FEEDBACK_MODE 22
+#define DEFAULT_RANDOM_SITES true
+
+#define DEFAULT_SAMPLE_TRANSITION_MATRIX false
+
+
+static inline BoundaryCondition parse_boundary_condition(std::string s) {
 	if (s == "pbc") return BoundaryCondition::Periodic;
 	else if (s == "obc1") return BoundaryCondition::Open1;
 	else if (s == "obc2") return BoundaryCondition::Open2;
@@ -13,7 +20,7 @@ static BoundaryCondition parse_boundary_condition(std::string s) {
 }
 
 
-SandpileCliffordSimulator::SandpileCliffordSimulator(Params &params) : Simulator(params) {
+SandpileCliffordSimulator::SandpileCliffordSimulator(Params &params) : EntropySimulator(params) {
 	mzr_prob = params.get<float>("mzr_prob");
 	unitary_prob = params.get<float>("unitary_prob");
 
@@ -23,6 +30,11 @@ SandpileCliffordSimulator::SandpileCliffordSimulator(Params &params) : Simulator
 	random_sites = params.get<int>("random_sites", DEFAULT_RANDOM_SITES);
 
 	system_size = params.get<int>("system_size");
+
+	sample_transition_matrix = params.get<int>("sample_transition_matrix", DEFAULT_SAMPLE_TRANSITION_MATRIX);
+	transition_matrix_unitary = std::vector<std::vector<uint>>(6, std::vector<uint>(6, 0));
+	transition_matrix_mzr = std::vector<std::vector<uint>>(6, std::vector<uint>(6, 0));
+	start_sampling = false;
 
 	if (feedback_mode == 0)       feedback_strategy = std::vector<uint>{1};
 	else if (feedback_mode == 1)  feedback_strategy = std::vector<uint>{1, 2};
@@ -59,28 +71,26 @@ SandpileCliffordSimulator::SandpileCliffordSimulator(Params &params) : Simulator
 
 void SandpileCliffordSimulator::mzr(uint i) {
 	if (state->randf() < mzr_prob) {
+		performed_mzr = true;
+
 		state->mzr(i);
 	}
 }
 
 void SandpileCliffordSimulator::unitary(uint i) {
 	if (state->randf() < unitary_prob) {
-		std::vector<uint> qubits{i, i + 1};
+		performed_unitary = true;
+
+		uint q = i - direction;
+		std::vector<uint> qubits{q, q + 1};
 		state->random_clifford(qubits);
 	}
 }
 
-int SandpileCliffordSimulator::cum_entropy(uint i) const {
-	std::vector<uint> qubits(i+1);
-	std::iota(qubits.begin(), qubits.end(), 0);
-
-	return std::round(state->entropy(qubits));
-}
-
 void SandpileCliffordSimulator::timesteps(uint num_steps) {
-	for (uint k = 0; k < num_steps; k++) {
+	LOG("Calling SandpileCliffordSimulator::timesteps(" << num_steps << ")\n");
+	for (uint k = 0; k < num_steps; k++)
 		timestep();
-	}
 }
 
 void SandpileCliffordSimulator::left_boundary() {
@@ -119,53 +129,115 @@ void SandpileCliffordSimulator::right_boundary() {
 	}
 }
 
+uint SandpileCliffordSimulator::sp_cum_entropy_left(uint i) const {
+	std::vector<uint> sites(i + 1);
+	std::iota(sites.begin(), sites.end(), 0);
+LOG("Left interval at " << i << ": " << print_vector(sites) << std::endl);
+	return std::round(entropy(sites));
+}
 
-void SandpileCliffordSimulator::feedback(int ds1, int ds2, uint q) {
-	uint shape;
-	if      ((ds1 == 0) && (ds2 == 0))   shape = 1;
-	else if ((ds1 == -1) && (ds2 == -1)) shape = 2;
-	else if ((ds1 == 1) && (ds2 == 1))   shape = 3;
-	else if ((ds1 == 0) && (ds2 == 1))   shape = 4;
-	else if ((ds1 == 1) && (ds2 == 0))   shape = 4;
-	else if ((ds1 == 0) && (ds2 == -1))  shape = 5;
-	else if ((ds1 == -1) && (ds2 == 0))  shape = 5;
-	else if ((ds1 == -1) && (ds2 == 1))  shape = 6;
-	else if ((ds1 == 1) && (ds2 == -1))  shape = 6;
+uint SandpileCliffordSimulator::sp_cum_entropy_right(uint i) const {
+	std::vector<uint> sites(system_size - i);
+	std::iota(sites.begin(), sites.end(), i);
+LOG("Right interval at " << i << ": " << print_vector(sites) << std::endl);
+	return std::round(entropy(sites));
+}
+
+uint SandpileCliffordSimulator::sp_cum_entropy(uint i) const {
+	return direction ? sp_cum_entropy_right(i) : sp_cum_entropy_left(i);
+}
+
+uint SandpileCliffordSimulator::get_shape(uint s0, uint s1, uint s2) const {
+	int ds1 = s0 - s1;
+	int ds2 = s2 - s1;
+
+	if      ((ds1 == 0)  && (ds2 == 0))   return 1;
+	else if ((ds1 == -1) && (ds2 == -1))  return 2;
+	else if ((ds1 == 1)  && (ds2 == 1))   return 3;
+	else if ((ds1 == 0)  && (ds2 == 1))   return 4;
+	else if ((ds1 == 1)  && (ds2 == 0))   return 4;
+	else if ((ds1 == 0)  && (ds2 == -1))  return 5;
+	else if ((ds1 == -1) && (ds2 == 0))   return 5;
+	else if ((ds1 == -1) && (ds2 == 1))   return 6;
+	else if ((ds1 == 1)  && (ds2 == -1))  return 6;
 	else { std::cout << "Something has gone wrong.\n"; assert(false); }
 
+	return -1;
+}
 
-	if (std::count(feedback_strategy.begin(), feedback_strategy.end(), shape)) unitary(q);
-	else mzr(q);
+void SandpileCliffordSimulator::feedback(uint q) {
+	uint q0 = mod(q - 1, system_size);
+	uint q2 = mod(q + 1, system_size);
+
+	int s0 = sp_cum_entropy(q0);
+	int s1 = sp_cum_entropy(q);
+	int s2 = sp_cum_entropy(q2);
+
+	uint shape = get_shape(s0, s1, s2);
+
+	performed_mzr = false;
+	performed_unitary = false;
+	if (std::count(feedback_strategy.begin(), feedback_strategy.end(), shape)) 
+		unitary(q);
+	else 
+		mzr(q);
+
+	if (sample_transition_matrix && start_sampling) {
+		if (performed_unitary || performed_mzr) {
+			uint shape_after = get_shape(
+				sp_cum_entropy(q0),
+				sp_cum_entropy(q), 
+				sp_cum_entropy(q2)
+			);
+
+			if (performed_unitary)
+				transition_matrix_unitary[shape-1][shape_after-1]++;
+			else if (performed_mzr)
+				transition_matrix_mzr[shape-1][shape_after-1]++;
+		}
+	}
 }
 
 void SandpileCliffordSimulator::timestep() {
 	left_boundary();
 
+	direction = 0;
 	for (uint i = 1; i < system_size-1; i++) {
-		uint q1;
-		if (random_sites) q1 = state->rand() % (system_size - 2) + 1;
-		else q1 = i;
-		uint q0 = mod(q1 - 1, system_size);
-		uint q2 = mod(q1 + 1, system_size);
+		uint q = random_sites ? state->rand() % (system_size - 2) + 1 : i;
+		feedback(q);
+	}
 
-		int s0 = cum_entropy(q0);
-		int s1 = cum_entropy(q1);
-		int s2 = cum_entropy(q2);
-
-		int ds1 = s0 - s1;
-		int ds2 = s2 - s1;
-
-		feedback(ds1, ds2, q1);
+	
+	direction = 1;
+	for (uint i = system_size-2; i > 0; i--) {
+		uint q = random_sites ? state->rand() % (system_size - 2) + 1 : i;
+		feedback(q);
 	}
 
 	right_boundary();
+
+	direction = 0;
+}
+
+void SandpileCliffordSimulator::add_transition_matrix_samples(std::map<std::string, Sample> &samples) {
+	for (uint i = 0; i < 6; i++) {
+		for (uint j = 0; j < 6; j++) {
+			samples.emplace("transition_mzr_" + std::to_string(i) + "_" + std::to_string(j), transition_matrix_mzr[i][j]);
+			samples.emplace("transition_unitary_" + std::to_string(i) + "_" + std::to_string(j), transition_matrix_unitary[i][j]);
+		}
+	}
+
+	transition_matrix_unitary = std::vector<std::vector<uint>>(6, std::vector<uint>(6, 0));
+	transition_matrix_mzr = std::vector<std::vector<uint>>(6, std::vector<uint>(6, 0));
 }
 
 std::map<std::string, Sample> SandpileCliffordSimulator::take_samples() {
-	std::map<std::string, Sample> samples;
-	for (uint i = 0; i < system_size; i++) {
-		samples.emplace("entropy_" + std::to_string(i), cum_entropy(i));
-	}
+	std::map<std::string, Sample> samples = EntropySimulator::take_samples();
+	for (uint i = 0; i < system_size; i++)
+		samples.emplace("entropy_" + std::to_string(i), sp_cum_entropy(i));
+	
+	if (sample_transition_matrix)
+		add_transition_matrix_samples(samples);
 
 	return samples;
 }

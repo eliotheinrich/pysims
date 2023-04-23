@@ -5,8 +5,6 @@
 #include <DataFrame.hpp>
 #include <random>
 
-#define DEFAULT_RANDOM_SITE_SELECTION false
-
 class BlockSimulator : public Simulator {
     private:
         uint system_size;
@@ -16,14 +14,23 @@ class BlockSimulator : public Simulator {
 
         bool random_sites;
 
+        bool precut;
+
+        bool start_sampling;
         std::vector<uint> avalanche_sizes;
 
-        void unitary_timestep();
-        void projective_timestep();
-        int slope(uint i) const;
-        void avalanche(uint i);
+        uint feedback_mode;
+        std::vector<uint> feedback_strategy;
 
-        void unitary_stack(uint i);
+        bool sample_avalanche_sizes;
+
+        uint get_shape(uint i) const;
+
+        void avalanche(uint i);
+        void stack(uint i);
+        void record_size(uint s) {
+            if (start_sampling) avalanche_sizes[s]++;
+        }
 
     public:
         BlockSimulator(Params &params);
@@ -31,8 +38,15 @@ class BlockSimulator : public Simulator {
         virtual void init_state();
 
         virtual void timesteps(uint num_steps);
+        virtual void equilibration_timesteps(uint num_steps) {
+            start_sampling = false;
+            timesteps(num_steps);
+            start_sampling = true;
+        }
+
         std::string to_string() const;
 
+        void add_avalanche_samples(std::map<std::string, Sample> &samples);
         virtual std::map<std::string, Sample> take_samples();
 
         CLONE(Simulator, BlockSimulator)

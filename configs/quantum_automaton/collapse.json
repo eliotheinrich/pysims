@@ -1,0 +1,23 @@
+{
+	"description": "Trying to find data collapse for transverse exponent",
+	"circuit_type": "quantum_automaton",
+
+	"clifford_type": "chp",
+	"num_runs": 25,
+
+	"zparams": [{"system_size": 128, "partition_size": 32},
+				{"system_size": 256, "partition_size": 64},
+				{"system_size": 512, "partition_size": 128},
+				{"system_size": 1024, "partition_size": 256}],
+	"mzr_prob": [0.110, 0.113, 0.116, 0.119, 0.122, 0.125, 0.128, 0.131, 0.134, 0.137, 0.138,
+				 0.141, 0.144, 0.147, 0.150, 0.153, 0.156, 0.159, 0.162, 0.165, 0.168, 0.171],
+
+	"temporal_avg": true,
+	"equilibration_timesteps": 4000,
+	"sampling_timesteps": 4000,
+	"measurement_freq": 5,
+	
+	"spacing": 5,
+
+	"filename": "qa_collapse.json"
+}

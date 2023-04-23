@@ -298,7 +298,6 @@ class CliffordState: public Entropy {
         }
 
         virtual bool mzr(uint a)=0;
-        virtual bool mzr_forced(uint a, bool outcome)=0;
 
         virtual bool mxr(uint a) {
             h_gate(a);

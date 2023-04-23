@@ -6,6 +6,9 @@ const uint QuantumGraphState::ZGATES[4] = {IDGATE, ZGATE, SGATE, SDGATE};
 
 const uint QuantumGraphState::CONJUGATION_TABLE[24] = {3, 6, 6, 3, 1, 1, 4, 4, 5, 2, 5, 2, 1, 1, 4, 4, 5, 2, 5, 2, 3, 6, 6, 3};
 
+// TODO check
+const uint QuantumGraphState::HERMITIAN_CONJUGATE_TABLE[24] = {0, 1, 2, 3, 8, 11, 9, 10, 4, 6, 7, 5, 12, 15, 14, 13, 17, 16, 18, 19, 23, 21, 22, 20};
+
 const uint QuantumGraphState::CLIFFORD_DECOMPS[24][5] =
    {{IDGATE,    IDGATE,    IDGATE,    IDGATE,    IDGATE   },
 	{SQRTXGATE, SQRTXGATE, IDGATE,    IDGATE,    IDGATE   },
@@ -376,22 +379,6 @@ void QuantumGraphState::cz_gate(uint a, uint b) {
 	if (lookup[0] != graph.contains_edge(a, b)) graph.toggle_edge(a, b);
 }
 
-bool QuantumGraphState::mzr_forced(uint a, bool outcome) {
-	uint basis = CONJUGATION_TABLE[graph.get_val(a)];
-	bool positive = basis > 3;
-
-	if ((basis == 1) || (basis == 4)) {
-		if (graph.degree(a) == 0) return (!positive == outcome);
-	}
-
-	if      ((basis == 1) || (basis == 4)) mxr_graph(a, outcome ^ positive);
-	else if ((basis == 2) || (basis == 5)) myr_graph(a, outcome ^ positive);
-	else if ((basis == 3) || (basis == 6)) mzr_graph(a, outcome ^ positive);
-
-	return true;	
-}
-
-
 bool QuantumGraphState::mzr(uint a) {
 	uint basis = CONJUGATION_TABLE[graph.get_val(a)];
 	bool positive = basis > 3;
@@ -405,6 +392,17 @@ bool QuantumGraphState::mzr(uint a) {
 	else if ((basis == 3) || (basis == 6)) mzr_graph(a, outcome);
 
 	return outcome ^ positive;
+}
+
+void QuantumGraphState::toggle_edge_gate(uint a, uint b) {
+	uint ca = graph.get_val(a);
+	uint cb = graph.get_val(b);
+	
+	apply_gatel(a, HERMITIAN_CONJUGATE_TABLE[ca]);
+	apply_gatel(b, HERMITIAN_CONJUGATE_TABLE[cb]);
+	cz_gate(a, b);
+	apply_gatel(a, ca);
+	apply_gatel(b, cb);
 }
 
 float QuantumGraphState::entropy(std::vector<uint> &qubits) const {

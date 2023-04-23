@@ -1,0 +1,24 @@
+{
+	"description": "Trying to find data collapse for transverse exponent",
+	"circuit_type": "random_clifford",
+
+	"clifford_type": "chp",
+	"gate_width": 2,
+	"num_runs": 25,
+
+	"zparams": [{"system_size": 128, "partition_size": 32},
+				{"system_size": 256, "partition_size": 64},
+				{"system_size": 512, "partition_size": 128},
+				{"system_size": 1024, "partition_size": 256}],
+	"mzr_prob": [0.140, 0.142, 0.144, 0.146, 0.148, 0.150, 0.152, 0.154, 0.156, 0.158, 0.16,
+				 0.162, 0.164, 0.166, 0.168, 0.170, 0.172, 0.174, 0.176, 0.178, 0.180, 0.182],
+
+	"temporal_avg": true,
+	"equilibration_timesteps": 4000,
+	"sampling_timesteps": 4000,
+	"measurement_freq": 5,
+	
+	"spacing": 5,
+
+	"filename": "rc_collapse.json"
+}

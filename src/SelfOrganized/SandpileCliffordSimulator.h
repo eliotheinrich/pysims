@@ -5,18 +5,13 @@
 #include "Entropy.hpp"
 #include "QuantumCHPState.h"
 
-#define DEFAULT_RANDOM_SITES true
-
 enum BoundaryCondition {
 	Periodic,
 	Open1,
 	Open2
 };
 
-#define DEFAULT_BOUNDARY_CONDITIONS "pbc"
-#define DEFAULT_FEEDBACK_MODE 22
-
-class SandpileCliffordSimulator : public Simulator {
+class SandpileCliffordSimulator : public EntropySimulator {
 	private:
 		std::unique_ptr<QuantumCHPState> state;
 
@@ -28,12 +23,19 @@ class SandpileCliffordSimulator : public Simulator {
 		bool random_sites;
 		BoundaryCondition boundary_condition;
 		uint feedback_mode;
+		
+		bool direction;
+		bool performed_unitary;
+		bool performed_mzr;
 
 		std::vector<uint> feedback_strategy;
 
-		int cum_entropy(uint i) const;
+		bool start_sampling;
+		bool sample_transition_matrix;
+		std::vector<std::vector<uint>> transition_matrix_unitary;
+		std::vector<std::vector<uint>> transition_matrix_mzr;
 
-		void feedback(int ds1, int ds2, uint q);
+		void feedback(uint q);
 
 		void left_boundary();
 		void right_boundary();
@@ -43,16 +45,30 @@ class SandpileCliffordSimulator : public Simulator {
 		
 		void timestep();
 
+		uint sp_cum_entropy_left(uint i) const;
+		uint sp_cum_entropy_right(uint i) const;
+		uint sp_cum_entropy(uint i) const;
+
+		uint get_shape(uint s0, uint s1, uint s2) const;
+
 	public:
 		SandpileCliffordSimulator(Params &params);
 
-		virtual void init_state() { 
+		virtual void init_state() override { 
 			state = std::unique_ptr<QuantumCHPState>(new QuantumCHPState(system_size)); 
 		}
 
-		virtual std::map<std::string, Sample> take_samples();
+		virtual float entropy(std::vector<uint> &qubits) const override { return state->entropy(qubits); }
 
-		virtual void timesteps(uint num_steps);
+		virtual void timesteps(uint num_steps) override;
+		virtual void equilibration_timesteps(uint num_steps) override {
+			start_sampling = false;
+			timesteps(num_steps);
+			start_sampling = true;
+		}
+
+		void add_transition_matrix_samples(std::map<std::string, Sample> &samples);
+		virtual std::map<std::string, Sample> take_samples() override;
 
 		CLONE(Simulator, SandpileCliffordSimulator)
 };

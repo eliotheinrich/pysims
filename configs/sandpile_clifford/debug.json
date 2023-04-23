@@ -1,0 +1,20 @@
+{
+	"description": "Debugging",
+	"circuit_type": "sandpile_clifford",
+	"num_runs": 1,
+
+	"random_sites": false,
+	"boundary_conditions": "obc1",
+	"feedback_mode": 22,
+
+	"system_size": 5,
+	"unitary_prob": 0.2,
+	"mzr_prob": 1.0,
+
+	"equilibration_timesteps": 1,
+	"temporal_avg": true,
+	"sampling_timesteps": 10,
+	"measurement_freq": 5,
+
+	"filename": "debug.json"
+}

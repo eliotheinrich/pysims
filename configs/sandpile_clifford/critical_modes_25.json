@@ -1,0 +1,42 @@
+{
+	"description": "Determining accurate exponents for critical modes 25 (consistent entropy)",
+	"circuit_type": "sandpile_clifford",
+	"num_runs": 100,
+
+	"random_sites": false,
+	"boundary_conditions": ["obc1", "obc2"],
+	"feedback_mode": 25,
+
+	"system_size": 128,
+	"zparams": [
+		{"unitary_prob": 0.82, "equilibration_timesteps": 300},
+		{"unitary_prob": 0.81, "equilibration_timesteps": 300},
+		{"unitary_prob": 0.80, "equilibration_timesteps": 300},
+		{"unitary_prob": 0.79, "equilibration_timesteps": 300},
+		{"unitary_prob": 0.78, "equilibration_timesteps": 300},
+		{"unitary_prob": 0.77, "equilibration_timesteps": 300},
+		{"unitary_prob": 0.76, "equilibration_timesteps": 300},
+		{"unitary_prob": 0.75, "equilibration_timesteps": 300},
+		{"unitary_prob": 0.74, "equilibration_timesteps": 300},
+		{"unitary_prob": 0.73, "equilibration_timesteps": 300},
+		{"unitary_prob": 0.72, "equilibration_timesteps": 300},
+		{"unitary_prob": 0.71, "equilibration_timesteps": 300},
+		{"unitary_prob": 0.70, "equilibration_timesteps": 300},
+		{"unitary_prob": 0.6, "equilibration_timesteps": 300},
+		{"unitary_prob": 0.5, "equilibration_timesteps": 300},
+		{"unitary_prob": 0.4, "equilibration_timesteps": 300},
+		{"unitary_prob": 0.3, "equilibration_timesteps": 300},
+		{"unitary_prob": 0.25, "equilibration_timesteps": 300},
+		{"unitary_prob": 0.20, "equilibration_timesteps": 400}
+	],
+
+	"mzr_prob": 1.0,
+
+	"temporal_avg": true,
+	"sampling_timesteps": 2000,
+	"measurement_freq": 5,
+
+	"sample_entropy": false,
+
+	"filename": "sandpile_critical_obc25.json"
+}
