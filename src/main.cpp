@@ -51,6 +51,9 @@ int main(int argc, char *argv[]) {
     std::ifstream f(filename);
     json data = json::parse(f);
     std::string circuit_type = data["circuit_type"];
+    bool record_error = false;
+    if (std::count(data.begin(), data.end(), "record_error"))
+        record_error = data["record_error"]
 
     std::cout << "Starting job\n";
 
@@ -82,6 +85,6 @@ int main(int argc, char *argv[]) {
 
     ParallelCompute pc(std::move(configs));
     DataFrame df = pc.compute(num_threads, true);
-    df.write_json(data_prefix + data_filename);
+    df.write_json(data_prefix + data_filename, record_error);
     std::cout << "Finishing job\n";
 } 

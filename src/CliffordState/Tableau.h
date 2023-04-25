@@ -27,6 +27,15 @@ class PauliString {
         void set_z(uint i, bool v) { bit_string[i + num_qubits] = v; }
         void set_r(bool v) { phase = v; }
 
+        void s_gate(uint a);
+        void sd_gate(uint a) {
+            s_gate(a);
+            s_gate(a);
+            s_gate(a);
+        }
+        void h_gate(uint a);
+        void cx_gate(uint a, uint b);
+
         bool commutes_at(PauliString &p, uint i) const;
         bool commutes(PauliString &p) const;
 
@@ -64,6 +73,11 @@ class Tableau {
 
         void h_gate(uint a);
         void s_gate(uint a);
+        void sd_gate(uint a) {
+            s_gate(a);
+            s_gate(a);
+            s_gate(a);
+        }
 
         void x_gate(uint a) {
             h_gate(a);

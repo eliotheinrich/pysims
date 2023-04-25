@@ -58,6 +58,37 @@ std::string PauliString::to_string(bool to_ops) const {
     }
 }
 
+void PauliString::s_gate(uint a) {
+    bool xa = x(a);
+    bool za = z(a);
+    bool r = phase;
+
+    set_r(r != (xa && za));
+    set_z(a, xa != za);
+}
+
+void PauliString::h_gate(uint a) {
+    bool xa = x(a);
+    bool za = z(a);
+    bool r = phase;
+
+    set_r(r != (xa && za));
+    set_x(a, za);
+    set_z(a, xa);
+}
+
+void PauliString::cx_gate(uint a, uint b) {
+    bool xa = x(a);
+    bool za = z(a);
+    bool xb = x(b);
+    bool zb = z(b);
+    bool r = phase;
+
+    set_r(r != ((xa && zb) && ((xb != za) != true)));
+    set_x(b, xa != xb);
+    set_z(a, za != zb);
+}
+
 bool PauliString::commutes_at(PauliString &p, uint i) const {
     if ((x(i) == p.x(i)) && (z(i) == p.z(i))) return true; // operators are identical
     else if (!x(i) && !z(i)) return true; // this is identity
@@ -149,40 +180,18 @@ void Tableau::rowsum(uint h, uint i) {
 }
 
 void Tableau::h_gate(uint a) {
-    for (uint i = 0; i < num_rows(); i++) {
-        bool xia = x(i, a);
-        bool zia = z(i, a);
-        bool ri = r(i);
-
-        set_r(i, ri != (xia && zia));
-        set_x(i, a, zia);
-        set_z(i, a, xia);
-    }
+    for (uint i = 0; i < num_rows(); i++)
+        rows[i].h_gate(a);
 }
 
 void Tableau::s_gate(uint a) {
-    for (uint i = 0; i < num_rows(); i++) {
-        bool xia = x(i, a);
-        bool zia = z(i, a);
-        bool ri = r(i);
-
-        set_r(i, ri != (xia && zia));
-        set_z(i, a, xia != zia);
-    }
+    for (uint i = 0; i < num_rows(); i++)
+        rows[i].s_gate(a);
 }
 
 void Tableau::cx_gate(uint a, uint b) {
-    for (uint i = 0; i < num_rows(); i++) {
-        bool xia = x(i, a);
-        bool zia = z(i, a);
-        bool xib = x(i, b);
-        bool zib = z(i, b);
-        bool ri = r(i);
-
-        set_r(i, ri != ((xia && zib) && ((xib != zia) != true)));
-        set_x(i, b, xia != xib);
-        set_z(i, a, zia != zib);
-    }
+    for (uint i = 0; i < num_rows(); i++)
+        rows[i].cx_gate(a, b);
 }
 
 // Returns a pair containing (1) wether the outcome of a measurement on qubit a is deterministic
