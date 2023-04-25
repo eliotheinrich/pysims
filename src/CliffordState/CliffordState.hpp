@@ -30,40 +30,44 @@ static void remove_even_indices(std::vector<T> &v) {
     }
 }
 
-struct s_gate { uint q; };
-struct sd_gate { uint q; }
-struct h_gate { uint q;};
-struct cx_gate {
+struct sgate { uint q; };
+struct sdgate { uint q; };
+struct hgate { uint q;};
+struct cxgate {
     uint q1;
     uint q2;
 };
 
 
-typedef std::variant<s_gate, sd_gate, h_gate, cx_gate> Gate;
+typedef std::variant<sgate, sdgate, hgate, cxgate> Gate;
 typedef std::vector<Gate> Circuit;
 
 template<class... Ts> struct overloaded : Ts... { using Ts::operator()...; };
-//template<class... Ts> overloaded(Ts...) -> overloaded<Ts...>;
+template<class... Ts> overloaded(Ts...) -> overloaded<Ts...>;
 
-Circuit conjugate_circuit(const Circuit &circuit) {
+static Circuit conjugate_circuit(const Circuit &circuit) {
     Circuit ncircuit;
     for (auto const &gate : circuit) {
         std::visit(overloaded{
-            [&ncircuit](s_gate s) { ncircuit.push_back(sd_gate{s.q}; )},
-            [&ncircuit](sd_gate s) { ncircuit.push_back(s_gate(s.q); )},
+            [&ncircuit](sgate s) { ncircuit.push_back(sdgate{s.q}); },
+            [&ncircuit](sdgate s) { ncircuit.push_back(sgate{s.q}); },
             [&ncircuit](auto s) { ncircuit.push_back(s); }
         }, gate);
     }
+
+    std::reverse(ncircuit.begin(), ncircuit.end());
+
+    return ncircuit;
 }
 
 template <class T>
-void apply_circuit(const Circuit &circuit, T &state) {
+static void apply_circuit(const Circuit &circuit, T &state) {
     for (auto const &gate : circuit) {
         std::visit(overloaded{
-                [state](s_gate s) {  state.s_gate(s.q); },
-                [state](sd_gate s) { state.sd_gate(s.q); },
-                [state](h_gate s) {  state.h_gate(s.q); },
-                [state](cx_gate s) { state.cx_gate(s.q1, s.q2); }
+                [&state](sgate s) {  state.s_gate(s.q); },
+                [&state](sdgate s) { state.sd_gate(s.q); },
+                [&state](hgate s) {  state.h_gate(s.q); },
+                [&state](cxgate s) { state.cx_gate(s.q1, s.q2); }
         }, gate);
     }
 }
@@ -83,17 +87,17 @@ class CliffordState: public Entropy {
 
             if (x) {
                 tableau.h_gate(0);
-                circuit.push_back(h_gate(qubits[0]));
+                circuit.push_back(hgate{0});
             }
 
             for (uint i = 0; i < num_qubits; i++) {
                 if (tableau.z(0, i)) {
                     if (tableau.x(0, i)) {
                         tableau.s_gate(i);
-                        circuit.push_back(s_gate(qubits[i]));
+                        circuit.push_back(sgate{i});
                     } else {
                         tableau.h_gate(i);
-                        circuit.push_back(h_gate(qubits[i]));
+                        circuit.push_back(hgate{i});
                     }
                 }
             }
@@ -110,7 +114,7 @@ class CliffordState: public Entropy {
                     uint q1 = nonzero_idx[2*j];
                     uint q2 = nonzero_idx[2*j+1];
                     tableau.cx_gate(q1, q2);
-                    circuit.push_back(cx_gate(qubits[q1], qubits[q2]));
+                    circuit.push_back(cxgate{q1, q2});
                 }
 
                 remove_even_indices(nonzero_idx);
@@ -125,9 +129,9 @@ class CliffordState: public Entropy {
                         tableau.cx_gate(ql, 0);
                         tableau.cx_gate(0, ql);
 
-                        circuit.push_back(cx_gate(qubits[0], qubits[ql]));
-                        circuit.push_back(cx_gate(qubits[ql], qubits[0]));
-                        circuit.push_back(cx_gate(qubits[0], qubits[ql]));
+                        circuit.push_back(cxgate{0, ql});
+                        circuit.push_back(cxgate{ql, 0});
+                        circuit.push_back(cxgate{0, ql});
 
                         break;
                     }
@@ -136,12 +140,17 @@ class CliffordState: public Entropy {
 
             if (tableau.r(0)) {
                 tableau.y_gate(0);
-                circuit.push_back(h_gate(qubits[0]));
+                circuit.push_back(sgate{0});
+                circuit.push_back(sgate{0});
+                circuit.push_back(hgate{0});
+                circuit.push_back(sgate{0});
+                circuit.push_back(sgate{0});
+                circuit.push_back(hgate{0});
             }
 
             if (x) {
                 tableau.h_gate(0);
-                circuit.push_back(h_gate(qubits[0]));
+                circuit.push_back(hgate{0});
             }
 
             return circuit;
@@ -252,9 +261,20 @@ class CliffordState: public Entropy {
                 p2 = PauliString::rand(num_qubits, &rng);
             }
 
-            Circuit c1 = reduce_to_x1(p1);
-            apply_circuit(c1, *this);
+            Circuit c1 = reduce(p1, true);
+
             apply_circuit(c1, p2);
+            auto qubit_visitor = overloaded{
+                [&qubits](sgate s) { s.q = qubits[s.q]; },
+                [&qubits](sdgate s) { s.q = qubits[s.q]; },
+                [&qubits](hgate s) { s.q = qubits[s.q]; },
+                [&qubits](cxgate s) { s.q1 = qubits[s.q1]; s.q2 = qubits[s.q2]; }
+            };
+
+            for (auto const &gate : c1)
+                std::visit(qubit_visitor, gate);
+
+            apply_circuit(c1, *this);
             
             PauliString z1_p(num_qubits);
             z1_p.set_z(0, true);
@@ -263,7 +283,10 @@ class CliffordState: public Entropy {
             z1_m.set_r(true);
 
             if (p2 != z1_p && p2 != z1_m) {
-                Circuit c2 = reduce_to_z1(p2);
+                Circuit c2 = reduce(p2, false);
+                for (auto const &gate : c2)
+                    std::visit(qubit_visitor, gate);
+
                 apply_circuit(c2, *this);
             }
 
@@ -395,6 +418,12 @@ class CliffordState: public Entropy {
 
         virtual void h_gate(uint a)=0;
         virtual void s_gate(uint a)=0;
+
+        virtual void sd_gate(uint a) {
+            s_gate(a);
+            s_gate(a);
+            s_gate(a);
+        }
 
         virtual void x_gate(uint a) {
             h_gate(a);

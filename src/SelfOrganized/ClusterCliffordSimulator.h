@@ -49,11 +49,11 @@ class ClusterCliffordSimulator : public EntropySimulator {
 	public:
 		ClusterCliffordSimulator(Params &params);
 
-		virtual void init_state();
+		virtual void init_state() override ;
 
-		virtual float entropy(std::vector<uint> &qubits) const { return state->entropy(qubits); }
-		virtual void timesteps(uint num_steps);
-		virtual std::map<std::string, Sample> take_samples();
+		virtual float entropy(std::vector<uint> &qubits) const override { return state->entropy(qubits); }
+		virtual void timesteps(uint num_steps) override;
+		virtual std::map<std::string, Sample> take_samples() override;
 
 		CLONE(Simulator, ClusterCliffordSimulator)
 };

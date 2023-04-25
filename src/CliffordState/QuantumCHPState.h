@@ -15,16 +15,16 @@ class QuantumCHPState : public CliffordState {
     public:
         QuantumCHPState(uint num_qubits, int seed=-1);
 
-        virtual std::string to_string() const;
-        virtual uint system_size() const { return num_qubits; }
+        virtual std::string to_string() const override;
+        virtual uint system_size() const override { return num_qubits; }
 
-        virtual void h_gate(uint a);
-        virtual void s_gate(uint a);
-        virtual void cx_gate(uint a, uint b);
-        virtual void cz_gate(uint a, uint b);
-        virtual bool mzr(uint a);
+        virtual void h_gate(uint a) override;
+        virtual void s_gate(uint a) override;
+        virtual void cx_gate(uint a, uint b) override;
+        virtual void cz_gate(uint a, uint b) override;
+        virtual bool mzr(uint a) override;
 
-        virtual float entropy(std::vector<uint> &qubits) const;
+        virtual float entropy(std::vector<uint> &qubits) const override;
 };
 
 #endif

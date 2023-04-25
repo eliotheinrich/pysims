@@ -35,10 +35,10 @@ class BlockSimulator : public Simulator {
     public:
         BlockSimulator(Params &params);
 
-        virtual void init_state();
+        virtual void init_state() override;
 
-        virtual void timesteps(uint num_steps);
-        virtual void equilibration_timesteps(uint num_steps) {
+        virtual void timesteps(uint num_steps) override;
+        virtual void equilibration_timesteps(uint num_steps) override {
             start_sampling = false;
             timesteps(num_steps);
             start_sampling = true;
@@ -47,7 +47,7 @@ class BlockSimulator : public Simulator {
         std::string to_string() const;
 
         void add_avalanche_samples(std::map<std::string, Sample> &samples);
-        virtual std::map<std::string, Sample> take_samples();
+        virtual std::map<std::string, Sample> take_samples() override;
 
         CLONE(Simulator, BlockSimulator)
 };

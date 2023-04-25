@@ -40,8 +40,8 @@ class PauliString {
         bool commutes(PauliString &p) const;
 
 
-		bool operator==(const PauliString &rhs);
-		bool operator!=(const PauliString &rhs) { return !(this->operator==(rhs)); }
+		bool operator==(const PauliString &rhs) const;
+		bool operator!=(const PauliString &rhs) const { return !(this->operator==(rhs)); }
 };
 
 class Tableau {

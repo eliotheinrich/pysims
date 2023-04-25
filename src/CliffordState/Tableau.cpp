@@ -106,7 +106,7 @@ bool PauliString::commutes(PauliString &p) const {
     return anticommuting_indices % 2 == 0;
 }
 
-bool PauliString::operator==(const PauliString &rhs) {
+bool PauliString::operator==(const PauliString &rhs) const {
 	if (num_qubits != rhs.num_qubits) return false;
 	if (r() != rhs.r()) return false;
 	

@@ -20,10 +20,10 @@ class MinCutSimulator : public EntropySimulator {
 
 		std::string to_string() const;
 
-		virtual void init_state();
+		virtual void init_state() override;
 
-		virtual void timesteps(uint num_steps);
-		virtual float entropy(std::vector<uint> &sites) const;
+		virtual void timesteps(uint num_steps) override;
+		virtual float entropy(std::vector<uint> &sites) const override;
 
 		CLONE(Simulator, MinCutSimulator)
 };

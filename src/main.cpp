@@ -6,7 +6,6 @@
 #include "MinCutSimulator.h"
 #include "BlockSimulator.h"
 #include "GraphCliffordSimulator.h"
-#include "DebugSimulator.hpp"
 
 #include <DataFrame.hpp>
 #include <nlohmann/json.hpp>
@@ -53,7 +52,7 @@ int main(int argc, char *argv[]) {
     std::string circuit_type = data["circuit_type"];
     bool record_error = false;
     if (std::count(data.begin(), data.end(), "record_error"))
-        record_error = data["record_error"]
+        record_error = data["record_error"];
 
     std::cout << "Starting job\n";
 

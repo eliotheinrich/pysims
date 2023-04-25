@@ -13,7 +13,7 @@ message("Build type: " ${CMAKE_BUILD_TYPE})
 
 set(CMAKE_DEBUG_POSTFIX "d")
 set(CMAKE_CXX_FLAGS_DEBUG "-g -pg -Wall -DDEBUG")
-set(CMAKE_CXX_FLAGS_RELEASE "-O3 -Wall")
+set(CMAKE_CXX_FLAGS_RELEASE "-O3 -Wall -Wno-ambiguous-reversed-operator")
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin)
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/lib)
 
@@ -30,7 +30,7 @@ add_library(simulator
 )
 target_include_directories(simulator PUBLIC ${DF_DEPENDENCIES})
 target_link_libraries(simulator -pthread)
-set_target_properties(simulator PROPERTIES LINKER_LANGUAGE CXX DEBUG_POSTFIX ${CMAKE_DEBUG_POSTFIX})
+set_target_properties(simulator PROPERTIES DEBUG_POSTFIX ${CMAKE_DEBUG_POSTFIX})
 
 set(CLIFFORD_DIR ${CMAKE_SOURCE_DIR}/src/CliffordState)
 set(QA_DIR ${CMAKE_SOURCE_DIR}/src/QuantumAutomaton)
@@ -42,8 +42,8 @@ set(SOC_DIR ${CMAKE_SOURCE_DIR}/src/SelfOrganized)
 set(GS_DIR ${CMAKE_SOURCE_DIR}/src/GraphSim)
 set(DEBUG_DIR ${CMAKE_SOURCE_DIR}/src/DebugSim)
 
-set(MODEL_DIRS ${CLIFFORD_DIR} ${QA_DIR} ${RC_DIR} ${FF_DIR} ${MC_DIR} ${BS_DIR} ${SOC_DIR} ${GS_DIR} ${DEBUG_DIR})
-set(SIMULATOR_LIBS quantum_automaton random_clifford mincut blocksim self_organized graphsim debugsim)
+set(MODEL_DIRS ${CLIFFORD_DIR} ${QA_DIR} ${RC_DIR} ${FF_DIR} ${MC_DIR} ${BS_DIR} ${SOC_DIR} ${GS_DIR})
+set(SIMULATOR_LIBS quantum_automaton random_clifford mincut blocksim self_organized graphsim)
 
 foreach(DIR IN LISTS MODEL_DIRS) 
     add_subdirectory(${DIR})

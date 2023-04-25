@@ -21,7 +21,7 @@ class FreeFermionSimulator : public EntropySimulator {
     public:
         FreeFermionSimulator(Params &params);
 
-        virtual void init_state();
+        virtual void init_state() override;
 
         int get_num_particles();
 
@@ -30,11 +30,11 @@ class FreeFermionSimulator : public EntropySimulator {
 
         void real_timestep();
         void imag_timestep();
-        virtual void timesteps(uint num_timesteps);
+        virtual void timesteps(uint num_timesteps) override;
 
         Eigen::MatrixXcd correlation_function() const;
 
-        virtual float entropy(std::vector<uint> &sites) const;
+        virtual float entropy(std::vector<uint> &sites) const override;
 
         CLONE(Simulator, FreeFermionSimulator)
 };

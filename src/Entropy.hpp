@@ -285,7 +285,7 @@ class EntropySimulator : public Simulator, public Entropy {
                 samples.emplace("entropy_" + std::to_string(i), spatially_averaged_entropy(system_size, i, spacing));
         }
 
-        virtual std::map<std::string, Sample> take_samples() {
+        virtual std::map<std::string, Sample> take_samples() override {
             std::map<std::string, Sample> samples;
 
             if (sample_entropy)
