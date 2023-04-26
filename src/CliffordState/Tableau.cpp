@@ -120,7 +120,7 @@ bool PauliString::operator==(const PauliString &rhs) const {
 
 Tableau::Tableau(uint num_qubits) : num_qubits(num_qubits), 
                                     track_destabilizers(true),
-                                    print_ops(false) {
+                                    print_ops(true) {
     rows = std::vector<PauliString>(2*num_qubits + 1, PauliString(num_qubits));
     for (uint i = 0; i < num_qubits; i++) {
         rows[i].set_x(i, true);
@@ -130,7 +130,7 @@ Tableau::Tableau(uint num_qubits) : num_qubits(num_qubits),
 
 Tableau::Tableau(uint num_qubits, std::vector<PauliString> rows) : num_qubits(num_qubits),
                                                                    track_destabilizers(false),
-                                                                   print_ops(false),
+                                                                   print_ops(true),
                                                                    rows(rows) {}
 
 std::string Tableau::to_string() const {

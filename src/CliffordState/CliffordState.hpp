@@ -77,15 +77,15 @@ class CliffordState: public Entropy {
     private:
         std::minstd_rand rng;
 
-        // Returns the circuit which maps a PauliString to X1 if x, otherwise to Z1
-        static Circuit reduce(const PauliString &p, bool x = true) {
+        // Returns the circuit which maps a PauliString to Z1 if z, otherwise to X1
+        static Circuit reduce(const PauliString &p, bool z = true) {
             uint num_qubits = p.num_qubits;
 
             Tableau tableau = Tableau(num_qubits, std::vector<PauliString>{p});
 
             Circuit circuit;
 
-            if (x) {
+            if (z) {
                 tableau.h_gate(0);
                 circuit.push_back(hgate{0});
             }
@@ -148,7 +148,7 @@ class CliffordState: public Entropy {
                 circuit.push_back(hgate{0});
             }
 
-            if (x) {
+            if (z) {
                 tableau.h_gate(0);
                 circuit.push_back(hgate{0});
             }
@@ -157,6 +157,7 @@ class CliffordState: public Entropy {
         }
 
         void single_qubit_random_clifford(uint a, uint r) {
+            // r == 0 is identity, so do nothing in thise case
             if (r == 1) {
                 x_gate(a);
             } else if (r == 2) {
@@ -265,14 +266,14 @@ class CliffordState: public Entropy {
 
             apply_circuit(c1, p2);
             auto qubit_visitor = overloaded{
-                [&qubits](sgate s) { s.q = qubits[s.q]; },
-                [&qubits](sdgate s) { s.q = qubits[s.q]; },
-                [&qubits](hgate s) { s.q = qubits[s.q]; },
-                [&qubits](cxgate s) { s.q1 = qubits[s.q1]; s.q2 = qubits[s.q2]; }
+                [&qubits](sgate s) -> Gate { return sgate{qubits[s.q]}; },
+                [&qubits](sdgate s) -> Gate { return sdgate{qubits[s.q]}; },
+                [&qubits](hgate s) -> Gate { return hgate{qubits[s.q]}; },
+                [&qubits](cxgate s) -> Gate { return cxgate{qubits[s.q1], qubits[s.q2]}; }
             };
 
-            for (auto const &gate : c1)
-                std::visit(qubit_visitor, gate);
+            for (auto &gate : c1)
+                gate = std::visit(qubit_visitor, gate);
 
             apply_circuit(c1, *this);
             
@@ -284,8 +285,8 @@ class CliffordState: public Entropy {
 
             if (p2 != z1_p && p2 != z1_m) {
                 Circuit c2 = reduce(p2, false);
-                for (auto const &gate : c2)
-                    std::visit(qubit_visitor, gate);
+                for (auto &gate : c2)
+                    gate = std::visit(qubit_visitor, gate);
 
                 apply_circuit(c2, *this);
             }

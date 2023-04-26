@@ -3,10 +3,10 @@
 	"circuit_type": "quantum_automaton",
 
 	"clifford_type": "chp",
-	"num_runs": 60,
+	"num_runs": 6,
 
 
-	"system_size": [1024],
+	"system_size": [32],
 	"mzr_prob": 0.138,
 
 	"temporal_avg": true,

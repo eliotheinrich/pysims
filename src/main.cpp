@@ -51,7 +51,7 @@ int main(int argc, char *argv[]) {
     json data = json::parse(f);
     std::string circuit_type = data["circuit_type"];
     bool record_error = false;
-    if (std::count(data.begin(), data.end(), "record_error"))
+    if (data.contains("record_error"))
         record_error = data["record_error"];
 
     std::cout << "Starting job\n";
