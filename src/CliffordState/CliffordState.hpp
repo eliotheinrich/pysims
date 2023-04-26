@@ -20,142 +20,11 @@ static inline CliffordType parse_clifford_type(std::string s) {
     }
 }
 
-
-template <typename T>
-static void remove_even_indices(std::vector<T> &v) {
-    uint vlen = v.size();
-    for (uint i = 0; i < vlen; i++) {
-        uint j = vlen - i - 1;
-        if ((j % 2)) v.erase(v.begin() + j);
-    }
-}
-
-struct sgate { uint q; };
-struct sdgate { uint q; };
-struct hgate { uint q;};
-struct cxgate {
-    uint q1;
-    uint q2;
-};
-
-
-typedef std::variant<sgate, sdgate, hgate, cxgate> Gate;
-typedef std::vector<Gate> Circuit;
-
-template<class... Ts> struct overloaded : Ts... { using Ts::operator()...; };
-template<class... Ts> overloaded(Ts...) -> overloaded<Ts...>;
-
-static Circuit conjugate_circuit(const Circuit &circuit) {
-    Circuit ncircuit;
-    for (auto const &gate : circuit) {
-        std::visit(overloaded{
-            [&ncircuit](sgate s) { ncircuit.push_back(sdgate{s.q}); },
-            [&ncircuit](sdgate s) { ncircuit.push_back(sgate{s.q}); },
-            [&ncircuit](auto s) { ncircuit.push_back(s); }
-        }, gate);
-    }
-
-    std::reverse(ncircuit.begin(), ncircuit.end());
-
-    return ncircuit;
-}
-
-template <class T>
-static void apply_circuit(const Circuit &circuit, T &state) {
-    for (auto const &gate : circuit) {
-        std::visit(overloaded{
-                [&state](sgate s) {  state.s_gate(s.q); },
-                [&state](sdgate s) { state.sd_gate(s.q); },
-                [&state](hgate s) {  state.h_gate(s.q); },
-                [&state](cxgate s) { state.cx_gate(s.q1, s.q2); }
-        }, gate);
-    }
-}
-
-
 class CliffordState: public Entropy {
     private:
         std::minstd_rand rng;
 
         // Returns the circuit which maps a PauliString to Z1 if z, otherwise to X1
-        static Circuit reduce(const PauliString &p, bool z = true) {
-            uint num_qubits = p.num_qubits;
-
-            Tableau tableau = Tableau(num_qubits, std::vector<PauliString>{p});
-
-            Circuit circuit;
-
-            if (z) {
-                tableau.h_gate(0);
-                circuit.push_back(hgate{0});
-            }
-
-            for (uint i = 0; i < num_qubits; i++) {
-                if (tableau.z(0, i)) {
-                    if (tableau.x(0, i)) {
-                        tableau.s_gate(i);
-                        circuit.push_back(sgate{i});
-                    } else {
-                        tableau.h_gate(i);
-                        circuit.push_back(hgate{i});
-                    }
-                }
-            }
-
-            // Step two
-            std::vector<uint> nonzero_idx;
-            for (uint i = 0; i < num_qubits; i++) {
-                if (tableau.x(0, i)) {
-                    nonzero_idx.push_back(i);
-                }
-            }
-            while (nonzero_idx.size() > 1) {
-                for (uint j = 0; j < nonzero_idx.size()/2; j++) {
-                    uint q1 = nonzero_idx[2*j];
-                    uint q2 = nonzero_idx[2*j+1];
-                    tableau.cx_gate(q1, q2);
-                    circuit.push_back(cxgate{q1, q2});
-                }
-
-                remove_even_indices(nonzero_idx);
-            }
-
-            // Step three
-            uint ql = nonzero_idx[0];
-            if (ql != 0) {
-                for (uint i = 0; i < num_qubits; i++) {
-                    if (tableau.x(0, i)) {
-                        tableau.cx_gate(0, ql);
-                        tableau.cx_gate(ql, 0);
-                        tableau.cx_gate(0, ql);
-
-                        circuit.push_back(cxgate{0, ql});
-                        circuit.push_back(cxgate{ql, 0});
-                        circuit.push_back(cxgate{0, ql});
-
-                        break;
-                    }
-                }
-            }
-
-            if (tableau.r(0)) {
-                tableau.y_gate(0);
-                circuit.push_back(sgate{0});
-                circuit.push_back(sgate{0});
-                circuit.push_back(hgate{0});
-                circuit.push_back(sgate{0});
-                circuit.push_back(sgate{0});
-                circuit.push_back(hgate{0});
-            }
-
-            if (z) {
-                tableau.h_gate(0);
-                circuit.push_back(hgate{0});
-            }
-
-            return circuit;
-        }
-
         void single_qubit_random_clifford(uint a, uint r) {
             // r == 0 is identity, so do nothing in thise case
             if (r == 1) {
@@ -262,7 +131,7 @@ class CliffordState: public Entropy {
                 p2 = PauliString::rand(num_qubits, &rng);
             }
 
-            Circuit c1 = reduce(p1, true);
+            Circuit c1 = p1.reduce(true);
 
             apply_circuit(c1, p2);
             auto qubit_visitor = overloaded{
@@ -284,119 +153,12 @@ class CliffordState: public Entropy {
             z1_m.set_r(true);
 
             if (p2 != z1_p && p2 != z1_m) {
-                Circuit c2 = reduce(p2, false);
+                Circuit c2 = p2.reduce(false);
                 for (auto &gate : c2)
                     gate = std::visit(qubit_visitor, gate);
 
                 apply_circuit(c2, *this);
             }
-
-//            Tableau tableau = Tableau(num_qubits, std::vector<PauliString>{p1, p2});
-//
-//            // Step one
-//            for (uint i = 0; i < num_qubits; i++) {
-//                if (tableau.z(0, i)) {
-//                    if (tableau.x(0, i)) {
-//                        tableau.s_gate(i);
-//                        s_gate(qubits[i]);
-//                    } else {
-//                        tableau.h_gate(i);
-//                        h_gate(qubits[i]);
-//                    }
-//                }
-//            }
-//
-//            // Step two
-//            std::vector<uint> nonzero_idx;
-//            for (uint i = 0; i < num_qubits; i++) {
-//                if (tableau.x(0, i)) {
-//                    nonzero_idx.push_back(i);
-//                }
-//            }
-//            while (nonzero_idx.size() > 1) {
-//                for (uint j = 0; j < nonzero_idx.size()/2; j++) {
-//                    uint q1 = nonzero_idx[2*j];
-//                    uint q2 = nonzero_idx[2*j+1];
-//                    tableau.cx_gate(q1, q2);
-//                    cx_gate(qubits[q1], qubits[q2]);
-//                }
-//
-//                remove_even_indices(nonzero_idx);
-//            }
-//
-//            // Step three
-//            uint ql = nonzero_idx[0];
-//            if (ql != 0) {
-//                for (uint i = 0; i < num_qubits; i++) {
-//                    if (tableau.x(0, i)) {
-//                        tableau.cx_gate(0, ql);
-//                        tableau.cx_gate(ql, 0);
-//                        tableau.cx_gate(0, ql);
-//
-//                        cx_gate(qubits[0], qubits[ql]);
-//                        cx_gate(qubits[ql], qubits[0]);
-//                        cx_gate(qubits[0], qubits[ql]);
-//
-//                        break;
-//                    }
-//                }
-//            }
-//
-//            // Step four
-//            PauliString z1_p(num_qubits);
-//            z1_p.set_z(0, true);
-//            PauliString z1_m(num_qubits);
-//            z1_m.set_z(0, true);
-//            z1_m.set_r(true);
-//
-//            if (tableau.rows[1] != z1_p && tableau.rows[1] != z1_m) {
-//                tableau.h_gate(0);
-//                h_gate(qubits[0]);
-//
-//                // Repeat step one
-//                for (uint i = 0; i < num_qubits; i++) {
-//                    if (tableau.z(1, i)) {
-//                        if (tableau.x(1, i)) {
-//                            tableau.s_gate(i);
-//                            s_gate(qubits[i]);
-//                        } else {
-//                            tableau.h_gate(i);
-//                            h_gate(qubits[i]);
-//                        }
-//                    }
-//                }
-//
-//                // ... and step two
-//                nonzero_idx.clear();
-//                for (uint i = 0; i < num_qubits; i++) {
-//                    if (tableau.x(1, i)) {
-//                        nonzero_idx.push_back(i);
-//                    }
-//                }
-//
-//                while (nonzero_idx.size() > 1) {
-//                    for (uint j = 0; j < nonzero_idx.size()/2; j++) {
-//                        uint q1 = nonzero_idx[2*j];
-//                        uint q2 = nonzero_idx[2*j+1];
-//                        tableau.cx_gate(q1, q2);
-//                        cx_gate(qubits[q1], qubits[q2]);
-//                    }
-//
-//                    remove_even_indices(nonzero_idx);
-//                }
-//
-//                tableau.h_gate(0);
-//                h_gate(qubits[0]);
-//            }
-//
-//            // Step five: correct phase
-//            if (tableau.r(0) && tableau.r(1)) {
-//                y_gate(qubits[0]);
-//            } else if (!tableau.r(0) && tableau.r(1)) {
-//                x_gate(qubits[0]);
-//            } else {
-//                z_gate(qubits[0]);
-//            }
         }
 
     public:

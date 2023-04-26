@@ -1,47 +1,17 @@
-#include "MinCutSimulator.h"
-#include "DataFrame.hpp"
-#include "QuantumGraphState.h"
-#include "Graph.h"
 #include <iostream>
-#include <assert.h>
-#include <DataFrame.hpp>
-#include <ctpl.h>
+#include <BS_thread_pool.hpp>
 
-bool test_graph_entropy() {
-    uint system_size = 14;
-    QuantumGraphState state(system_size);
-    for (uint i = 0; i < system_size; i++) {
-//        state.graph.add_edge(i, system_size - i - 1);
-//        state.graph.add_edge(i, (i + 1) % system_size);
-        state.h_gate(i);
-    }
 
-    state.cz_gate(2, 9);
-    state.cz_gate(3, 10);
-
-    state.cz_gate(3, 9);
-    state.cz_gate(2, 10);
-
-//    state.cz_gate(2, 7);
-
-    std::cout << state.to_string() << std::endl;
-
-    std::vector<uint> qubits(0);
-    std::cout << state.entropy(qubits) << " ";
-    for (uint i = 0; i < system_size; i++) {
-        qubits.push_back(i);
-        std::cout << state.entropy(qubits) << " ";
-    } std::cout << std::endl;
-
-    return true;
-}
-
+uint test(std::unique_ptr<int> i) { return 2*(*i); }
 
 int main() {
-    test_graph_entropy();
+    BS::thread_pool pool(3);
+    std::vector<std::future<uint>> results(3);
+
+    for (uint i = 0; i < 3; i++) {
+        std::unique_ptr<int> k = std::make_unique<int>(i);
+        results[i] = pool.submit(test, std::move(k));
+        std::cout << results[i].get() << std::endl;
+    }
+
 }
-
-
-
-
-

@@ -106,6 +106,92 @@ bool PauliString::commutes(PauliString &p) const {
     return anticommuting_indices % 2 == 0;
 }
 
+Circuit PauliString::reduce(bool z = true) const {
+    Tableau tableau = Tableau(num_qubits, std::vector<PauliString>{*this});
+
+    Circuit circuit;
+
+    if (z) {
+        tableau.h_gate(0);
+        circuit.push_back(hgate{0});
+    }
+
+    for (uint i = 0; i < num_qubits; i++) {
+        if (tableau.z(0, i)) {
+            if (tableau.x(0, i)) {
+                tableau.s_gate(i);
+                circuit.push_back(sgate{i});
+            } else {
+                tableau.h_gate(i);
+                circuit.push_back(hgate{i});
+            }
+        }
+    }
+
+    // Step two
+    std::vector<uint> nonzero_idx;
+    for (uint i = 0; i < num_qubits; i++) {
+        if (tableau.x(0, i)) {
+            nonzero_idx.push_back(i);
+        }
+    }
+    while (nonzero_idx.size() > 1) {
+        for (uint j = 0; j < nonzero_idx.size()/2; j++) {
+            uint q1 = nonzero_idx[2*j];
+            uint q2 = nonzero_idx[2*j+1];
+            tableau.cx_gate(q1, q2);
+            circuit.push_back(cxgate{q1, q2});
+        }
+
+        remove_even_indices(nonzero_idx);
+    }
+
+    // Step three
+    uint ql = nonzero_idx[0];
+    if (ql != 0) {
+        for (uint i = 0; i < num_qubits; i++) {
+            if (tableau.x(0, i)) {
+                tableau.cx_gate(0, ql);
+                tableau.cx_gate(ql, 0);
+                tableau.cx_gate(0, ql);
+
+                circuit.push_back(cxgate{0, ql});
+                circuit.push_back(cxgate{ql, 0});
+                circuit.push_back(cxgate{0, ql});
+
+                break;
+            }
+        }
+    }
+
+    if (tableau.r(0)) {
+        tableau.y_gate(0);
+        circuit.push_back(sgate{0});
+        circuit.push_back(sgate{0});
+        circuit.push_back(hgate{0});
+        circuit.push_back(sgate{0});
+        circuit.push_back(sgate{0});
+        circuit.push_back(hgate{0});
+    }
+
+    if (z) {
+        tableau.h_gate(0);
+        circuit.push_back(hgate{0});
+    }
+
+    return circuit;
+}
+
+Circuit PauliString::transform(PauliString const &p) const {
+    Circuit c1 = reduce();
+    Circuit c2 = conjugate_circuit(p.reduce());
+
+    c1.insert(c1.end(), c2.begin(), c2.end());
+
+    return c1;
+}
+
+
 bool PauliString::operator==(const PauliString &rhs) const {
 	if (num_qubits != rhs.num_qubits) return false;
 	if (r() != rhs.r()) return false;
