@@ -19,6 +19,25 @@ PauliString PauliString::rand(uint num_qubits, std::minstd_rand *r) {
     return PauliString::rand(num_qubits, r);
 }
 
+PauliString PauliString::basis(uint num_qubits, std::string P, uint q, bool r) {
+    PauliString p(num_qubits);
+    if (P == "X") {
+        p.set_x(q, true);
+    } else if (P == "Y") {
+        p.set_x(q, true);
+        p.set_z(q, true);
+    } else if (P == "Z") {
+        p.set_z(q, true);
+    } else {
+        std::cout << P << " is not a valid basis. Must provide one of X,Y,Z.\n";
+        assert(false);
+    }
+
+    p.set_r(r);
+
+    return p;
+}
+
 PauliString PauliString::copy() {
 	PauliString p(num_qubits);
 	std::copy(bit_string.begin(), bit_string.end(), p.bit_string.begin());

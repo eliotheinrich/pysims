@@ -21,7 +21,7 @@ typedef std::vector<Gate> Circuit;
 template<class... Ts> struct overloaded : Ts... { using Ts::operator()...; };
 template<class... Ts> overloaded(Ts...) -> overloaded<Ts...>;
 
-Circuit conjugate_circuit(const Circuit &circuit) {
+static Circuit conjugate_circuit(const Circuit &circuit) {
     Circuit ncircuit;
     for (auto const &gate : circuit) {
         std::visit(overloaded{
@@ -37,7 +37,7 @@ Circuit conjugate_circuit(const Circuit &circuit) {
 }
 
 template <class T>
-void apply_circuit(const Circuit &circuit, T &state) {
+static void apply_circuit(const Circuit &circuit, T &state) {
     for (auto const &gate : circuit) {
         std::visit(overloaded{
                 [&state](sgate s) {  state.s_gate(s.q); },
@@ -49,7 +49,7 @@ void apply_circuit(const Circuit &circuit, T &state) {
 }
 
 template <typename T>
-void remove_even_indices(std::vector<T> &v) {
+static void remove_even_indices(std::vector<T> &v) {
     uint vlen = v.size();
     for (uint i = 0; i < vlen; i++) {
         uint j = vlen - i - 1;
@@ -67,6 +67,10 @@ class PauliString {
         PauliString(uint num_qubits);
 
         static PauliString rand(uint num_qubits, std::minstd_rand *r);
+        static PauliString basis(uint num_qubits, std::string P, uint q, bool r);
+        static PauliString basis(uint num_qubits, std::string P, uint q) {
+            return PauliString::basis(num_qubits, P, q, false);
+        }
 		PauliString copy();
 
         std::string to_op(uint i) const;
@@ -92,7 +96,10 @@ class PauliString {
         bool commutes_at(PauliString &p, uint i) const;
         bool commutes(PauliString &p) const;
 
-        Circuit reduce(bool x) const;
+        // Returns the circuit which maps the PauliString onto ZII... if z or XII.. otherwise
+        Circuit reduce(bool z) const;
+
+        // Returns the circuit which maps the PauliString onto p
         Circuit transform(PauliString const &p) const;
 
 		bool operator==(const PauliString &rhs) const;
