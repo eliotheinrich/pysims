@@ -9,8 +9,8 @@ endif()
 message("Build type: " ${CMAKE_BUILD_TYPE})
 
 set(CMAKE_DEBUG_POSTFIX "d")
-set(CMAKE_CXX_FLAGS_DEBUG "-g -Wall -Wno-ambiguous-reversed-operator -DDEBUG")
-set(CMAKE_CXX_FLAGS_RELEASE "-O3 -Wall -Wno-ambiguous-reversed-operator")
+set(CMAKE_CXX_FLAGS_DEBUG "-g -Wall -Wno-unused-function -DDEBUG")
+set(CMAKE_CXX_FLAGS_RELEASE "-O3 -Wall -Wno-unused-function")
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin)
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/lib)
 

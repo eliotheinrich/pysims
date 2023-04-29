@@ -1,9 +1,9 @@
 {
 	"description": "Test behavior of QA SOC model when started at the critical point, as well as determine critical threshold accurately",
-	"circuit_type": "cluster_clifford",
+	"circuit_type": "soc_clifford",
 
 	"circuit": "quantum_automaton",
-	"feedback_type": "p_adjust",
+	"feedback_type": "cluster_threshold",
 	"num_runs": 150,
 
 	"gate_width": 2,

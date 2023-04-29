@@ -232,7 +232,7 @@ class EntropySimulator : public Simulator, public Entropy {
             }
         }
 
-        void add_surface_avalanche_samples(std::map<std::string, Sample> &samples) {
+        void add_surface_avalanche_samples(data_t &samples) {
             std::vector<uint> new_surface(system_size, 0);
             for (uint i = 0; i < system_size; i++) new_surface[i] = cum_entropy(i);
 
@@ -244,7 +244,7 @@ class EntropySimulator : public Simulator, public Entropy {
             samples.emplace("avalanche_size", avalanche_size);
         }
 
-        void add_mutual_information_samples(std::map<std::string, Sample> &samples) const {
+        void add_mutual_information_samples(data_t &samples) const {
             std::vector<float> entropy_table = compute_entropy_table();
             for (uint x1 = 0; x1 < system_size; x1++) {
                 LOG("x1 = " << x1 << std::endl);
@@ -272,7 +272,7 @@ class EntropySimulator : public Simulator, public Entropy {
             }
         }
 
-        void add_fixed_mutual_information_samples(std::map<std::string, Sample> &samples) const {
+        void add_fixed_mutual_information_samples(data_t &samples) const {
             std::vector<uint> interval1 = to_interval(x1, x2);
             std::vector<uint> interval2 = to_interval(x3, x4);
             std::vector<uint> interval3 = to_combined_interval(x1, x2, x3, x4);
@@ -280,13 +280,13 @@ class EntropySimulator : public Simulator, public Entropy {
             samples.emplace("mutual_information", entropy(interval1) + entropy(interval2) - entropy(interval3));
         }
 
-        void add_entropy_all_partition_sizes(std::map<std::string, Sample> &samples) const {
+        void add_entropy_all_partition_sizes(data_t &samples) const {
             for (uint i = 0; i < system_size; i++)
                 samples.emplace("entropy_" + std::to_string(i), spatially_averaged_entropy(system_size, i, spacing));
         }
 
-        virtual std::map<std::string, Sample> take_samples() override {
-            std::map<std::string, Sample> samples;
+        virtual data_t take_samples() override {
+            data_t samples;
 
             if (sample_entropy)
                 samples.emplace("entropy", spatially_averaged_entropy());

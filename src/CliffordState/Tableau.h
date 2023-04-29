@@ -5,14 +5,12 @@
 #include <vector>
 #include <random>
 #include <variant>
+#include <algorithm>
 
 struct sgate { uint q; };
 struct sdgate { uint q; };
 struct hgate { uint q;};
-struct cxgate {
-    uint q1;
-    uint q2;
-};
+struct cxgate { uint q1; uint q2; };
 
 typedef std::variant<sgate, sdgate, hgate, cxgate> Gate;
 typedef std::vector<Gate> Circuit;

@@ -67,8 +67,8 @@ class SandpileCliffordSimulator : public EntropySimulator {
 			start_sampling = true;
 		}
 
-		void add_transition_matrix_samples(std::map<std::string, Sample> &samples);
-		virtual std::map<std::string, Sample> take_samples() override;
+		void add_transition_matrix_samples(data_t &samples);
+		virtual data_t take_samples() override;
 
 		CLONE(Simulator, SandpileCliffordSimulator)
 };

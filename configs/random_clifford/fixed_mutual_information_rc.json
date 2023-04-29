@@ -21,5 +21,5 @@
 	"sample_entropy": false,
 	"sample_fixed_mutual_information": true,
 
-	"filename": "fixed_mutual_information_rc.json"
+	"filename": "fixed_mutual_information_rc_2.json"
 }

@@ -149,14 +149,14 @@ void GraphCliffordSimulator::add_avg_max_dist(std::map<std::string, Sample> &sam
 	}
 }
 
-void GraphCliffordSimulator::add_degree_distribution(std::map<std::string, Sample> &samples) const {
+void GraphCliffordSimulator::add_degree_distribution(data_t &samples) const {
 	auto degree_counts = state->graph.compute_degree_counts();
 	for (uint i = 0; i < system_size; i++) 
 		samples.emplace("deg_" + std::to_string(i), degree_counts[i]);
 }
 
-std::map<std::string, Sample> GraphCliffordSimulator::take_samples() {
-	std::map<std::string, Sample> samples;
+data_t GraphCliffordSimulator::take_samples() {
+	data_t samples;
 	
 	add_avg_max_dist(samples);
 

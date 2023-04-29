@@ -2,7 +2,7 @@
 #include "RandomCliffordSimulator.h"
 #include "SandpileCliffordSimulator.h"
 #include "BellSandpileSimulator.h"
-#include "ClusterCliffordSimulator.h"
+#include "SelfOrganizedCliffordSimulator.h"
 #include "MinCutSimulator.h"
 #include "BlockSimulator.h"
 #include "GraphCliffordSimulator.h"
@@ -50,9 +50,6 @@ int main(int argc, char *argv[]) {
     std::ifstream f(filename);
     json data = json::parse(f);
     std::string circuit_type = data["circuit_type"];
-    bool record_error = false;
-    if (data.contains("record_error"))
-        record_error = data["record_error"];
 
     std::cout << "Starting job\n";
 
@@ -67,7 +64,7 @@ int main(int argc, char *argv[]) {
 
         if (circuit_type == "quantum_automaton") sim = std::unique_ptr<Simulator>(new QuantumAutomatonSimulator(param));
         else if (circuit_type == "random_clifford") sim = std::unique_ptr<Simulator>(new RandomCliffordSimulator(param));
-        else if (circuit_type == "cluster_clifford") sim = std::unique_ptr<Simulator>(new ClusterCliffordSimulator(param));
+        else if (circuit_type == "soc_clifford") sim = std::unique_ptr<Simulator>(new SelfOrganizedCliffordSimulator(param));
         else if (circuit_type == "sandpile_clifford") sim = std::unique_ptr<Simulator>(new SandpileCliffordSimulator(param));
         else if (circuit_type == "bell_sandpile") sim = std::unique_ptr<Simulator>(new BellSandpileSimulator(param));
         else if (circuit_type == "mincut") sim = std::unique_ptr<Simulator>(new MinCutSimulator(param));
@@ -84,6 +81,6 @@ int main(int argc, char *argv[]) {
 
     ParallelCompute pc(std::move(configs));
     DataFrame df = pc.compute(num_threads, true);
-    df.write_json(data_prefix + data_filename, record_error);
+    df.write_json(data_prefix + data_filename);
     std::cout << "Finishing job\n";
 } 

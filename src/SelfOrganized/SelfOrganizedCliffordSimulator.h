@@ -1,37 +1,44 @@
-#ifndef CLUSTER_CLIFFORD_SIM_H
-#define CLUSTER_CLIFFORD_SIM_H
+#ifndef SOC_CLIFFORD_SIM_H
+#define SOC_CLIFFORD_SIM_H
 
 #include <DataFrame.hpp>
 #include "Entropy.hpp"
 #include "QuantumGraphState.h"
 
-enum CircuitType {
+enum EvolutionType {
 	RandomClifford,
 	QuantumAutomaton
 };
 
 enum FeedbackType {
 	NoFeedback,
-	ClusterMzr,
-	PAdjust
+	ClusterThreshold,
+	DistanceThreshold
 };
 
-class ClusterCliffordSimulator : public EntropySimulator {
+class SelfOrganizedCliffordSimulator : public EntropySimulator {
 	private:
 		FeedbackType feedback_type;
-		CircuitType circuit_type;
+		EvolutionType evolution_type;
 
 		std::unique_ptr<QuantumGraphState> state;
 		float mzr_prob;
 		float x;
 
 		uint gate_width;
+
 		float threshold;
 		float dx;
 
 		bool initial_offset;
 
 		uint avalanche_size;
+
+		
+		uint dist(int i, int j) const;
+		float avg_dist() const;
+
+		float max_component_size() const;
 
 		void mzr(uint q);
 		void mzr_feedback();
@@ -42,20 +49,22 @@ class ClusterCliffordSimulator : public EntropySimulator {
 
 		// Self-organization strategies
 		void random_measure();
-		void cluster_mzr();
-		void p_adjust();
+		void cluster_threshold();
+		void distance_threshold();
 
 
 	public:
-		ClusterCliffordSimulator(Params &params);
+		SelfOrganizedCliffordSimulator(Params &params);
 
 		virtual void init_state() override ;
 
 		virtual float entropy(std::vector<uint> &qubits) const override { return state->entropy(qubits); }
 		virtual void timesteps(uint num_steps) override;
-		virtual std::map<std::string, Sample> take_samples() override;
 
-		CLONE(Simulator, ClusterCliffordSimulator)
+
+		virtual data_t take_samples() override;
+
+		CLONE(Simulator, SelfOrganizedCliffordSimulator)
 };
 
 #endif

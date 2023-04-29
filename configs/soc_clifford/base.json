@@ -1,7 +1,6 @@
 {
-	"run_name": "test_rc",
-	"circuit_type": "cluster_clifford",
-	"feedback_type": ["no_feedback", "cluster_mzr", "p_adjust"],
+	"circuit_type": "soc_clifford",
+	"feedback_type": ["no_feedback", "cluster_threshold", "distance_threshold"],
 	"num_runs": 5,
 
 	"system_size": [26, 50, 100, 150],

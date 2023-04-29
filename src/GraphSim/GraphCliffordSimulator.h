@@ -28,9 +28,9 @@ class GraphCliffordSimulator : public EntropySimulator {
 		void rc_timesteps(uint num_steps);
 
 		uint dist(int i, int j) const;
-		void add_distance_distribution(std::map<std::string, Sample> &samples) const;
-		void add_degree_distribution(std::map<std::string, Sample> &samples) const;
-		void add_avg_max_dist(std::map<std::string, Sample> &samples) const;
+		void add_distance_distribution(data_t &samples) const;
+		void add_degree_distribution(data_t &samples) const;
+		void add_avg_max_dist(data_t &samples) const;
 
 
 	public:
@@ -40,7 +40,7 @@ class GraphCliffordSimulator : public EntropySimulator {
 
 		virtual float entropy(std::vector<uint> &qubits) const override { return state->entropy(qubits); }
 		virtual void timesteps(uint num_steps) override;
-		virtual std::map<std::string, Sample> take_samples() override;
+		virtual data_t take_samples() override;
 
 		CLONE(Simulator, GraphCliffordSimulator)
 };

@@ -1,6 +1,6 @@
 add_library(self_organized
     SandpileCliffordSimulator.cpp
-    ClusterCliffordSimulator.cpp
+    SelfOrganizedCliffordSimulator.cpp
     BellSandpileSimulator.cpp
 )
 target_link_libraries(self_organized clifford_state)

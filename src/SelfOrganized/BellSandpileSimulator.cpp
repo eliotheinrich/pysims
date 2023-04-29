@@ -112,8 +112,8 @@ void BellSandpileSimulator::timestep() {
 	}
 }
 
-std::map<std::string, Sample> BellSandpileSimulator::take_samples() {
-	std::map<std::string, Sample> samples = EntropySimulator::take_samples();
+data_t BellSandpileSimulator::take_samples() {
+	data_t samples = EntropySimulator::take_samples();
 	for (uint i = 0; i < system_size; i++)
 		samples.emplace("entropy_" + std::to_string(i), cum_entropy(i));
 

@@ -39,7 +39,7 @@ class BellSandpileSimulator : public EntropySimulator {
 
 		virtual void timesteps(uint num_steps) override;
 
-		virtual std::map<std::string, Sample> take_samples() override;
+		virtual data_t take_samples() override;
 
 		CLONE(Simulator, BellSandpileSimulator)
 };

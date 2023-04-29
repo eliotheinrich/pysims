@@ -46,8 +46,8 @@ class BlockSimulator : public Simulator {
 
         std::string to_string() const;
 
-        void add_avalanche_samples(std::map<std::string, Sample> &samples);
-        virtual std::map<std::string, Sample> take_samples() override;
+        void add_avalanche_samples(data_t &samples);
+        virtual data_t take_samples() override;
 
         CLONE(Simulator, BlockSimulator)
 };

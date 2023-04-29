@@ -219,7 +219,7 @@ void SandpileCliffordSimulator::timestep() {
 	direction = 0;
 }
 
-void SandpileCliffordSimulator::add_transition_matrix_samples(std::map<std::string, Sample> &samples) {
+void SandpileCliffordSimulator::add_transition_matrix_samples(data_t &samples) {
 	for (uint i = 0; i < 6; i++) {
 		for (uint j = 0; j < 6; j++) {
 			samples.emplace("transition_mzr_" + std::to_string(i) + "_" + std::to_string(j), transition_matrix_mzr[i][j]);
@@ -231,8 +231,8 @@ void SandpileCliffordSimulator::add_transition_matrix_samples(std::map<std::stri
 	transition_matrix_mzr = std::vector<std::vector<uint>>(6, std::vector<uint>(6, 0));
 }
 
-std::map<std::string, Sample> SandpileCliffordSimulator::take_samples() {
-	std::map<std::string, Sample> samples = EntropySimulator::take_samples();
+data_t SandpileCliffordSimulator::take_samples() {
+	data_t samples = EntropySimulator::take_samples();
 	for (uint i = 0; i < system_size; i++)
 		samples.emplace("entropy_" + std::to_string(i), sp_cum_entropy(i));
 	

@@ -140,14 +140,14 @@ void BlockSimulator::timesteps(uint num_steps) {
     }
 }
 
-void BlockSimulator::add_avalanche_samples(std::map<std::string, Sample> &samples) {
+void BlockSimulator::add_avalanche_samples(data_t &samples) {
     for (uint i = 0; i < system_size; i++) samples.emplace("avalanche_" + std::to_string(i), avalanche_sizes[i]);
 
     avalanche_sizes = std::vector<uint>(system_size, 0);
 }
 
-std::map<std::string, Sample> BlockSimulator::take_samples() {
-    std::map<std::string, Sample> samples;
+data_t BlockSimulator::take_samples() {
+    data_t samples;
     for (uint i = 0; i < system_size; i++) samples.emplace("surface_" + std::to_string(i), surface[i]);
 
 	if (sample_avalanche_sizes)

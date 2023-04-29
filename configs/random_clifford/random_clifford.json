@@ -4,20 +4,19 @@
 
 	"clifford_type": "chp",
 	"gate_width": 2,
-	"num_runs": 6,
+	"num_runs": 20,
 
-	"system_size": [32],
+	"system_size": 512,
 	"mzr_prob": 0.16,
 
-	"record_error": false,
 	"temporal_avg": true,
-	"equilibration_timesteps": 2000,
-	"sampling_timesteps": 2000,
+	"equilibration_timesteps": 1000,
+	"sampling_timesteps": 1000,
 	"measurement_freq": 5,
 	"sample_all_partition_sizes": true,
-	"sample_entropy": false,
+	"sample_entropy": true,
 	
 	"spacing": 5,
 
-	"filename": "random_clifford_1024.json"
+	"filename": "random_clifford_512_3.json"
 }
