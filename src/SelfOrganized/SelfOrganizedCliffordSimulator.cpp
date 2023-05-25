@@ -11,6 +11,7 @@
 static EvolutionType parse_evolution_type(std::string s) {
 	if (s == "random_clifford") return EvolutionType::RandomClifford;
 	else if (s == "quantum_automaton") return EvolutionType::QuantumAutomaton;
+	else if (s == "graph_operations") return EvolutionType::GraphOperations;
 	else {
 		std::cout << "Invalid evolution type: " << s << std::endl;
 		assert(false);
@@ -170,23 +171,67 @@ void SelfOrganizedCliffordSimulator::rc_timesteps(uint num_steps) {
 	initial_offset = offset_layer;
 }
 
+void SelfOrganizedCliffordSimulator::graph_timesteps(uint num_steps) {
+	for (uint i = 0; i < system_size; i += 2) {
+		uint j = (i + 1) % system_size;
+		if (!state->graph.contains_edge(i, j)) {
+			state->toggle_edge_gate(i, j);
+		} else {
+			state->graph.local_complement(i);
+			state->graph.local_complement(j);
+		}
+	}
+
+	for (uint i = 1; i < system_size; i += 2) {
+		uint j = (i + 1) % system_size;
+		if (!state->graph.contains_edge(i, j)) {
+			state->toggle_edge_gate(i, j);
+		} else {
+			state->graph.local_complement(i);
+			state->graph.local_complement(j);
+		}
+	}
+
+	for (uint i = 0; i < system_size; i++) {
+		// "measurement" step; with some probability, remove all edges incident on i
+		if (randf() < mzr_prob) {
+			for (auto const &j : state->graph.neighbors(i)) 
+				state->toggle_edge_gate(i, j);
+		}
+	}
+}
+
 void SelfOrganizedCliffordSimulator::timesteps(uint num_steps) {
 	switch (evolution_type) {
 		case (EvolutionType::RandomClifford): rc_timesteps(num_steps); break;
 		case (EvolutionType::QuantumAutomaton): qa_timesteps(num_steps); break;
+		case (EvolutionType::GraphOperations): graph_timesteps(num_steps); break;
 	}
 }
 
-data_t SelfOrganizedCliffordSimulator::take_samples() {
-	data_t data = EntropySimulator::take_samples();
-
-	if (feedback_type == FeedbackType::ClusterThreshold) {
-		data.emplace("mzr_prob_f", mzr_prob);
-		data.emplace("max_cluster_size", max_component_size());
-	} else if (feedback_type == FeedbackType::DistanceThreshold) {
-		data.emplace("mzr_prob_f", mzr_prob);
-		data.emplace("avg_distance", avg_dist());
+void SelfOrganizedCliffordSimulator::add_distance_distribution(data_t &samples) const {
+	std::vector<uint> hist(system_size/2, 0);
+	for (uint i = 0; i < system_size; i++) {
+		for (auto const &j : state->graph.neighbors(i))
+			hist[dist(i,j)]++;
 	}
 
-	return data;
+	for (uint i = 0; i < system_size/2; i++)
+		samples.emplace("dist_" + std::to_string(i), hist[i]);
+}
+
+data_t SelfOrganizedCliffordSimulator::take_samples() {
+	data_t samples = EntropySimulator::take_samples();
+
+	if (feedback_type == FeedbackType::ClusterThreshold) {
+		samples.emplace("mzr_prob_f", mzr_prob);
+		samples.emplace("max_cluster_size", max_component_size());
+	} else if (feedback_type == FeedbackType::DistanceThreshold) {
+		samples.emplace("mzr_prob_f", mzr_prob);
+		samples.emplace("avg_distance", avg_dist());
+	}
+
+	add_distance_distribution(samples);
+
+	return samples;
 }

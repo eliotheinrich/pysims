@@ -1,0 +1,20 @@
+{
+	"description": "Testing pure ensemble of random graphs",
+	"circuit_type": "graphsim",
+	"evolution_type": "random_graph",
+	"num_runs": 5,
+
+	"system_size": 128,
+	"a": [-0.5, -1.0, -1.5, -2.0, -2.5, -3.0, -3.5, -4.0, -4.5, -5.0],
+	"m": [2, 4, 6, 8, 10],
+
+	"temporal_avg": true,
+	"sampling_timesteps": 100,
+	"equilibration_timesteps": 0,
+	"measurement_freq": 1,
+
+	"sample_entropy": false,
+	"sample_all_partition_sizes": true,
+
+	"filename": "random_graph_graphsim128.json"
+}

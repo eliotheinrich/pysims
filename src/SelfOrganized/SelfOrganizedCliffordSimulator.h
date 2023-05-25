@@ -7,7 +7,8 @@
 
 enum EvolutionType {
 	RandomClifford,
-	QuantumAutomaton
+	QuantumAutomaton,
+	GraphOperations
 };
 
 enum FeedbackType {
@@ -46,19 +47,21 @@ class SelfOrganizedCliffordSimulator : public EntropySimulator {
 		void qa_timestep(bool offset, bool gate_type);
 		void qa_timesteps(uint num_steps);
 		void rc_timesteps(uint num_steps);
+		void graph_timesteps(uint num_steps);
 
 		// Self-organization strategies
 		void random_measure();
 		void cluster_threshold();
 		void distance_threshold();
 
+		void add_distance_distribution(data_t &samples) const;
 
 	public:
 		SelfOrganizedCliffordSimulator(Params &params);
 
 		virtual void init_state() override ;
 
-		virtual float entropy(std::vector<uint> &qubits) const override { return state->entropy(qubits); }
+		virtual float entropy(const std::vector<uint> &qubits) const override { return state->entropy(qubits); }
 		virtual void timesteps(uint num_steps) override;
 
 

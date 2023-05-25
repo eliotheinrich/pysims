@@ -4,38 +4,44 @@
 #include "QuantumAutomatonSimulator.h"
 #include <iostream>
 
-#define DEFAULT_CIRCUIT_TYPE "random_clifford"
+#define DEFAULT_EVOLUTION_TYPE "random_clifford"
+#define DEFAULT_GATE_WIDTH 2
 
-static GraphSimCircuitType parse_graphsim_circuit_type(std::string s) {
-	if (s == "random_clifford") return GraphSimCircuitType::GraphSimRandomClifford;
-	else if (s == "quantum_automaton") return GraphSimCircuitType::GraphSimQuantumAutomaton;
-	else if (s == "unitary") return GraphSimCircuitType::GraphSimUnitary;
-	else {
-		std::cout << "Invalid circuit type: " << s << std::endl;
-		assert(false);
-	}
+#define RANDOM_CLIFFORD "random_clifford"
+#define QUANTUM_AUTOMATON "quantum_automaton"
+#define UNITARY "unitary"
+#define RANDOM_GRAPH "random_graph"
+
+static inline float sample_powerlaw(float y, float x0, float x1, float a) {
+	return std::pow((std::pow(x1, a+1) - std::pow(x0, a+1))*y + std::pow(x0, a+1), 1./(a+1.));
 }
 
 GraphCliffordSimulator::GraphCliffordSimulator(Params &params) : EntropySimulator(params) {
-	mzr_prob = params.get<float>("mzr_prob");
+	evolution_type = params.get<std::string>("evolution_type", DEFAULT_EVOLUTION_TYPE);
 
-	circuit_type = parse_graphsim_circuit_type(params.get<std::string>("circuit", DEFAULT_CIRCUIT_TYPE));
 
-	gate_width = params.get<int>("gate_width");
+	if (evolution_type == RANDOM_CLIFFORD) {
+		gate_width = params.get<int>("gate_width", DEFAULT_GATE_WIDTH);
+		initial_offset = false;
+	} if (evolution_type == RANDOM_GRAPH) {
+		m = params.get<int>("m");
+		a = params.get<float>("a");
+		rng = std::minstd_rand(params.get<int>("seed", -1));
+	} else
+		mzr_prob = params.get<float>("mzr_prob");
 
-	initial_offset = false;
 }
 
 void GraphCliffordSimulator::init_state() {
 	state = std::shared_ptr<QuantumGraphState>(new QuantumGraphState(system_size));
 
-	if (circuit_type == GraphSimCircuitType::GraphSimQuantumAutomaton) // quantum automaton circuit must be polarized
+	if (evolution_type == QUANTUM_AUTOMATON) // quantum automaton circuit must be polarized
 		for (uint i = 0; i < system_size; i++) state->h_gate(i);
 }
 
 void GraphCliffordSimulator::mzr(uint q) {
 	state->mzr(q);
-	if (circuit_type == GraphSimCircuitType::GraphSimQuantumAutomaton) state->h_gate(q);
+	if (evolution_type == QUANTUM_AUTOMATON) state->h_gate(q);
 }
 
 void GraphCliffordSimulator::qa_timesteps(uint num_steps) {
@@ -94,12 +100,43 @@ void GraphCliffordSimulator::unitary_timesteps(uint num_steps) {
 	initial_offset = offset_layer;
 }
 
-void GraphCliffordSimulator::timesteps(uint num_steps) {
-	switch (circuit_type) {
-		case (GraphSimCircuitType::GraphSimRandomClifford): rc_timesteps(num_steps); break;
-		case (GraphSimCircuitType::GraphSimQuantumAutomaton): qa_timesteps(num_steps); break;
-		case (GraphSimCircuitType::GraphSimUnitary): unitary_timesteps(num_steps); break;
+void GraphCliffordSimulator::generate_random_graph() {
+	Graph graph(system_size);
+
+	// Barabasi-Albert random graph model
+	for (uint i = 0; i < system_size; i++) {
+		std::vector<float> weights;
+		std::vector<uint> sites;
+		for (uint j = 0; j < system_size; j++) {
+			if (i == j || graph.contains_edge(i, j)) continue;
+
+			weights.push_back(std::pow(dist(i, j), a));
+			sites.push_back(j);
+		}
+
+		
+		for (uint j = 0; j < m; j++) {
+			std::discrete_distribution<uint> distribution(weights.begin(), weights.end());
+			uint k = distribution(rng);
+			graph.add_edge(i, k);
+
+			weights.erase(weights.begin() + k);
+			sites.erase(sites.begin() + k);
+		}
 	}
+
+	state = std::shared_ptr<QuantumGraphState>(new QuantumGraphState(graph));
+}
+
+void GraphCliffordSimulator::timesteps(uint num_steps) {
+	if (evolution_type == RANDOM_CLIFFORD)
+		rc_timesteps(num_steps);
+	else if (evolution_type == QUANTUM_AUTOMATON)
+		qa_timesteps(num_steps);
+	else if (evolution_type == UNITARY)
+		unitary_timesteps(num_steps);
+	else if (evolution_type == RANDOM_GRAPH)
+		generate_random_graph();
 }
 
 uint GraphCliffordSimulator::dist(int i, int j) const {
@@ -110,9 +147,9 @@ uint GraphCliffordSimulator::dist(int i, int j) const {
 		return d;
 }
 
-void GraphCliffordSimulator::add_distance_distribution(std::map<std::string, Sample> &samples) const {
+void GraphCliffordSimulator::add_distance_distribution(data_t &samples) const {
 	uint max_dist = system_size/2;
-	std::vector<uint> distribution(max_dist, 0.);
+	std::vector<uint> distribution(max_dist, 0);
 	for (uint i = 0; i < system_size; i++) {
 		for (auto const j : state->graph.neighbors(i))
 			distribution[dist(i, j)]++;
@@ -123,7 +160,7 @@ void GraphCliffordSimulator::add_distance_distribution(std::map<std::string, Sam
 }
 
 
-void GraphCliffordSimulator::add_avg_max_dist(std::map<std::string, Sample> &samples) const {
+void GraphCliffordSimulator::add_avg_max_dist(data_t &samples) const {
 	double p1 = 0.;
 	double p2 = 0.;
 	uint n = 0;
@@ -156,7 +193,7 @@ void GraphCliffordSimulator::add_degree_distribution(data_t &samples) const {
 }
 
 data_t GraphCliffordSimulator::take_samples() {
-	data_t samples;
+	data_t samples = EntropySimulator::take_samples();
 	
 	add_avg_max_dist(samples);
 
@@ -166,10 +203,6 @@ data_t GraphCliffordSimulator::take_samples() {
 	samples.emplace("global_clustering_coefficient", state->graph.global_clustering_coefficient());
 	samples.emplace("average_cluster_size", state->graph.average_component_size());
 	samples.emplace("max_cluster_size", state->graph.max_component_size());
-
-	// Add EntropySimulator samples
-	auto parent_samples = EntropySimulator::take_samples();
-	samples.insert(parent_samples.begin(), parent_samples.end());
 
 	return samples;
 }

@@ -41,13 +41,13 @@ class QuantumGraphState : public CliffordState {
 
 		void mxr_graph(uint a, bool outcome);
 		void myr_graph(uint a, bool outcome);
-		void mzr_graph(uint a, bool outcome);
 
 
 	public:
 		Graph graph;
 
         QuantumGraphState(uint num_qubits, int seed=-1);
+        QuantumGraphState(Graph &graph, int seed=-1);
 
         virtual std::string to_string() const override;
         virtual uint system_size() const override { return num_qubits; }
@@ -61,10 +61,12 @@ class QuantumGraphState : public CliffordState {
 
         virtual void cz_gate(uint a, uint b) override;
         virtual bool mzr(uint a) override;
+		
+		void mzr_graph(uint a, bool outcome);
 
 		void toggle_edge_gate(uint a, uint b);
 
-        virtual float entropy(std::vector<uint> &qubits) const override;
+        virtual float entropy(const std::vector<uint> &qubits) const override;
 
 
 };

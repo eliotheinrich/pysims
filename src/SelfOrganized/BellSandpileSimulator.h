@@ -35,7 +35,7 @@ class BellSandpileSimulator : public EntropySimulator {
 				state->h_gate(i);
 		}
 
-		virtual float entropy(std::vector<uint> &qubits) const override { return state->entropy(qubits); }
+		virtual float entropy(const std::vector<uint> &qubits) const override { return state->entropy(qubits); }
 
 		virtual void timesteps(uint num_steps) override;
 

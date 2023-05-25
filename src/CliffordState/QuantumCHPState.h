@@ -24,7 +24,7 @@ class QuantumCHPState : public CliffordState {
         virtual void cz_gate(uint a, uint b) override;
         virtual bool mzr(uint a) override;
 
-        virtual float entropy(std::vector<uint> &qubits) const override;
+        virtual float entropy(const std::vector<uint> &qubits) const override;
 };
 
 #endif

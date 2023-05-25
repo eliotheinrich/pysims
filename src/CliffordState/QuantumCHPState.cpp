@@ -38,7 +38,7 @@ bool QuantumCHPState::mzr(uint a) {
     return outcome;
 }
 
-float QuantumCHPState::entropy(std::vector<uint> &qubits) const {
+float QuantumCHPState::entropy(const std::vector<uint> &qubits) const {
     uint system_size = this->system_size();
     uint partition_size = qubits.size();
 

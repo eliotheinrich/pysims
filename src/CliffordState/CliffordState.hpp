@@ -2,7 +2,6 @@
 #define CLIFFORDSIM_H
 
 #include "Tableau.h"
-#include "Entropy.hpp"
 #include <random>
 #include <deque>
 #include <algorithm>
@@ -20,7 +19,7 @@ static inline CliffordType parse_clifford_type(std::string s) {
     }
 }
 
-class CliffordState: public Entropy {
+class CliffordState {
     private:
         std::minstd_rand rng;
 
@@ -127,14 +126,14 @@ class CliffordState: public Entropy {
 
             PauliString p1 = PauliString::rand(num_qubits, &rng);
             PauliString p2 = PauliString::rand(num_qubits, &rng);
-            while (p1.commutes(p2)) {
+            while (p1.commutes(p2))
                 p2 = PauliString::rand(num_qubits, &rng);
-            }
 
-            Circuit c1 = p1.reduce(true);
+            Circuit c1 = p1.reduce(false);
 
             apply_circuit(c1, p2);
-            auto qubit_visitor = overloaded{
+
+            auto qubit_map_visitor = overloaded{
                 [&qubits](sgate s) -> Gate { return sgate{qubits[s.q]}; },
                 [&qubits](sdgate s) -> Gate { return sdgate{qubits[s.q]}; },
                 [&qubits](hgate s) -> Gate { return hgate{qubits[s.q]}; },
@@ -142,20 +141,18 @@ class CliffordState: public Entropy {
             };
 
             for (auto &gate : c1)
-                gate = std::visit(qubit_visitor, gate);
+                gate = std::visit(qubit_map_visitor, gate);
 
             apply_circuit(c1, *this);
-            
-            PauliString z1_p(num_qubits);
-            z1_p.set_z(0, true);
-            PauliString z1_m(num_qubits);
-            z1_m.set_z(0, true);
-            z1_m.set_r(true);
 
-            if (p2 != z1_p && p2 != z1_m) {
-                Circuit c2 = p2.reduce(false);
+            PauliString z1p = PauliString::basis(num_qubits, "Z", 0, false);
+            PauliString z1m = PauliString::basis(num_qubits, "Z", 0, true);
+
+            if (p2 != z1p && p2 != z1m) {
+                Circuit c2 = p2.reduce(true);
+
                 for (auto &gate : c2)
-                    gate = std::visit(qubit_visitor, gate);
+                    gate = std::visit(qubit_map_visitor, gate);
 
                 apply_circuit(c2, *this);
             }
@@ -218,6 +215,20 @@ class CliffordState: public Entropy {
             s_gate(b);
         }
 
+        virtual void T4_gate(uint a, uint b, uint c, uint d) {
+            cx_gate(a, d);
+            cx_gate(b, d);
+            cx_gate(c, d);
+
+            cx_gate(d, a);
+            cx_gate(d, b);
+            cx_gate(d, c);
+
+            cx_gate(a, d);
+            cx_gate(b, d);
+            cx_gate(c, d);
+        }
+
         virtual bool mzr(uint a)=0;
 
         virtual bool mxr(uint a) {
@@ -249,6 +260,7 @@ class CliffordState: public Entropy {
         }
 
         virtual std::string to_string() const { return ""; };
+        virtual float entropy(const std::vector<uint> &qubits) const=0;
 
 };
 

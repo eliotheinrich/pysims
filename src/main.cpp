@@ -1,11 +1,15 @@
-#include "QuantumAutomatonSimulator.h"
-#include "RandomCliffordSimulator.h"
-#include "SandpileCliffordSimulator.h"
-#include "BellSandpileSimulator.h"
-#include "SelfOrganizedCliffordSimulator.h"
-#include "MinCutSimulator.h"
-#include "BlockSimulator.h"
-#include "GraphCliffordSimulator.h"
+// Clifford simulators
+#include <QuantumAutomatonSimulator.h>
+#include <RandomCliffordSimulator.h>
+#include <SandpileCliffordSimulator.h>
+#include <BellSandpileSimulator.h>
+#include <SelfOrganizedCliffordSimulator.h>
+#include <MinCutSimulator.h>
+#include <BlockSimulator.h>
+#include <GraphCliffordSimulator.h>
+
+// Quantum simulators
+#include <GroverProjectionSimulator.h>
 
 #include <DataFrame.hpp>
 #include <nlohmann/json.hpp>
@@ -70,6 +74,8 @@ int main(int argc, char *argv[]) {
         else if (circuit_type == "mincut") sim = std::unique_ptr<Simulator>(new MinCutSimulator(param));
         else if (circuit_type == "blocksim") sim = std::unique_ptr<Simulator>(new BlockSimulator(param));
         else if (circuit_type == "graphsim") sim = std::unique_ptr<Simulator>(new GraphCliffordSimulator(param));
+
+        else if (circuit_type == "grover_projection") sim = std::unique_ptr<Simulator>(new GroverProjectionSimulator(param));
         else {
             defaultf();
             return 0;

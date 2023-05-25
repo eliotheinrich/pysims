@@ -1,72 +1,151 @@
 #include <iostream>
-#include <Tableau.h>
+#include "QuantumStatevector.hpp"
+#include "GroverProjectionSimulator.h"
+#include <Eigen/Dense>
+#include <Eigen/Eigenvalues>
+#include <unsupported/Eigen/MatrixFunctions>
+#include <vector>
+#include <map>
 #include <DataFrame.hpp>
-#include <random>
 
-class ReductionCircuitConfig : public Config {
-    private:
-        uint system_size;
-        uint num_runs;
-        uint num_strings;
 
-    public:
-        ReductionCircuitConfig(Params &params) : Config(params) {
-            this->system_size = params.get<int>("system_size");
-            this->num_runs = params.get<int>("num_runs");
-            this->num_strings = params.get<int>("num_strings");
-        }
+std::string print_pair(std::pair<double, double> p) {
+    return std::to_string(p.first) + ", " + std::to_string(p.second);
+}
 
-        virtual uint get_nruns() const override {
-            return num_runs;
-        }
+bool test_QuantumStatevector() {
+    QuantumStatevector state(3);
 
-        virtual DataSlide compute() override {
-            DataSlide ds;
+    Eigen::MatrixXcd X(2, 2);
+    X << 0, 1, 1, 0;
 
-            ds.add<int>("system_size", system_size);
-            ds.add_data("circuit_depth");
-            std::vector<uint> circuit_depth;
+    Eigen::MatrixXcd Y(2, 2);
+    Y << 0, -1, 1, 0;
+    Y *= std::complex<double>(0, 1);
 
-            std::minstd_rand *r = new std::minstd_rand();
-            for (uint i = 0; i < num_strings; i++) {
-                PauliString p1 = PauliString::rand(system_size, r);
-                PauliString p2 = PauliString::rand(system_size, r);
+    Eigen::MatrixXcd Z(2, 2);
+    Z << 1, 0, 0, -1;
 
-                PauliString p3 = p1.copy();
+    Eigen::MatrixXcd H(2, 2);
+    H << 1, 1, 1, -1;
+    H /= std::sqrt(2);
 
-                Circuit circuit = p1.transform(p2);
-                apply_circuit(circuit, p3);
-                assert(p2 == p3);
+    Eigen::MatrixXcd CX(4, 4);
+    CX << 1, 0, 0, 0,
+          0, 1, 0, 0,
+          0, 0, 0, 1,
+          0, 0, 1, 0;
 
-                circuit_depth.push_back(circuit.size());
-            }
+    state.apply_gate(H, std::vector<uint>{0});
+    std::cout << state.to_string() << "\n\n";
+    std::cout << state.entropy(std::vector<uint>{0}) << std::endl;
+    std::cout << state.entropy(std::vector<uint>{1}) << std::endl;
+    std::cout << state.entropy(std::vector<uint>{2}) << std::endl;
+    std::cout << print_pair(state.probabilities(0)) << std::endl;
+    std::cout << print_pair(state.probabilities(1)) << std::endl;
+    std::cout << print_pair(state.probabilities(2)) << std::endl;
 
-            for (auto const &d : circuit_depth) ds.push_data("circuit_depth", d);
+    state.apply_gate(CX, std::vector<uint>{1, 0});
+    std::cout << state.to_string() << "\n\n";
+    std::cout << state.entropy(std::vector<uint>{0}) << std::endl;
+    std::cout << state.entropy(std::vector<uint>{1}) << std::endl;
+    std::cout << state.entropy(std::vector<uint>{2}) << std::endl;
 
-            return ds;
-        }
+    std::cout << print_pair(state.probabilities(0)) << std::endl;
+    std::cout << print_pair(state.probabilities(1)) << std::endl;
+    std::cout << print_pair(state.probabilities(2)) << std::endl;
 
-        virtual std::unique_ptr<Config> clone() override {
-            std::unique_ptr<ReductionCircuitConfig> config(new ReductionCircuitConfig(params));
-            return config;
-        }
-};
+    return true;
+}
 
+bool test_GroverSimulation() {
+    std::cout << "Beginning grover simulation\n";
+    Params p;
+    p.add("system_size", (int) 3);
+    p.add("mzr_prob", (float) 0.0);
+    p.add("nmax", (int) 50);
+
+    GroverProjectionSimulator gs(p);
+    gs.init_state();
+    
+    for (uint i = 0; i < 10; i++) {
+        auto gate = haar_unitary(3);
+        gs.state->apply_gate(haar_unitary(3));
+
+        uint q = gs.rand() % 3;
+        gs.grover_projection(q, 1);
+
+        auto probs = gs.state->probabilities(q);
+        std::cout << gs.state->get_statevector().data << std::endl;
+        std::cout << "on qubit " << q << ": " << print_pair(probs) << " sum to " << probs.first + probs.second << std::endl;
+        std::cout << "entropy of projected qubit: " << gs.entropy(std::vector<uint>{q}) << "\n\n";
+    }
+
+    return true;
+}
+
+bool test_UnitaryEquivalence() {
+    uint num_qubits = 3;
+    auto gate = haar_unitary(num_qubits);
+
+    QuantumStatevector state_vector(num_qubits);
+    UnitaryState state_unitary(num_qubits);
+
+    state_vector.apply_gate(gate);
+    state_unitary.apply_gate(gate);
+
+    std::cout << state_vector.to_string() << std::endl;
+    std::cout << state_unitary.to_string() << std::endl;
+
+    return true;
+}
+
+bool test_normalize() {
+    uint num_qubits = 3;
+
+    QuantumStatevector state(num_qubits);
+    state.data = state.data/2;
+    state.apply_gate(haar_unitary(num_qubits));
+
+    std::cout << state.to_string() << std::endl;
+    std::cout << state.norm() << std::endl;
+
+    state.normalize();
+
+    std::cout << state.to_string() << std::endl;
+    std::cout << state.norm() << std::endl;
+
+
+    std::cout << "\nBeginning UnitaryState tests\n\n";
+    auto gate = haar_unitary(num_qubits);
+    gate(0,0) += 1e-8;
+
+    UnitaryState ustate1(num_qubits);
+    ustate1.apply_gate(gate);
+
+    for (auto e : ustate1.unitary.eigenvalues())
+        std::cout << std::abs(e) << " ";
+    std::cout << "\n\n";
+
+    UnitaryState ustate2(num_qubits);
+    ustate2.apply_gate(gate.pow(10000000));
+    for (auto e : ustate2.unitary.eigenvalues())
+        std::cout << std::abs(e) << " ";
+    std::cout << "\n";
+    std::cout << ustate2.get_statevector().to_string();
+    std::cout << "\n\n";
+
+    ustate2.normalize();
+    for (auto e : ustate2.unitary.eigenvalues())
+        std::cout << std::abs(e) << " ";
+    std::cout << "\n";
+    std::cout << ustate2.get_statevector().to_string();
+    std::cout << "\n\n";
+
+    return true;
+}
 
 int main() {
-    uint num_strings = 100;
-    uint num_runs = 1;
-    std::vector<std::unique_ptr<Config>> cfgs;
-    std::vector<uint> system_sizes{5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55, 60};
-    for (auto const &s : system_sizes) {
-        Params p;
-        p.add<int>("system_size", s);
-        p.add<int>("num_runs", num_runs);
-        p.add<int>("num_strings", num_strings);
-        cfgs.push_back(std::unique_ptr<Config>(new ReductionCircuitConfig(p)));
-    }
-    ParallelCompute pc(std::move(cfgs));
-
-    DataFrame df = pc.compute(4, true);
-    df.write_json("test_data.json", true);
+    //test_normalize();
+    test_GroverSimulation();
 }

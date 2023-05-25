@@ -22,6 +22,8 @@ class Graph {
 		Graph(uint num_vertices) : num_vertices(0) { for (uint i = 0; i < num_vertices; i++) add_vertex(DEFAULT_VAL); }
 		Graph(const Graph &g);
 
+		static Graph erdos_renyi_graph(uint num_vertices, float p);
+
 		std::string to_string() const;
 
 		void add_vertex() { add_vertex(DEFAULT_VAL); }
@@ -68,7 +70,7 @@ class Graph {
 
 		void local_complement(uint v);
 
-		Graph partition(std::vector<uint> &set) const;
+		Graph partition(const std::vector<uint> &set) const;
 
 		std::pair<bool, std::vector<uint>> path(uint s, uint t) const;
 

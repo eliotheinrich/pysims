@@ -5,15 +5,9 @@
 #include "Entropy.hpp"
 #include "QuantumGraphState.h"
 
-enum GraphSimCircuitType {
-	GraphSimRandomClifford,
-	GraphSimQuantumAutomaton,
-	GraphSimUnitary,
-};
-
 class GraphCliffordSimulator : public EntropySimulator {
 	private:
-		GraphSimCircuitType circuit_type;
+		std::string evolution_type;
 
 		std::shared_ptr<QuantumGraphState> state;
 		float mzr_prob;
@@ -21,11 +15,17 @@ class GraphCliffordSimulator : public EntropySimulator {
 		uint gate_width;
 		bool initial_offset;
 
+		uint m;
+		float a;
+
+		std::minstd_rand rng;
+
 		void mzr(uint q);
 
 		void unitary_timesteps(uint num_steps);
 		void qa_timesteps(uint num_steps);
 		void rc_timesteps(uint num_steps);
+		void generate_random_graph();
 
 		uint dist(int i, int j) const;
 		void add_distance_distribution(data_t &samples) const;
@@ -38,7 +38,7 @@ class GraphCliffordSimulator : public EntropySimulator {
 
 		virtual void init_state() override;
 
-		virtual float entropy(std::vector<uint> &qubits) const override { return state->entropy(qubits); }
+		virtual float entropy(const std::vector<uint> &qubits) const override { return state->entropy(qubits); }
 		virtual void timesteps(uint num_steps) override;
 		virtual data_t take_samples() override;
 

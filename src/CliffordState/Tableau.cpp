@@ -3,6 +3,9 @@
 #include <algorithm>
 #include <iostream>
 
+
+#define DEFAULT_PRINT_OPS false
+
 PauliString::PauliString(uint num_qubits) : num_qubits(num_qubits), bit_string(std::vector<bool>(2*num_qubits, false)), phase(false) {}
 
 PauliString PauliString::rand(uint num_qubits, std::minstd_rand *r) {
@@ -150,9 +153,8 @@ Circuit PauliString::reduce(bool z = true) const {
     // Step two
     std::vector<uint> nonzero_idx;
     for (uint i = 0; i < num_qubits; i++) {
-        if (tableau.x(0, i)) {
+        if (tableau.x(0, i))
             nonzero_idx.push_back(i);
-        }
     }
     while (nonzero_idx.size() > 1) {
         for (uint j = 0; j < nonzero_idx.size()/2; j++) {
@@ -194,7 +196,7 @@ Circuit PauliString::reduce(bool z = true) const {
     }
 
     if (z) {
-        tableau.h_gate(0);
+        // tableau is discarded after function exits, so no need to apply it here. Just add to circuit.
         circuit.push_back(hgate{0});
     }
 
@@ -225,7 +227,7 @@ bool PauliString::operator==(const PauliString &rhs) const {
 
 Tableau::Tableau(uint num_qubits) : num_qubits(num_qubits), 
                                     track_destabilizers(true),
-                                    print_ops(true) {
+                                    print_ops(DEFAULT_PRINT_OPS) {
     rows = std::vector<PauliString>(2*num_qubits + 1, PauliString(num_qubits));
     for (uint i = 0; i < num_qubits; i++) {
         rows[i].set_x(i, true);
@@ -235,7 +237,7 @@ Tableau::Tableau(uint num_qubits) : num_qubits(num_qubits),
 
 Tableau::Tableau(uint num_qubits, std::vector<PauliString> rows) : num_qubits(num_qubits),
                                                                    track_destabilizers(false),
-                                                                   print_ops(true),
+                                                                   print_ops(DEFAULT_PRINT_OPS),
                                                                    rows(rows) {}
 
 std::string Tableau::to_string() const {

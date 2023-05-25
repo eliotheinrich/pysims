@@ -5,29 +5,20 @@
 #define DEFAULT_BOUNDARY_CONDITIONS "pbc"
 #define DEFAULT_FEEDBACK_MODE 22
 #define DEFAULT_RANDOM_SITES true
+#define DEFAULT_BOND_HEIGHT false
 
 #define DEFAULT_SAMPLE_TRANSITION_MATRIX false
-
-
-static inline BoundaryCondition parse_boundary_condition(std::string s) {
-	if (s == "pbc") return BoundaryCondition::Periodic;
-	else if (s == "obc1") return BoundaryCondition::Open1;
-	else if (s == "obc2") return BoundaryCondition::Open2;
-	else {
-		std::cout << "Invalid boundary condition: " << s << std::endl;
-		assert(false);
-	}
-}
 
 
 SandpileCliffordSimulator::SandpileCliffordSimulator(Params &params) : EntropySimulator(params) {
 	mzr_prob = params.get<float>("mzr_prob");
 	unitary_prob = params.get<float>("unitary_prob");
 
-	boundary_condition = parse_boundary_condition(params.get<std::string>("boundary_conditions", DEFAULT_BOUNDARY_CONDITIONS));
+	boundary_condition = params.get<std::string>("boundary_conditions", DEFAULT_BOUNDARY_CONDITIONS);
 	feedback_mode = params.get<int>("feedback_mode", DEFAULT_FEEDBACK_MODE);
 
 	random_sites = params.get<int>("random_sites", DEFAULT_RANDOM_SITES);
+	bond_height = params.get<int>("bond_height", DEFAULT_BOND_HEIGHT);
 
 	system_size = params.get<int>("system_size");
 
@@ -74,6 +65,9 @@ void SandpileCliffordSimulator::mzr(uint i) {
 		performed_mzr = true;
 
 		state->mzr(i);
+
+		if (bond_height)
+			state->mzr(i+1);
 	}
 }
 
@@ -81,7 +75,8 @@ void SandpileCliffordSimulator::unitary(uint i) {
 	if (state->randf() < unitary_prob) {
 		performed_unitary = true;
 
-		uint q = i - direction;
+		uint q = bond_height ? i : i - direction;
+
 		std::vector<uint> qubits{q, q + 1};
 		state->random_clifford(qubits);
 	}
@@ -94,52 +89,38 @@ void SandpileCliffordSimulator::timesteps(uint num_steps) {
 }
 
 void SandpileCliffordSimulator::left_boundary() {
-	switch (boundary_condition) {
-		case (BoundaryCondition::Periodic): {
-			std::vector<uint> qubits{0, 1};
-			state->random_clifford(qubits);
-			break;
-		}
-		case (BoundaryCondition::Open1): {
-			break;
-		}
-		case (BoundaryCondition::Open2): {
-			std::vector<uint> qubits{0, 1};
-			state->random_clifford(qubits);
-			break;
-		}
-	}
+	if (boundary_condition == "pbc") {
+		std::vector<uint> qubits{0, 1};
+		state->random_clifford(qubits);
+	} else if (boundary_condition == "obc1") {
+
+	} else if (boundary_condition == "obc2") {
+		std::vector<uint> qubits{0, 1};
+		state->random_clifford(qubits);
+	} else { assert(false); }
 }
 
 void SandpileCliffordSimulator::right_boundary() {
-	switch (boundary_condition) {
-		case (BoundaryCondition::Periodic): {
-			std::vector<uint> qubits{system_size-1, 0};
-			state->random_clifford(qubits);
-			break;
-		}
-		case (BoundaryCondition::Open1): {
-			break;
-		}
-		case (BoundaryCondition::Open2): {
-			std::vector<uint> qubits{system_size-2, system_size-1};
-			state->random_clifford(qubits);
-			break;
-		}
+	if (boundary_condition == "pbc") {
+		std::vector<uint> qubits{system_size-1, 0};
+		state->random_clifford(qubits);
+	} else if (boundary_condition == "obc1") {
+
+	} else if (boundary_condition == "obc2") {
+		std::vector<uint> qubits{system_size-2, system_size-1};
+		state->random_clifford(qubits);
 	}
 }
 
 uint SandpileCliffordSimulator::sp_cum_entropy_left(uint i) const {
 	std::vector<uint> sites(i + 1);
 	std::iota(sites.begin(), sites.end(), 0);
-LOG("Left interval at " << i << ": " << print_vector(sites) << std::endl);
 	return std::round(entropy(sites));
 }
 
 uint SandpileCliffordSimulator::sp_cum_entropy_right(uint i) const {
 	std::vector<uint> sites(system_size - i);
 	std::iota(sites.begin(), sites.end(), i);
-LOG("Right interval at " << i << ": " << print_vector(sites) << std::endl);
 	return std::round(entropy(sites));
 }
 
@@ -169,11 +150,18 @@ void SandpileCliffordSimulator::feedback(uint q) {
 	uint q0 = mod(q - 1, system_size);
 	uint q2 = mod(q + 1, system_size);
 
-	int s0 = sp_cum_entropy(q0);
-	int s1 = sp_cum_entropy(q);
-	int s2 = sp_cum_entropy(q2);
-
-	uint shape = get_shape(s0, s1, s2);
+	uint shape;
+	if (bond_height) {
+		int s0 = sp_cum_entropy_left(q0);
+		int s1 = sp_cum_entropy_left(q);
+		int s2 = sp_cum_entropy_left(q2);
+		shape = get_shape(s0, s1, s2);
+	} else {
+		int s0 = sp_cum_entropy(q0);
+		int s1 = sp_cum_entropy(q);
+		int s2 = sp_cum_entropy(q2);
+		shape = get_shape(s0, s1, s2);
+	}
 
 	performed_mzr = false;
 	performed_unitary = false;

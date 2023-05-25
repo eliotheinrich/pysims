@@ -5,12 +5,6 @@
 #include "Entropy.hpp"
 #include "QuantumCHPState.h"
 
-enum BoundaryCondition {
-	Periodic,
-	Open1,
-	Open2
-};
-
 class SandpileCliffordSimulator : public EntropySimulator {
 	private:
 		std::unique_ptr<QuantumCHPState> state;
@@ -21,8 +15,11 @@ class SandpileCliffordSimulator : public EntropySimulator {
 		uint system_size;
 
 		bool random_sites;
-		BoundaryCondition boundary_condition;
+		std::string boundary_condition;
 		uint feedback_mode;
+
+
+		bool bond_height;
 		
 		bool direction;
 		bool performed_unitary;
@@ -58,7 +55,7 @@ class SandpileCliffordSimulator : public EntropySimulator {
 			state = std::unique_ptr<QuantumCHPState>(new QuantumCHPState(system_size)); 
 		}
 
-		virtual float entropy(std::vector<uint> &qubits) const override { return state->entropy(qubits); }
+		virtual float entropy(const std::vector<uint> &qubits) const override { return state->entropy(qubits); }
 
 		virtual void timesteps(uint num_steps) override;
 		virtual void equilibration_timesteps(uint num_steps) override {

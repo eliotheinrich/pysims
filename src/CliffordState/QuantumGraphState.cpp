@@ -213,6 +213,10 @@ QuantumGraphState::QuantumGraphState(uint num_qubits, int seed) : CliffordState(
 	for (uint i = 0; i < num_qubits; i++) graph.add_vertex(HGATE);
 }
 
+QuantumGraphState::QuantumGraphState(Graph &graph, int seed) : CliffordState(seed) {
+	this->graph = Graph(graph);
+}
+
 void QuantumGraphState::apply_gatel(uint a, uint gate_id) {
 	graph.set_val(a, CLIFFORD_PRODUCTS[gate_id][graph.get_val(a)]);
 }
@@ -405,7 +409,7 @@ void QuantumGraphState::toggle_edge_gate(uint a, uint b) {
 	apply_gatel(b, cb);
 }
 
-float QuantumGraphState::entropy(std::vector<uint> &qubits) const {
+float QuantumGraphState::entropy(const std::vector<uint> &qubits) const {
 	Graph bipartite_graph = graph.partition(qubits);
 	float s = 2*bipartite_graph.num_vertices;
 	for (uint i = 0; i < bipartite_graph.num_vertices; i++) {

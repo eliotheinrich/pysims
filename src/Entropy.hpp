@@ -2,12 +2,14 @@
 #define SIM_H
 
 #include <iostream>
+#include <sstream>
 #include <DataFrame.hpp>
 #include <Simulator.hpp>
 #include <algorithm>
 #include <numeric>
 #include <math.h>
 
+#define DEFAULT_RENYI_INDICES "2"
 #define DEFAULT_SAMPLE_ENTROPY true
 
 #define DEFAULT_SAMPLE_ALL_PARTITION_SIZES false
@@ -32,14 +34,24 @@ static std::string print_vector(const std::vector<T> v) {
 }
 
 class Entropy {
-    protected:
-        uint cum_entropy(uint i) const {
-            std::vector<uint> sites(i+1);
-            std::iota(sites.begin(), sites.end(), 0);
+    private:
+        static std::vector<uint> parse_renyi_indices(const std::string &renyi_indices_str) {
+            std::vectir<uint> indices;
+            std::stringstream ss(renyi_indices_str);
+            std::string token;
 
-            return std::round(entropy(sites));
+            while (std::gtline(ss, token, ',')) {
+                try {
+                    uint number = std::stoi(token);
+                    indices.push_back(number);
+                } catch (const std::exception &e) {
+                }
+            }
+
+            return indices;
         }
 
+    protected:
         std::vector<uint> to_interval(uint x1, uint x2) const {
             assert(x1 < system_size);
             assert(x2 <= system_size);
@@ -101,16 +113,27 @@ class Entropy {
         uint partition_size;
         uint spacing;
 
+        std::vector<uint> renyi_indices;
+
         Entropy() {}
 
         Entropy(Params &params) {
             system_size = params.get<int>("system_size");
             partition_size = params.get<int>("partition_size", 0); // A partition_size value of 0 will result in measuring every possible partition size
             spacing = params.get<int>("spacing", DEFAULT_SPACING);
+
+            renyi_indices = parse_renyi_indices(params.get<std::string>("renyi_indices", DEFAULT_RENYI_INDICES));
         }
 
         // This is the primary virtual function which must be overloaded by inheriting classes
-        virtual float entropy(std::vector<uint> &sites) const=0;
+        virtual float entropy(const std::vector<uint> &sites) const=0;
+
+        uint cum_entropy(uint i) const {
+            std::vector<uint> sites(i+1);
+            std::iota(sites.begin(), sites.end(), 0);
+
+            return std::round(entropy(sites));
+        }
 
         Sample spatially_averaged_entropy(uint system_size, uint partition_size, uint spacing) const {
             std::vector<uint> sites(partition_size);

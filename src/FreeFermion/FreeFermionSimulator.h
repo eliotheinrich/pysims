@@ -34,7 +34,7 @@ class FreeFermionSimulator : public EntropySimulator {
 
         Eigen::MatrixXcd correlation_function() const;
 
-        virtual float entropy(std::vector<uint> &sites) const override;
+        virtual float entropy(const std::vector<uint> &sites) const override;
 
         CLONE(Simulator, FreeFermionSimulator)
 };

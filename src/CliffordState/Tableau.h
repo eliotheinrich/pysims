@@ -94,10 +94,10 @@ class PauliString {
         bool commutes_at(PauliString &p, uint i) const;
         bool commutes(PauliString &p) const;
 
-        // Returns the circuit which maps the PauliString onto ZII... if z or XII.. otherwise
+        // Returns the circuit which maps this PauliString onto ZII... if z or XII.. otherwise
         Circuit reduce(bool z) const;
 
-        // Returns the circuit which maps the PauliString onto p
+        // Returns the circuit which maps this PauliString onto p
         Circuit transform(PauliString const &p) const;
 
 		bool operator==(const PauliString &rhs) const;

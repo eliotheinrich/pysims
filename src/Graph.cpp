@@ -22,6 +22,19 @@ std::string Graph::to_string() const {
 	return s;
 }
 
+Graph Graph::erdos_renyi_graph(uint num_vertices, float p) {
+	Graph g(num_vertices);
+	thread_local std::minstd_rand r;
+	for (uint i = 0; i < num_vertices-1; i++) {
+		for (uint j = i+1; j < num_vertices; j++) {
+			if (float(r())/float(RAND_MAX) < p)
+				g.toggle_edge(i, j);
+		}
+	}
+
+	return g;
+}
+
 void Graph::remove_vertex(uint v) {
 	num_vertices--;
 	edges.erase(edges.begin() + v);
@@ -104,7 +117,7 @@ void Graph::local_complement(uint v) {
 }
 
 
-Graph Graph::partition(std::vector<uint> &nodes) const {
+Graph Graph::partition(const std::vector<uint> &nodes) const {
 	std::set<uint> nodess;
 	std::copy(nodes.begin(), nodes.end(), std::inserter(nodess, nodess.end()));
 	Graph new_graph;

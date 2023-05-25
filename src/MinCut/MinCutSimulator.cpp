@@ -13,7 +13,7 @@ std::string MinCutSimulator::to_string() const {
 	return state.to_string();
 }
 
-float MinCutSimulator::entropy(std::vector<uint> &qubits) const {
+float MinCutSimulator::entropy(const std::vector<uint> &qubits) const {
 	assert(qubits.size() % 2 == 0);
 	uint num_vertices = state.num_vertices;
 
