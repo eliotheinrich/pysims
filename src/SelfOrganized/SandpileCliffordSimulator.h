@@ -55,7 +55,7 @@ class SandpileCliffordSimulator : public EntropySimulator {
 			state = std::unique_ptr<QuantumCHPState>(new QuantumCHPState(system_size)); 
 		}
 
-		virtual float entropy(const std::vector<uint> &qubits) const override { return state->entropy(qubits); }
+		virtual float entropy(const std::vector<uint> &qubits, uint index) const override { return state->entropy(qubits); }
 
 		virtual void timesteps(uint num_steps) override;
 		virtual void equilibration_timesteps(uint num_steps) override {

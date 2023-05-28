@@ -22,7 +22,7 @@ class GroverProjectionSimulator : public EntropySimulator {
 
 		virtual void init_state() override;
 
-		virtual float entropy(const std::vector<uint> &qubits) const override { return state->entropy(qubits); }
+		virtual float entropy(const std::vector<uint> &qubits, uint index) const override { return state->entropy(qubits, index); }
 		virtual void timesteps(uint num_steps) override;
 
 		CLONE(Simulator, GroverProjectionSimulator)

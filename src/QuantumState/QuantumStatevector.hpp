@@ -2,6 +2,8 @@
 #define QSTATEVECTOR_STATE
 
 #include <Eigen/Dense>
+#include <unsupported/Eigen/KroneckerProduct>
+#include <unsupported/Eigen/MatrixFunctions>
 #include <random>
 
 #define EPS 1e-8
@@ -74,28 +76,8 @@ static Eigen::MatrixXcd full_circuit_unitary(const Eigen::MatrixXcd &gate, const
 	return full_gate;
 }
 
-static Eigen::MatrixXcd kronecker_product(const Eigen::MatrixXcd& A, const Eigen::MatrixXcd& B) {
-    int rows_A = A.rows();
-    int cols_A = A.cols();
-    int rows_B = B.rows();
-    int cols_B = B.cols();
-
-    int rows_C = rows_A * rows_B;
-    int cols_C = cols_A * cols_B;
-
-    Eigen::MatrixXcd C = Eigen::MatrixXcd::Zero(rows_C, cols_C);
-
-    for (int i = 0; i < rows_A; ++i) {
-        for (int j = 0; j < cols_A; ++j) {
-            C.block(i * rows_B, j * cols_B, rows_B, cols_B) = A(i, j) * B;
-        }
-    }
-
-    return C;
-}
-
 static Eigen::MatrixXcd density_matrix(const Eigen::VectorXcd &statevector) {
-	return kronecker_product(statevector.adjoint(), statevector);
+	return Eigen::kroneckerProduct(statevector.adjoint(), statevector);
 }
 
 static Eigen::MatrixXcd partial_trace(const Eigen::MatrixXcd &rho, const std::vector<uint> &traced_qubits) {
@@ -214,7 +196,7 @@ class QuantumStatevector {
 			data = data/norm();
 		}
 
-		float entropy(const std::vector<uint> &qubits) const {
+		float entropy(const std::vector<uint> &qubits, uint index) const {
 			for (auto const &q : qubits)
 				assert(q >= 0 && q < num_qubits);
 
@@ -228,8 +210,17 @@ class QuantumStatevector {
 
 			Eigen::MatrixXcd rho_a = partial_trace(rho, traced_qubits);
 
-			// For now, just compute 2nd Renyi entropy
-			return -std::log2((rho_a * rho_a).trace().real());
+			if (index == 0) {
+				uint rank = 0;
+				for (auto const &e : rho_a.eigenvalues()) {
+					if (std::abs(e) > EPS) rank++;
+				}
+				return std::log2(rank);
+			} else if (index == 1) {
+				return -(rho_a * rho_a.log()).trace().real();
+			} else {
+				return 1./(1. - index) * std::log(rho_a.pow(index).trace().real());
+			}
 		}
 
 		std::pair<double, double> probabilities(uint qubit) const {

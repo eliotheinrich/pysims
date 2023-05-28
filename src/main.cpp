@@ -2,7 +2,6 @@
 #include <QuantumAutomatonSimulator.h>
 #include <RandomCliffordSimulator.h>
 #include <SandpileCliffordSimulator.h>
-#include <BellSandpileSimulator.h>
 #include <SelfOrganizedCliffordSimulator.h>
 #include <MinCutSimulator.h>
 #include <BlockSimulator.h>
@@ -15,6 +14,10 @@
 #include <nlohmann/json.hpp>
 #include <iostream>
 #include <memory>
+
+#ifdef OMPI
+#include <mpi.h>
+#endif
 
 using json = nlohmann::json;
 
@@ -41,13 +44,23 @@ int main(int argc, char *argv[]) {
         return 1;
     }
 
-    if (argc != 3) std::cout << "Incorrect arguments.\n";
+#ifdef OMPI
+    MPI_Init(NULL, NULL);
+
+    // if running with OpenMPI, number of processes is provided to mpirun and not as an argument to main
+    if (argc != 2) {
+        DO_IF_MASTER(std::cout << "Incorrect arguments.\n";)
+    }
+    uint num_threads = 0;
+#else
+    if (argv != 3) std::cout << "Incorrect arguments.\n";
+    uint num_threads = std::stoi(argv[2]);
+#endif
 
     std::string filename = argv[1];
-    uint num_threads = std::stoi(argv[2]);
     bool valid = file_valid(filename);
     if (!valid) {
-        std::cout << "Cannot find " << filename << "; aborting.\n";
+        DO_IF_MASTER(std::cout << "Cannot find " << filename << "; aborting.\n";)
         return 1;
     }
 
@@ -55,7 +68,7 @@ int main(int argc, char *argv[]) {
     json data = json::parse(f);
     std::string circuit_type = data["circuit_type"];
 
-    std::cout << "Starting job\n";
+    DO_IF_MASTER(std::cout << "Starting job\n";)
 
     std::string data_filename = data["filename"];
     auto params = Params::load_json(data, true);
@@ -70,7 +83,6 @@ int main(int argc, char *argv[]) {
         else if (circuit_type == "random_clifford") sim = std::unique_ptr<Simulator>(new RandomCliffordSimulator(param));
         else if (circuit_type == "soc_clifford") sim = std::unique_ptr<Simulator>(new SelfOrganizedCliffordSimulator(param));
         else if (circuit_type == "sandpile_clifford") sim = std::unique_ptr<Simulator>(new SandpileCliffordSimulator(param));
-        else if (circuit_type == "bell_sandpile") sim = std::unique_ptr<Simulator>(new BellSandpileSimulator(param));
         else if (circuit_type == "mincut") sim = std::unique_ptr<Simulator>(new MinCutSimulator(param));
         else if (circuit_type == "blocksim") sim = std::unique_ptr<Simulator>(new BlockSimulator(param));
         else if (circuit_type == "graphsim") sim = std::unique_ptr<Simulator>(new GraphCliffordSimulator(param));
@@ -85,8 +97,14 @@ int main(int argc, char *argv[]) {
         configs.push_back(std::move(config));
     }
 
-    ParallelCompute pc(std::move(configs));
-    DataFrame df = pc.compute(num_threads, true);
-    df.write_json(data_prefix + data_filename);
-    std::cout << "Finishing job\n";
+    ParallelCompute pc(std::move(configs), num_threads);
+    pc.compute(true);
+    DO_IF_MASTER(
+        pc.write_json(data_prefix + data_filename);
+        std::cout << "Finishing job.\n";
+    )
+
+#ifdef OMPI
+    MPI_Finalize();
+#endif
 } 

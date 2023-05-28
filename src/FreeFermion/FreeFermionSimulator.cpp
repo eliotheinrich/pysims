@@ -73,7 +73,7 @@ Eigen::MatrixXcd FreeFermionSimulator::correlation_function() const {
     return (W * W.adjoint()).transpose();
 }
 
-float FreeFermionSimulator::entropy(const std::vector<uint> &sites) const {
+float FreeFermionSimulator::entropy(const std::vector<uint> &sites, uint index) const {
     uint subsystem_size = sites.size();
     Eigen::MatrixXcd C = correlation_function();
     

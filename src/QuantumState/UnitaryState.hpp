@@ -49,9 +49,9 @@ class UnitaryState {
 			return statevector;
 		}
 
-		float entropy(const std::vector<uint> &sites) const {
+		float entropy(const std::vector<uint> &sites, uint index) const {
 			// TODO avoid computing full density matrix
-			return get_statevector().entropy(sites);
+			return get_statevector().entropy(sites, index);
 		}
 
 		std::string to_string() const {

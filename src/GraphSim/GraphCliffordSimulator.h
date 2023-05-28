@@ -38,7 +38,7 @@ class GraphCliffordSimulator : public EntropySimulator {
 
 		virtual void init_state() override;
 
-		virtual float entropy(const std::vector<uint> &qubits) const override { return state->entropy(qubits); }
+		virtual float entropy(const std::vector<uint> &qubits, uint index) const override { return state->entropy(qubits); }
 		virtual void timesteps(uint num_steps) override;
 		virtual data_t take_samples() override;
 

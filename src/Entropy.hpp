@@ -34,23 +34,6 @@ static std::string print_vector(const std::vector<T> v) {
 }
 
 class Entropy {
-    private:
-        static std::vector<uint> parse_renyi_indices(const std::string &renyi_indices_str) {
-            std::vectir<uint> indices;
-            std::stringstream ss(renyi_indices_str);
-            std::string token;
-
-            while (std::gtline(ss, token, ',')) {
-                try {
-                    uint number = std::stoi(token);
-                    indices.push_back(number);
-                } catch (const std::exception &e) {
-                }
-            }
-
-            return indices;
-        }
-
     protected:
         std::vector<uint> to_interval(uint x1, uint x2) const {
             assert(x1 < system_size);
@@ -62,7 +45,6 @@ class Entropy {
                 interval.push_back(i);
                 i = (i + 1) % system_size;
                 if (i == x2) {
-                    //interval.push_back(i);
                     return interval;
                 }
             }
@@ -95,14 +77,14 @@ class Entropy {
             return x12*x34/(x13*x24);
         }
 
-		std::vector<float> compute_entropy_table() const {
+		std::vector<float> compute_entropy_table(uint index) const {
 			std::vector<float> table;
 
 			for (uint x1 = 0; x1 < system_size; x1++) {
 				uint x2 = (x1 + partition_size) % system_size;
 
 				std::vector<uint> sites = to_interval(x1, x2);
-				table.push_back(entropy(sites));
+				table.push_back(entropy(sites, index));
 			}
 
 			return table;
@@ -113,29 +95,25 @@ class Entropy {
         uint partition_size;
         uint spacing;
 
-        std::vector<uint> renyi_indices;
-
         Entropy() {}
 
         Entropy(Params &params) {
             system_size = params.get<int>("system_size");
             partition_size = params.get<int>("partition_size", 0); // A partition_size value of 0 will result in measuring every possible partition size
             spacing = params.get<int>("spacing", DEFAULT_SPACING);
-
-            renyi_indices = parse_renyi_indices(params.get<std::string>("renyi_indices", DEFAULT_RENYI_INDICES));
         }
 
         // This is the primary virtual function which must be overloaded by inheriting classes
-        virtual float entropy(const std::vector<uint> &sites) const=0;
+        virtual float entropy(const std::vector<uint> &sites, uint index) const=0;
 
-        uint cum_entropy(uint i) const {
+        float cum_entropy(uint i, uint index) const {
             std::vector<uint> sites(i+1);
             std::iota(sites.begin(), sites.end(), 0);
 
-            return std::round(entropy(sites));
+            return entropy(sites, index);
         }
 
-        Sample spatially_averaged_entropy(uint system_size, uint partition_size, uint spacing) const {
+        Sample spatially_averaged_entropy(uint system_size, uint partition_size, uint spacing, uint index) const {
             std::vector<uint> sites(partition_size);
             std::iota(sites.begin(), sites.end(), 0);
 
@@ -151,7 +129,7 @@ class Entropy {
                                offset_sites.begin(), 
                                [i, spacing, system_size](uint x) { return (x + i*spacing) % system_size; });
 
-                float st = entropy(offset_sites);
+                float st = entropy(offset_sites, index);
                 s += st;
                 s2 += st*st;
             }
@@ -164,12 +142,12 @@ class Entropy {
             return Sample(s, stdev, num_partitions);        
         }
 
-        Sample spatially_averaged_entropy() const {
-            return spatially_averaged_entropy(system_size, partition_size, spacing);
+        Sample spatially_averaged_entropy(uint index) const {
+            return spatially_averaged_entropy(system_size, partition_size, spacing, index);
         }
 
 
-        std::vector<Sample> entropy_surface() const {
+        std::vector<Sample> entropy_surface(uint index) const {
             std::vector<Sample> surface;
 
             std::vector<uint> sites;
@@ -178,7 +156,7 @@ class Entropy {
                 for (uint j = 0; j < system_size; j++) {
                     std::vector<uint> _sites(sites);
                     std::transform(_sites.begin(), _sites.end(), _sites.begin(), [system_size=system_size, j=j](uint q) { return (q + j) % system_size; } );
-                    surface.push_back(entropy(_sites));
+                    surface.push_back(entropy(_sites, index));
                 }
             }
 
@@ -188,8 +166,26 @@ class Entropy {
 };
 
 class EntropySimulator : public Simulator, public Entropy {
+    private:
+        static std::vector<uint> parse_renyi_indices(const std::string &renyi_indices_str) {
+            std::vector<uint> indices;
+            std::stringstream ss(renyi_indices_str);
+            std::string token;
+
+            while (std::getline(ss, token, ',')) {
+                try {
+                    uint number = std::stoi(token);
+                    indices.push_back(number);
+                } catch (const std::exception &e) {
+                }
+            }
+
+            return indices;
+        }
+
     protected:
         bool sample_entropy;
+        std::vector<uint> renyi_indices;
 
         bool sample_all_partition_sizes;
 
@@ -234,7 +230,6 @@ class EntropySimulator : public Simulator, public Entropy {
                                             
             sample_entropy = params.get<int>("sample_entropy", DEFAULT_SAMPLE_ENTROPY);
             sample_all_partition_sizes = params.get<int>("sample_all_partition_sizes", DEFAULT_SAMPLE_ALL_PARTITION_SIZES);
-            sample_surface_avalanche = params.get<int>("sample_surface_avalanche", DEFAULT_SAMPLE_SURFACE_AVALANCHE);
             sample_mutual_information = params.get<int>("sample_mutual_information", DEFAULT_SAMPLE_MUTUAL_INFORMATION);
             sample_fixed_mutual_information = params.get<int>("sample_fixed_mutual_information", DEFAULT_SAMPLE_FIXED_MUTUAL_INFORMATION);
 
@@ -253,22 +248,12 @@ class EntropySimulator : public Simulator, public Entropy {
                 x3 = params.get<int>("x3");
                 x4 = params.get<int>("x4");
             }
+
+            renyi_indices = parse_renyi_indices(params.get<std::string>("renyi_indices", DEFAULT_RENYI_INDICES));
         }
 
-        void add_surface_avalanche_samples(data_t &samples) {
-            std::vector<uint> new_surface(system_size, 0);
-            for (uint i = 0; i < system_size; i++) new_surface[i] = cum_entropy(i);
-
-            uint avalanche_size = 0;
-            for (uint i = 0; i < system_size; i++)
-                if (new_surface[i] != entropy_surface_vec[i]) avalanche_size++;
-
-            entropy_surface_vec = new_surface;
-            samples.emplace("avalanche_size", avalanche_size);
-        }
-
-        void add_mutual_information_samples(data_t &samples) const {
-            std::vector<float> entropy_table = compute_entropy_table();
+        void add_mutual_information_samples(data_t &samples, uint index) const {
+            std::vector<float> entropy_table = compute_entropy_table(index);
             for (uint x1 = 0; x1 < system_size; x1++) {
                 LOG("x1 = " << x1 << std::endl);
                 for (uint x3 = 0; x3 < system_size; x3++) {
@@ -282,11 +267,11 @@ class EntropySimulator : public Simulator, public Entropy {
 
                     float entropy1 = entropy_table[x1];
                     float entropy2 = entropy_table[x3];
-                    float entropy3 = entropy(combined_sites);
+                    float entropy3 = entropy(combined_sites, index);
                     
                     float mutual_information_sample = entropy1 + entropy2 - entropy3;
 
-                    std::string key = "I_" + std::to_string(get_bin_idx(eta));
+                    std::string key = "I" + std::to_string(index) + "_" + std::to_string(get_bin_idx(eta));
                     if (samples.count(key))
                         samples[key] = mutual_information_sample;
                     else
@@ -295,36 +280,37 @@ class EntropySimulator : public Simulator, public Entropy {
             }
         }
 
-        void add_fixed_mutual_information_samples(data_t &samples) const {
+        void add_fixed_mutual_information_samples(data_t &samples, uint index) const {
             std::vector<uint> interval1 = to_interval(x1, x2);
             std::vector<uint> interval2 = to_interval(x3, x4);
             std::vector<uint> interval3 = to_combined_interval(x1, x2, x3, x4);
 
-            samples.emplace("mutual_information", entropy(interval1) + entropy(interval2) - entropy(interval3));
+            samples.emplace("mutual_information" + std::to_string(index), 
+                            entropy(interval1, index) + entropy(interval2, index) - entropy(interval3, index));
         }
 
-        void add_entropy_all_partition_sizes(data_t &samples) const {
+        void add_entropy_all_partition_sizes(data_t &samples, uint index) const {
             for (uint i = 0; i < system_size; i++)
-                samples.emplace("entropy_" + std::to_string(i), spatially_averaged_entropy(system_size, i, spacing));
+                samples.emplace("entropy" + std::to_string(index) + "_"
+                                 + std::to_string(i), spatially_averaged_entropy(system_size, i, spacing, index));
         }
 
         virtual data_t take_samples() override {
             data_t samples;
 
-            if (sample_entropy)
-                samples.emplace("entropy", spatially_averaged_entropy());
-            
-            if (sample_all_partition_sizes)
-                add_entropy_all_partition_sizes(samples);
+            for (auto const &i : renyi_indices) {
+                if (sample_entropy)
+                    samples.emplace("entropy" + std::to_string(i), spatially_averaged_entropy(i));
+                
+                if (sample_all_partition_sizes)
+                    add_entropy_all_partition_sizes(samples, i);
 
-            if (sample_surface_avalanche)
-                add_surface_avalanche_samples(samples);
+                if (sample_mutual_information)
+                    add_mutual_information_samples(samples, i);
 
-            if (sample_mutual_information)
-                add_mutual_information_samples(samples);
-
-            if (sample_fixed_mutual_information)
-                add_fixed_mutual_information_samples(samples);
+                if (sample_fixed_mutual_information)
+                    add_fixed_mutual_information_samples(samples, i);
+            }
 
             return samples;
         }

@@ -40,16 +40,7 @@ class QuantumAutomatonSimulator : public EntropySimulator {
 
 		virtual void init_state() override;
 		
-		virtual float entropy(const std::vector<uint> &qubits) const override { return state->entropy(qubits); }
-		virtual std::map<std::string, std::vector<Sample>> take_vector_samples() override {
-			std::map<std::string, std::vector<Sample>> sample;
-			if (sample_surface) {
-				sample.emplace("surface_" + std::to_string(vsample_idx), entropy_surface());
-				vsample_idx++;
-			}
-
-			return sample;
-		}
+		virtual float entropy(const std::vector<uint> &qubits, uint index) const override { return state->entropy(qubits); }
 
 		virtual void timesteps(uint num_steps) override;
 

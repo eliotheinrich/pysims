@@ -115,13 +115,13 @@ void SandpileCliffordSimulator::right_boundary() {
 uint SandpileCliffordSimulator::sp_cum_entropy_left(uint i) const {
 	std::vector<uint> sites(i + 1);
 	std::iota(sites.begin(), sites.end(), 0);
-	return std::round(entropy(sites));
+	return std::round(entropy(sites, 1));
 }
 
 uint SandpileCliffordSimulator::sp_cum_entropy_right(uint i) const {
 	std::vector<uint> sites(system_size - i);
 	std::iota(sites.begin(), sites.end(), i);
-	return std::round(entropy(sites));
+	return std::round(entropy(sites, 1));
 }
 
 uint SandpileCliffordSimulator::sp_cum_entropy(uint i) const {

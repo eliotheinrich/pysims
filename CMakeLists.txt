@@ -8,18 +8,36 @@ endif()
 
 message("Build type: " ${CMAKE_BUILD_TYPE})
 
+
 set(CMAKE_DEBUG_POSTFIX "d")
 set(CMAKE_CXX_FLAGS_DEBUG "-g -Wall -Wno-unused-function -DDEBUG")
 set(CMAKE_CXX_FLAGS_RELEASE "-O3 -Wall -Wno-unused-function")
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin)
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/lib)
 
+set(UTIL_LIBS)
+
+# Add OpenMPI if needed
+if (OMPI)
+    message("OMPI required")
+    find_package(MPI REQUIRED)
+    include_directories(SYSTEM ${MPI_INCLUDE_PATH})
+    set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS} -fopenmp -DOMPI")
+    set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS} -fopenmp -DOMPI")
+    list(APPEND UTIL_LIBS ${MPI_CXX_LIBRARIES})
+endif()
+
 set(EIGEN_DIR $ENV{EIGEN_DIR})
-set(BSPL_DIR $ENV{BSPL_DIR})
 set(DF_DIR $ENV{DF_DIR})
 set(NLOHMANN_DIR $ENV{NLOHMANN_DIR})
 
-set(DF_DEPENDENCIES ${DF_DIR} ${BSPL_DIR} ${NLOHMANN_DIR})
+set(DF_DEPENDENCIES ${DF_DIR} ${NLOHMANN_DIR} ${EIGEN_DIR})
+
+# Add BSPL if needed
+if (NOT OMPI)
+    set(BSPL_DIR $ENV{BSPL_DIR})
+    list(APPEND DF_DEPENDENCIES ${BSPL_DIR})
+endif()
 
 add_library(simulator 
     src/Entropy.hpp
@@ -52,6 +70,7 @@ foreach(LIB IN LISTS SIMULATOR_LIBS)
     set_target_properties(${LIB} PROPERTIES DEBUG_POSTFIX ${CMAKE_DEBUG_POSTFIX})
 endforeach()
 
+# --- MAIN --- #
 add_executable(main src/main.cpp)
 target_include_directories(main PRIVATE 
     src 
@@ -59,9 +78,9 @@ target_include_directories(main PRIVATE
     ${MODEL_DIRS}
 )
 set_target_properties(main PROPERTIES DEBUG_POSTFIX ${CMAKE_DEBUG_POSTFIX})
-target_link_libraries(main PRIVATE ${SIMULATOR_LIBS})
+target_link_libraries(main PRIVATE ${SIMULATOR_LIBS} ${UTIL_LIBS})
 
-
+# --- TEST --- #
 add_executable(test src/test.cpp)
 target_include_directories(test PRIVATE
     src
@@ -69,4 +88,13 @@ target_include_directories(test PRIVATE
     ${MODEL_DIRS}
 )
 set_target_properties(test PROPERTIES DEBUG_POSTFIX ${CMAKE_DEBUG_POSTFIX})
-target_link_libraries(test PRIVATE ${SIMULATOR_LIBS})
+target_link_libraries(test PRIVATE ${SIMULATOR_LIBS} ${UTIL_LIBS})
+
+# --- SIMPLE TEST --- #
+add_executable(simple_test src/simpletest.cpp)
+target_include_directories(simple_test PRIVATE
+    src
+    ${DF_DEPENDENCIES}
+)
+set_target_properties(simple_test PROPERTIES DEBUG_POSTFIX ${CMAKE_DEBUG_POSTFIX})
+target_link_libraries(simple_test PRIVATE ${UTIL_LIBS})

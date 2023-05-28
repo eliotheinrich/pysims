@@ -8,7 +8,7 @@
 #include <map>
 #include <DataFrame.hpp>
 
-
+/*
 std::string print_pair(std::pair<double, double> p) {
     return std::to_string(p.first) + ", " + std::to_string(p.second);
 }
@@ -38,18 +38,18 @@ bool test_QuantumStatevector() {
 
     state.apply_gate(H, std::vector<uint>{0});
     std::cout << state.to_string() << "\n\n";
-    std::cout << state.entropy(std::vector<uint>{0}) << std::endl;
-    std::cout << state.entropy(std::vector<uint>{1}) << std::endl;
-    std::cout << state.entropy(std::vector<uint>{2}) << std::endl;
+    std::cout << state.entropy(std::vector<uint>{0}, 2) << std::endl;
+    std::cout << state.entropy(std::vector<uint>{1}, 2) << std::endl;
+    std::cout << state.entropy(std::vector<uint>{2}, 2) << std::endl;
     std::cout << print_pair(state.probabilities(0)) << std::endl;
     std::cout << print_pair(state.probabilities(1)) << std::endl;
     std::cout << print_pair(state.probabilities(2)) << std::endl;
 
     state.apply_gate(CX, std::vector<uint>{1, 0});
     std::cout << state.to_string() << "\n\n";
-    std::cout << state.entropy(std::vector<uint>{0}) << std::endl;
-    std::cout << state.entropy(std::vector<uint>{1}) << std::endl;
-    std::cout << state.entropy(std::vector<uint>{2}) << std::endl;
+    std::cout << state.entropy(std::vector<uint>{0}, 2) << std::endl;
+    std::cout << state.entropy(std::vector<uint>{1}, 2) << std::endl;
+    std::cout << state.entropy(std::vector<uint>{2}, 2) << std::endl;
 
     std::cout << print_pair(state.probabilities(0)) << std::endl;
     std::cout << print_pair(state.probabilities(1)) << std::endl;
@@ -78,7 +78,7 @@ bool test_GroverSimulation() {
         auto probs = gs.state->probabilities(q);
         std::cout << gs.state->get_statevector().data << std::endl;
         std::cout << "on qubit " << q << ": " << print_pair(probs) << " sum to " << probs.first + probs.second << std::endl;
-        std::cout << "entropy of projected qubit: " << gs.entropy(std::vector<uint>{q}) << "\n\n";
+        std::cout << "entropy of projected qubit: " << gs.entropy(std::vector<uint>{q}, 2) << "\n\n";
     }
 
     return true;
@@ -145,7 +145,19 @@ bool test_normalize() {
     return true;
 }
 
-int main() {
-    //test_normalize();
-    test_GroverSimulation();
+#include <omp.h>
+bool test_OMP() {
+    #pragma omp parallel 
+    {
+        printf("Hello world from thread %d\n", omp_get_thread_num());
+    }
+
+    return true;
 }
+*/
+
+#include <vector>
+#include <iostream>
+
+
+
