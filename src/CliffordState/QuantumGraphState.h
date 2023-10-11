@@ -1,5 +1,4 @@
-#ifndef QGRAPH_STATE
-#define QGRAPH_STATE
+#pragma once
 
 #include <vector>
 #include "Graph.h"
@@ -24,51 +23,50 @@
 // https://arxiv.org/abs/quant-ph/0504117
 class QuantumGraphState : public CliffordState {
 	private:
-		static const uint ZGATES[4];
-		static const uint CONJUGATION_TABLE[24];
-		static const uint HERMITIAN_CONJUGATE_TABLE[24];
-		static const uint CLIFFORD_DECOMPS[24][5];
-		static const uint CLIFFORD_PRODUCTS[24][24];
-		static const uint CZ_LOOKUP[24][24][2][3];
+		static const uint32_t ZGATES[4];
+		static const uint32_t CONJUGATION_TABLE[24];
+		static const uint32_t HERMITIAN_CONJUGATE_TABLE[24];
+		static const uint32_t CLIFFORD_DECOMPS[24][5];
+		static const uint32_t CLIFFORD_PRODUCTS[24][24];
+		static const uint32_t CZ_LOOKUP[24][24][2][3];
 
-		uint num_qubits;
+		uint32_t num_qubits;
 
-		void apply_gater(uint a, uint gate_id);
-		void apply_gatel(uint a, uint gate_id);
-		void local_complement(uint a);
-		void remove_vop(uint a, uint b);
-		bool isolated(uint a, uint b);
+		void apply_gater(uint32_t a, uint gate_id);
+		void apply_gatel(uint32_t a, uint gate_id);
+		void local_complement(uint32_t a);
+		void remove_vop(uint32_t a, uint b);
+		bool isolated(uint32_t a, uint b);
 
-		void mxr_graph(uint a, bool outcome);
-		void myr_graph(uint a, bool outcome);
+		void mxr_graph(uint32_t a, bool outcome);
+		void myr_graph(uint32_t a, bool outcome);
 
 
 	public:
 		Graph graph;
 
-        QuantumGraphState(uint num_qubits, int seed=-1);
+        QuantumGraphState(uint32_t num_qubits, int seed=-1);
         QuantumGraphState(Graph &graph, int seed=-1);
 
         virtual std::string to_string() const override;
-        virtual uint system_size() const override { return num_qubits; }
+        virtual uint32_t system_size() const override { return num_qubits; }
 
-        virtual void h_gate(uint a) override;
-        virtual void s_gate(uint a) override;
+        virtual void h_gate(uint32_t a) override;
+        virtual void s_gate(uint32_t a) override;
 
-		virtual void x_gate(uint a) override;
-		virtual void y_gate(uint a) override;
-		virtual void z_gate(uint a) override;
+		virtual void x_gate(uint32_t a) override;
+		virtual void y_gate(uint32_t a) override;
+		virtual void z_gate(uint32_t a) override;
 
-        virtual void cz_gate(uint a, uint b) override;
-        virtual bool mzr(uint a) override;
+        virtual void cz_gate(uint32_t a, uint b) override;
+		virtual double mzr_expectation(uint32_t a) override;
+        virtual bool mzr(uint32_t a) override;
 		
-		void mzr_graph(uint a, bool outcome);
+		void mzr_graph(uint32_t a, bool outcome);
 
-		void toggle_edge_gate(uint a, uint b);
+		void toggle_edge_gate(uint32_t a, uint b);
 
-        virtual float entropy(const std::vector<uint> &qubits) const override;
+        virtual double entropy(const std::vector<uint32_t> &qubits) const override;
 
-
+		virtual double sparsity() const override;
 };
-
-#endif

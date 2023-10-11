@@ -1,7 +1,6 @@
-#ifndef CLIFFORDSIM_H
-#define CLIFFORDSIM_H
+#pragma once
 
-#include "Tableau.h"
+#include "Tableau.hpp"
 #include <random>
 #include <deque>
 #include <algorithm>
@@ -24,7 +23,7 @@ class CliffordState {
         std::minstd_rand rng;
 
         // Returns the circuit which maps a PauliString to Z1 if z, otherwise to X1
-        void single_qubit_random_clifford(uint a, uint r) {
+        void single_qubit_random_clifford(uint32_t a, uint32_t r) {
             // r == 0 is identity, so do nothing in thise case
             if (r == 1) {
                 x_gate(a);
@@ -115,8 +114,8 @@ class CliffordState {
         }
 
         // Performs an iteration of the random clifford algorithm outlined in https://arxiv.org/pdf/2008.06011.pdf
-        void random_clifford_iteration(std::deque<uint> &qubits) {
-            uint num_qubits = qubits.size();
+        void random_clifford_iteration(std::deque<uint32_t> &qubits) {
+            uint32_t num_qubits = qubits.size();
 
             // If only acting on one qubit, can easily lookup from a table
             if (num_qubits == 1) {
@@ -129,15 +128,15 @@ class CliffordState {
             while (p1.commutes(p2))
                 p2 = PauliString::rand(num_qubits, &rng);
 
-            Circuit c1 = p1.reduce(false);
+            tableau_utils::Circuit c1 = p1.reduce(false);
 
             apply_circuit(c1, p2);
 
-            auto qubit_map_visitor = overloaded{
-                [&qubits](sgate s) -> Gate { return sgate{qubits[s.q]}; },
-                [&qubits](sdgate s) -> Gate { return sdgate{qubits[s.q]}; },
-                [&qubits](hgate s) -> Gate { return hgate{qubits[s.q]}; },
-                [&qubits](cxgate s) -> Gate { return cxgate{qubits[s.q1], qubits[s.q2]}; }
+            auto qubit_map_visitor = tableau_utils::overloaded{
+                [&qubits](tableau_utils::sgate s) ->  tableau_utils::Gate { return tableau_utils::sgate{qubits[s.q]}; },
+                [&qubits](tableau_utils::sdgate s) -> tableau_utils::Gate { return tableau_utils::sdgate{qubits[s.q]}; },
+                [&qubits](tableau_utils::hgate s) ->  tableau_utils::Gate { return tableau_utils::hgate{qubits[s.q]}; },
+                [&qubits](tableau_utils::cxgate s) -> tableau_utils::Gate { return tableau_utils::cxgate{qubits[s.q1], qubits[s.q2]}; }
             };
 
             for (auto &gate : c1)
@@ -149,7 +148,7 @@ class CliffordState {
             PauliString z1m = PauliString::basis(num_qubits, "Z", 0, true);
 
             if (p2 != z1p && p2 != z1m) {
-                Circuit c2 = p2.reduce(true);
+                tableau_utils::Circuit c2 = p2.reduce(true);
 
                 for (auto &gate : c2)
                     gate = std::visit(qubit_map_visitor, gate);
@@ -163,49 +162,51 @@ class CliffordState {
             if (seed == -1) rng = std::minstd_rand(std::rand());
             else rng = std::minstd_rand(seed);
         }
-
-        virtual ~CliffordState() {}
-
-        virtual uint system_size() const=0;
-
-        uint rand() {
+        
+        uint32_t rand() {
             return this->rng();
         }
 
-        float randf() {
-            return float(rand())/float(RAND_MAX);
+        double randf() {
+            return double(rand())/double(RAND_MAX);
         }
 
-        virtual void h_gate(uint a)=0;
-        virtual void s_gate(uint a)=0;
 
-        virtual void sd_gate(uint a) {
+        virtual ~CliffordState() {}
+
+        virtual uint32_t system_size() const=0;
+
+
+        virtual void h_gate(uint32_t a)=0;
+        virtual void s_gate(uint32_t a)=0;
+
+        virtual void sd_gate(uint32_t a) {
             s_gate(a);
             s_gate(a);
             s_gate(a);
         }
 
-        virtual void x_gate(uint a) {
+        virtual void x_gate(uint32_t a) {
             h_gate(a);
             z_gate(a);
             h_gate(a);
         }
-        virtual void y_gate(uint a) {
+        virtual void y_gate(uint32_t a) {
             x_gate(a);
             z_gate(a);
         }
-        virtual void z_gate(uint a) {
+        virtual void z_gate(uint32_t a) {
             s_gate(a);
             s_gate(a);
         }
 
-        virtual void cz_gate(uint a, uint b)=0;
-        virtual void cx_gate(uint a, uint b) {
+        virtual void cz_gate(uint32_t a, uint32_t b)=0;
+        virtual void cx_gate(uint32_t a, uint32_t b) {
             h_gate(b);
             cz_gate(a, b);
             h_gate(b);
         }
-        virtual void cy_gate(uint a, uint b) {
+        virtual void cy_gate(uint32_t a, uint32_t b) {
             s_gate(b);
             h_gate(b);
             cz_gate(a, b);
@@ -215,7 +216,13 @@ class CliffordState {
             s_gate(b);
         }
 
-        virtual void T4_gate(uint a, uint b, uint c, uint d) {
+        virtual void swap_gate(uint32_t a, uint32_t b) {
+            cx_gate(a, b);
+            cx_gate(b, a);
+            cx_gate(a, b);
+        }
+
+        virtual void T4_gate(uint32_t a, uint32_t b, uint32_t c, uint32_t d) {
             cx_gate(a, d);
             cx_gate(b, d);
             cx_gate(c, d);
@@ -229,15 +236,61 @@ class CliffordState {
             cx_gate(c, d);
         }
 
-        virtual bool mzr(uint a)=0;
+        virtual double mzr_expectation(uint32_t a)=0;
+        virtual double mzr_expectation() {
+            double e = 0.0;
 
-        virtual bool mxr(uint a) {
+            for (uint32_t i = 0; i < system_size(); i++)
+                e += mzr_expectation(i);
+            
+            return e/system_size();
+        }
+
+        virtual double mxr_expectation(uint32_t a) {
+            s_gate(a);
+            h_gate(a);
+            double p = mzr_expectation(a);
+            h_gate(a);
+            s_gate(a);
+            return p;
+        }
+        virtual double mxr_expectation() {
+            double e = 0.0;
+
+            for (uint32_t i = 0; i < system_size(); i++)
+                e += mxr_expectation(i);
+            
+            return e/system_size();
+        }
+
+        virtual double myr_expectation(uint32_t a) {
+            s_gate(a);
+            h_gate(a);
+            double p = mzr_expectation(a);
+            h_gate(a);
+            s_gate(a);
+            s_gate(a);
+            s_gate(a);
+            return p;
+        }
+        virtual double myr_expectation() {
+            double e = 0.0;
+
+            for (uint32_t i = 0; i < system_size(); i++)
+                e += myr_expectation(i);
+            
+            return e/system_size();
+        }
+
+        virtual bool mzr(uint32_t a)=0;
+
+        virtual bool mxr(uint32_t a) {
             h_gate(a);
             bool outcome = mzr(a);
             h_gate(a);
             return outcome;
         }
-        virtual bool myr(uint a) {
+        virtual bool myr(uint32_t a) {
             s_gate(a);
             h_gate(a);
             bool outcome = mzr(a);
@@ -248,20 +301,20 @@ class CliffordState {
             return outcome;
         }
 
-        void random_clifford(std::vector<uint> &qubits) {
+        void random_clifford(std::vector<uint32_t> &qubits) {
             for (auto q : qubits) assert(q < system_size());
-            uint num_qubits = qubits.size();
-            std::deque<uint> dqubits(num_qubits);
+            uint32_t num_qubits = qubits.size();
+            std::deque<uint32_t> dqubits(num_qubits);
             std::copy(qubits.begin(), qubits.end(), dqubits.begin());
-            for (uint i = 0; i < num_qubits; i++) {
+            for (uint32_t i = 0; i < num_qubits; i++) {
                 random_clifford_iteration(dqubits);
                 dqubits.pop_front();
             }
         }
 
         virtual std::string to_string() const { return ""; };
-        virtual float entropy(const std::vector<uint> &qubits) const=0;
+        virtual double entropy(const std::vector<uint32_t> &qubits) const=0;
+
+        virtual double sparsity() const=0;
 
 };
-
-#endif
