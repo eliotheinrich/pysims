@@ -208,12 +208,12 @@ const uint32_t QuantumGraphState::CZ_LOOKUP[24][24][2][3] =
 	{{1, 23, 20}, {0, 23, 20}}, {{1, 0, 10}, {0, 20, 10}}, {{1, 0, 8}, {0, 20, 8}}, {{1, 23, 23}, {0, 23, 23}}}};
 
 
-QuantumGraphState::QuantumGraphState(uint32_t num_qubits, int seed) : CliffordState(seed), num_qubits(num_qubits) {
+QuantumGraphState::QuantumGraphState(uint32_t num_qubits, int seed) : CliffordState(num_qubits, seed), num_qubits(num_qubits) {
 	graph = Graph();
 	for (uint32_t i = 0; i < num_qubits; i++) graph.add_vertex(HGATE);
 }
 
-QuantumGraphState::QuantumGraphState(Graph &graph, int seed) : CliffordState(seed) {
+QuantumGraphState::QuantumGraphState(Graph &graph, int seed) : CliffordState(graph.num_vertices, seed) {
 	this->graph = Graph(graph);
 }
 
@@ -420,9 +420,9 @@ void QuantumGraphState::toggle_edge_gate(uint32_t a, uint32_t b) {
 	apply_gatel(b, cb);
 }
 
-double QuantumGraphState::entropy(const std::vector<uint32_t> &qubits) const {
+double QuantumGraphState::entropy(const std::vector<uint32_t> &qubits, uint32_t index) const {
 	Graph bipartite_graph = graph.partition(qubits);
-	double s = 2*bipartite_graph.num_vertices;
+	int s = 2*bipartite_graph.num_vertices;
 	for (uint32_t i = 0; i < bipartite_graph.num_vertices; i++) {
 		if (bipartite_graph.get_val(i)) s--;
 	}
@@ -497,7 +497,7 @@ double QuantumGraphState::entropy(const std::vector<uint32_t> &qubits) const {
 		}
 	}
 
-	return s;
+	return static_cast<double>(s);
 }
 
 double QuantumGraphState::sparsity() const {

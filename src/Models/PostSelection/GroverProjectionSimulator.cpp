@@ -6,7 +6,8 @@
 
 #define DEFAULT_EPS 0.0
 
-GroverProjectionSimulator::GroverProjectionSimulator(Params &params) : EntropySimulator(params) {
+GroverProjectionSimulator::GroverProjectionSimulator(Params &params) : Simulator(params), sampler(params) {
+	system_size = get<int>(params, "system_size");
 	mzr_prob = get<double>(params, "mzr_prob");
 	nmax = get<int>(params, "nmax", DEFAULT_NMAX);
 

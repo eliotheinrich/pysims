@@ -10,15 +10,20 @@
 #define DEFAULT_SAMPLE_AVALANCHES false
 
 
-SandpileCliffordSimulator::SandpileCliffordSimulator(Params &params) : EntropySimulator(params) {
+SandpileCliffordSimulator::SandpileCliffordSimulator(Params &params) : Simulator(params), interface_sampler(params), entropy_sampler(params) {
+	system_size = get<int>(params, "system_size");
+
 	mzr_prob = get<double>(params, "mzr_prob");
 	unitary_prob = get<double>(params, "unitary_prob");
+	params.emplace("u", unitary_prob/mzr_prob);
 
 	boundary_condition = get<std::string>(params, "boundary_conditions", DEFAULT_BOUNDARY_CONDITIONS);
 	feedback_mode = get<int>(params, "feedback_mode", DEFAULT_FEEDBACK_MODE);
 	unitary_qubits = get<int>(params, "unitary_qubits", DEFAULT_UNITARY_QUBITS);
 	mzr_mode = get<int>(params, "mzr_mode", DEFAULT_MZR_MODE);
-	system_size = get<int>(params, "system_size");
+
+	sample_avalanche_sizes = get<int>(params, "sample_avalanche_sizes", false);
+	start_sampling = false;
 
 	// ------------------ TETRONIMOS -------------------
 	// |  (1)  |  (2)  |  (3)  |  (4)  |  (5)  |  (6)  |
@@ -61,10 +66,12 @@ SandpileCliffordSimulator::SandpileCliffordSimulator(Params &params) : EntropySi
 
 void SandpileCliffordSimulator::mzr(uint32_t i) {
 	if (state->randf() < mzr_prob) {
+		// (maybe) record entropy surface for avalanche calculations
 		std::vector<int> entropy_surface1;
+		if (sample_avalanche_sizes && start_sampling)
+			entropy_surface1 = state->get_entropy_surface<int>(2);
 
-		take_avalanche_samples();
-
+		// Do measurement
 		if (mzr_mode == 0) {
 			state->mzr(i);
 		} else if (mzr_mode == 1) {
@@ -77,7 +84,15 @@ void SandpileCliffordSimulator::mzr(uint32_t i) {
 				state->mzr(i+1);
 		}
 
-		take_avalanche_samples();
+		// record avalanche sizes
+		if (sample_avalanche_sizes && start_sampling) {
+			std::vector<int> entropy_surface2 = state->get_entropy_surface<int>(2);
+			int s = 0.0;
+			for (uint32_t i = 0; i < system_size; i++)
+				s += std::abs(entropy_surface1[i] - entropy_surface2[i]);
+
+			interface_sampler.record_size(s);
+		}
 	}
 }
 
@@ -92,9 +107,7 @@ void SandpileCliffordSimulator::unitary(uint32_t i) {
 		else if (unitary_qubits == 4)
 			qubits = std::vector<uint32_t>{i-1, i, i+1, i+2};
 
-		//take_avalanche_samples();			
 		state->random_clifford(qubits);
-		//take_avalanche_samples();			
 	}
 }
 
@@ -112,7 +125,10 @@ void SandpileCliffordSimulator::left_boundary() {
 	} else if (boundary_condition == "obc2") {
 		std::vector<uint32_t> qubits{0, 1};
 		state->random_clifford(qubits);
-	} else { assert(false); }
+	} else { 
+		std::string error_message = "Invalid boundary condition: " + boundary_condition;
+		throw std::invalid_argument(error_message);
+	}
 }
 
 void SandpileCliffordSimulator::right_boundary() {
@@ -154,9 +170,9 @@ void SandpileCliffordSimulator::feedback(uint32_t q) {
 		q2 = q + 1;
 	}
 
-	int s0 = std::round(cum_entropy(q0));
-	int s1 = std::round(cum_entropy(q));
-	int s2 = std::round(cum_entropy(q2));
+	int s0 = state->cum_entropy<int>(q0);
+	int s1 = state->cum_entropy<int>(q);
+	int s2 = state->cum_entropy<int>(q2);
 	uint32_t shape = get_shape(s0, s1, s2);
 
 	if (std::count(feedback_strategy.begin(), feedback_strategy.end(), shape)) 
@@ -176,4 +192,15 @@ void SandpileCliffordSimulator::timestep() {
 	}
 
 	right_boundary();
+}
+
+data_t SandpileCliffordSimulator::take_samples() {
+	data_t samples;
+
+	std::vector<int> entropy_surface = state->get_entropy_surface<int>(2);
+
+	interface_sampler.add_samples(samples, entropy_surface);
+	entropy_sampler.add_samples(samples, state);
+
+	return samples;
 }

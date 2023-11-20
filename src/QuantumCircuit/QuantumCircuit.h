@@ -4,6 +4,8 @@
 #include "CircuitUtils.h"
 #include "Instructions.hpp"
 
+#include <iostream>
+
 // --- Definitions for QuantumCircuit --- //
 
 class QuantumCircuit {
@@ -15,7 +17,7 @@ class QuantumCircuit {
 
 		QuantumCircuit(uint32_t num_qubits) : num_qubits(num_qubits) {}
 
-		QuantumCircuit(const QuantumCircuit& qc) { append(qc); };
+		QuantumCircuit(const QuantumCircuit& qc) : num_qubits(qc.num_qubits) { append(qc); };
 
 		std::string to_string() const;
 

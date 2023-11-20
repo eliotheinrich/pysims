@@ -33,7 +33,7 @@ void PartneringSimulator::init_state(uint32_t) {
 
 	for (uint32_t i = 0; i < num_nodes; i++) {
 		for (uint32_t j = num_nodes; j < 2*num_nodes; j++) {
-			double affinity;
+			double affinity = 0.0;
 			if (affinity_type == POWER_LAW) {
 				affinity = power_law(1.0, 2.0, -5.0, randf()) - 1.0;
 			} else if (affinity_type == DELTA) {
@@ -74,11 +74,6 @@ void PartneringSimulator::timesteps(uint32_t num_steps) {
 
 				weights.push_back(weight);
 			}
-
-
-			//for (auto w : weights)
-			//	std::cout << w << " ";
-			//std::cout << "\n";
 
 			std::discrete_distribution<uint32_t> dist(weights.begin(), weights.end());
 			uint32_t idx2 = dist(rng) + num_nodes;

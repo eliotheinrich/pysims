@@ -11,7 +11,7 @@ DensityMatrix::DensityMatrix(const Statevector& state) : QuantumState(state.num_
 }
 
 DensityMatrix::DensityMatrix(const QuantumCircuit& circuit) : DensityMatrix(circuit.num_qubits) {
-	QuantumState::evolve(circuit);
+	evolve(circuit);
 }
 
 DensityMatrix::DensityMatrix(const DensityMatrix& rho) : QuantumState(rho.num_qubits) {

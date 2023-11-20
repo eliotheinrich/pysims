@@ -49,7 +49,6 @@ class QuantumGraphState : public CliffordState {
         QuantumGraphState(Graph &graph, int seed=-1);
 
         virtual std::string to_string() const override;
-        virtual uint32_t system_size() const override { return num_qubits; }
 
         virtual void h_gate(uint32_t a) override;
         virtual void s_gate(uint32_t a) override;
@@ -66,7 +65,7 @@ class QuantumGraphState : public CliffordState {
 
 		void toggle_edge_gate(uint32_t a, uint b);
 
-        virtual double entropy(const std::vector<uint32_t> &qubits) const override;
+        virtual double entropy(const std::vector<uint32_t> &qubits, uint32_t index) const override;
 
 		virtual double sparsity() const override;
 };

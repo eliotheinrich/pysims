@@ -7,7 +7,8 @@
 #define DEFAULT_CLIFFORD_TYPE "chp"
 #define DEFAULT_SAMPLE_SURFACE false
 
-QuantumAutomatonSimulator::QuantumAutomatonSimulator(Params &params) : EntropySimulator(params) {
+QuantumAutomatonSimulator::QuantumAutomatonSimulator(Params &params) : Simulator(params), sampler(params) {
+	system_size = get<int>(params, "system_size");
 	clifford_type = parse_clifford_type(get<std::string>(params, "clifford_type", DEFAULT_CLIFFORD_TYPE));
 	mzr_prob = get<double>(params, "mzr_prob");
 	system_size = get<int>(params, "system_size");
@@ -39,4 +40,10 @@ void QuantumAutomatonSimulator::timesteps(uint32_t num_steps) {
 			}
 		}
 	}
+}
+
+data_t QuantumAutomatonSimulator::take_samples() {
+	data_t samples;
+	sampler.add_samples(samples, state);
+	return samples;
 }

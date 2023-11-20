@@ -1,18 +1,30 @@
 #pragma once
 
 #include <Graph.h>
-#include <DataFrame.hpp>
+#include <EntropySampler.hpp>
+#include <Simulator.hpp>
 #include <nlohmann/json.hpp>
-#include <random>
-#include <Entropy.hpp>
 
-class MinCutSimulator : public EntropySimulator {
-	private:
+class GraphEntropyState : public EntropyState {
+	public:
 		Graph state;
+		virtual double entropy(const std::vector<uint32_t>& sites, uint32_t index) const override;
+		GraphEntropyState()=default;
+		GraphEntropyState(uint32_t num_nodes) {
+			state = Graph(num_nodes);
+		}
+};
 
-		float mzr_prob;
+class MinCutSimulator : public Simulator {
+	private:
+		std::shared_ptr<GraphEntropyState> state;
+
+		uint32_t system_size;
+		double mzr_prob;
 
 		bool offset;
+
+		EntropySampler sampler;
 
 	public:
 		MinCutSimulator(Params &params);
@@ -20,11 +32,12 @@ class MinCutSimulator : public EntropySimulator {
 		std::string to_string() const;
 
 		virtual void init_state(uint32_t) override {
-			state = Graph(system_size/2);
+			state = std::make_shared<GraphEntropyState>(system_size/2);
 		}
 
 		virtual void timesteps(uint32_t num_steps) override;
-		virtual double entropy(const std::vector<uint32_t> &sites, uint32_t index) const override;
+
+		virtual data_t take_samples() override;
 
 		CLONE(Simulator, MinCutSimulator)
 };

@@ -1,11 +1,9 @@
 #pragma once
 
 #include "Tableau.hpp"
-#include <random>
 #include <deque>
 #include <algorithm>
-#include <assert.h>
-#include <variant>
+#include <EntropySampler.hpp>
 
 enum CliffordType { CHP, GraphSim };
 
@@ -13,15 +11,12 @@ static inline CliffordType parse_clifford_type(std::string s) {
     if (s == "chp") return CliffordType::CHP;
     else if (s == "graph") return CliffordType::GraphSim;
     else {
-        assert(false);
-        return CliffordType::CHP;
+        throw std::invalid_argument("Cannot parse clifford state type.");
     }
 }
 
-class CliffordState {
+class CliffordState : public EntropyState {
     private:
-        std::minstd_rand rng;
-
         // Returns the circuit which maps a PauliString to Z1 if z, otherwise to X1
         void single_qubit_random_clifford(uint32_t a, uint32_t r) {
             // r == 0 is identity, so do nothing in thise case
@@ -156,10 +151,17 @@ class CliffordState {
                 apply_circuit(c2, *this);
             }
         }
+    
+    protected:
+        std::minstd_rand rng;
+
 
     public:
-        CliffordState(int seed=-1) {
-            if (seed == -1) rng = std::minstd_rand(std::rand());
+        CliffordState(uint32_t num_qubits, int seed=-1) : EntropyState(num_qubits) {
+            if (seed == -1) {
+                thread_local std::random_device rd;
+                rng = std::minstd_rand(rd());
+            }
             else rng = std::minstd_rand(seed);
         }
         
@@ -168,13 +170,13 @@ class CliffordState {
         }
 
         double randf() {
-            return double(rand())/double(RAND_MAX);
+            return static_cast<double>(rand())/static_cast<double>(RAND_MAX);
         }
 
 
         virtual ~CliffordState() {}
 
-        virtual uint32_t system_size() const=0;
+        uint32_t system_size() const { return EntropyState::system_size; }
 
 
         virtual void h_gate(uint32_t a)=0;
@@ -211,9 +213,7 @@ class CliffordState {
             h_gate(b);
             cz_gate(a, b);
             h_gate(b);
-            s_gate(b);
-            s_gate(b);
-            s_gate(b);
+            sd_gate(b);
         }
 
         virtual void swap_gate(uint32_t a, uint32_t b) {
@@ -247,11 +247,9 @@ class CliffordState {
         }
 
         virtual double mxr_expectation(uint32_t a) {
-            s_gate(a);
             h_gate(a);
             double p = mzr_expectation(a);
             h_gate(a);
-            s_gate(a);
             return p;
         }
         virtual double mxr_expectation() {
@@ -268,9 +266,7 @@ class CliffordState {
             h_gate(a);
             double p = mzr_expectation(a);
             h_gate(a);
-            s_gate(a);
-            s_gate(a);
-            s_gate(a);
+            sd_gate(a);
             return p;
         }
         virtual double myr_expectation() {
@@ -295,14 +291,11 @@ class CliffordState {
             h_gate(a);
             bool outcome = mzr(a);
             h_gate(a);
-            s_gate(a);
-            s_gate(a);
-            s_gate(a);
+            sd_gate(a);
             return outcome;
         }
 
         void random_clifford(std::vector<uint32_t> &qubits) {
-            for (auto q : qubits) assert(q < system_size());
             uint32_t num_qubits = qubits.size();
             std::deque<uint32_t> dqubits(num_qubits);
             std::copy(qubits.begin(), qubits.end(), dqubits.begin());
@@ -313,8 +306,6 @@ class CliffordState {
         }
 
         virtual std::string to_string() const { return ""; };
-        virtual double entropy(const std::vector<uint32_t> &qubits) const=0;
 
         virtual double sparsity() const=0;
-
 };

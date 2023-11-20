@@ -8,6 +8,9 @@
 #include <math.h>
 #include <memory>
 
+
+#include <iostream>
+
 // --- Definitions for gates/measurements --- //
 
 #define GATECLONE(A) virtual std::shared_ptr<Gate> clone() override { return std::shared_ptr<Gate>(new A(qbits)); }
@@ -64,7 +67,8 @@ class MatrixGate : public Gate {
 		}
 
 		Eigen::MatrixXcd define(const std::vector<double>& params) const override {
-			assert(params.size() == 0);
+			if (params.size() != 0)
+				throw std::invalid_argument("Cannot pass parameters to MatrixGate.");
 			return data;
 		}
 
@@ -94,14 +98,17 @@ typedef std::variant<std::shared_ptr<Gate>, Measurement> Instruction;
 class RxRotationGate : public Gate {
 	public:
 		RxRotationGate(const std::vector<uint32_t>& qbits) : Gate(qbits) {
-			assert(qbits.size() == 1);
+			if (qbits.size() != 1)
+				throw std::invalid_argument("Rx gate can only have a single qubit.");
 		}
 
 		virtual uint32_t num_params() const override { return 1; }
 		virtual std::string label() const override { return "Rx"; }
 
 		virtual Eigen::MatrixXcd define(const std::vector<double>& params) const override {
-			assert(params.size() == num_params());
+			if (params.size() != num_params())
+				throw std::invalid_argument("Invalid number of params passed to RxRotationGate.define().");
+
 			Eigen::MatrixXcd gate = Eigen::MatrixXcd::Zero(2, 2);
 
 			double t = params[0];
@@ -116,14 +123,17 @@ class RxRotationGate : public Gate {
 class RyRotationGate : public Gate {
 	public:
 		RyRotationGate(const std::vector<uint32_t>& qbits) : Gate(qbits) {
-			assert(qbits.size() == 1);
+			if (qbits.size() != 1)
+				throw std::invalid_argument("Ry gate can only have a single qubit.");
 		}
 
 		virtual uint32_t num_params() const override { return 1; }
 		virtual std::string label() const override { return "Ry"; }
 
 		virtual Eigen::MatrixXcd define(const std::vector<double>& params) const override {
-			assert(params.size() == num_params());
+			if (params.size() != num_params())
+				throw std::invalid_argument("Invalid number of params passed to RyRotationGate.define().");
+
 			Eigen::MatrixXcd gate = Eigen::MatrixXcd::Zero(2, 2);
 
 			double t = params[0];
@@ -138,14 +148,17 @@ class RyRotationGate : public Gate {
 class RzRotationGate : public Gate {
 	public:
 		RzRotationGate(const std::vector<uint32_t>& qbits) : Gate(qbits) {
-			assert(qbits.size() == 1);
+			if (qbits.size() != 1)
+				throw std::invalid_argument("Rz gate can only have a single qubit.");
 		}
 
 		virtual uint32_t num_params() const override { return 1; }
 		virtual std::string label() const override { return "Rz"; }
 
 		virtual Eigen::MatrixXcd define(const std::vector<double>& params) const override {
-			assert(params.size() == num_params());
+			if (params.size() != num_params())
+				throw std::invalid_argument("Invalid number of params passed to RzRotationGate.define().");
+
 			Eigen::MatrixXcd gate = Eigen::MatrixXcd::Zero(2, 2);
 
 			double t = params[0];

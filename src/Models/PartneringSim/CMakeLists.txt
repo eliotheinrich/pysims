@@ -1,4 +1,5 @@
 add_library(partnersim
     PartneringSimulator.cpp
 )
-target_include_directories(partnersim PUBLIC ${CMAKE_SOURCE_DIR}/src)
+target_link_libraries(partnersim graph)
+target_include_directories(partnersim PRIVATE ${CMAKE_SOURCE_DIR}/src)

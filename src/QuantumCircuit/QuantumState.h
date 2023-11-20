@@ -2,11 +2,15 @@
 
 #include "QuantumCircuit.h"
 
+#include <EntropySampler.hpp>
+
 #include <map>
 #include <bitset>
 
 #include <Eigen/Dense>
 #include <itensor/all.h>
+
+#include <iostream>
 
 #define QS_ATOL 1e-8
 
@@ -63,7 +67,7 @@ namespace quantumstate_utils {
 }
 
 
-class QuantumState {
+class QuantumState : public EntropyState {
 	protected:
         std::minstd_rand rng;
 
@@ -74,8 +78,9 @@ class QuantumState {
 		uint32_t num_qubits;
 		uint32_t basis;
 
+		virtual ~QuantumState() = default;
 		QuantumState() = default;
-		QuantumState(uint32_t num_qubits, int s=-1) : num_qubits(num_qubits), basis(1u << num_qubits) {
+		QuantumState(uint32_t num_qubits, int s=-1) : EntropyState(num_qubits), num_qubits(num_qubits), basis(1u << num_qubits) {
 			if (s == -1)
 				seed(std::rand());
 			else
@@ -87,8 +92,6 @@ class QuantumState {
 		}
 		virtual std::string to_string() const=0;
 
-		virtual double entropy(const std::vector<uint32_t> &qubits, uint32_t index) const=0;
-
 		virtual void evolve(const Eigen::MatrixXcd& gate, const std::vector<uint32_t>& qbits)=0;
 		virtual void evolve(const Eigen::MatrixXcd& gate) {
 			std::vector<uint32_t> qbits(num_qubits);
@@ -97,10 +100,10 @@ class QuantumState {
 		}
 		virtual void evolve(const Eigen::Matrix2cd& gate, uint32_t q) { evolve(gate, {q}); }
 		virtual void evolve(const Eigen::VectorXcd& gate, const std::vector<uint32_t>& qbits) { 
-			evolve(static_cast<Eigen::MatrixXcd>(gate.asDiagonal()), qbits); 
+			evolve(Eigen::MatrixXcd(gate.asDiagonal()), qbits); 
 		}
 		virtual void evolve(const Eigen::VectorXcd& gate) { 
-			evolve(static_cast<Eigen::MatrixXcd>(gate.asDiagonal())); 
+			evolve(Eigen::MatrixXcd(gate.asDiagonal())); 
 		}
 		virtual void evolve(const Measurement& measurement) {
 			for (auto q : measurement.qbits)
@@ -159,6 +162,7 @@ class DensityMatrix : public QuantumState {
 		virtual void evolve(const Eigen::MatrixXcd& gate, const std::vector<uint32_t>& qbits) override;
 		virtual void evolve(const Eigen::VectorXcd& gate, const std::vector<uint32_t>& qbits) override;
 		virtual void evolve(const Eigen::VectorXcd& gate) override;
+		virtual void evolve(const QuantumCircuit& circuit) override { QuantumState::evolve(circuit); }
 
 		virtual bool measure(uint32_t q) override;
 		virtual std::vector<bool> measure_all() override;
@@ -186,6 +190,7 @@ class Statevector : public QuantumState {
 		virtual void evolve(const Eigen::MatrixXcd &gate) override;
 		virtual void evolve(const Eigen::VectorXcd &gate, const std::vector<uint32_t> &qubits) override;
 		virtual void evolve(const Eigen::VectorXcd &gate) override;
+		virtual void evolve(const QuantumCircuit& circuit) override { QuantumState::evolve(circuit); }
 
 		double measure_probability(uint32_t q, bool outcome) const;
 		virtual bool measure(uint32_t q) override;
@@ -210,6 +215,7 @@ class UnitaryState : public QuantumState {
 
 		virtual void evolve(const Eigen::MatrixXcd &gate, const std::vector<uint32_t> &qubits);
 		virtual void evolve(const Eigen::MatrixXcd &gate) override;
+		virtual void evolve(const QuantumCircuit& circuit) override { QuantumState::evolve(circuit); }
 
 		virtual bool measure(uint32_t q) {
 			throw std::invalid_argument("Cannot perform measurement on UnitaryState.");
@@ -221,7 +227,6 @@ class UnitaryState : public QuantumState {
 
 		double probabilities(uint32_t z, const std::vector<uint32_t>& qubits) const;
 };
-
 
 
 itensor::ITensor tensor_slice(const itensor::ITensor& tensor, const itensor::Index& index, int i);
@@ -260,9 +265,9 @@ class MatrixProductState : public QuantumState {
 
 		virtual void evolve(const Eigen::Matrix2cd& gate, uint32_t qubit) override;
 		virtual void evolve(const Eigen::MatrixXcd& gate, const std::vector<uint32_t>& qubits) override;
+		virtual void evolve(const QuantumCircuit& circuit) override { QuantumState::evolve(circuit); }
 
 		double measure_probability(uint32_t q, bool outcome) const;
 		virtual bool measure(uint32_t q) override;
 		void measure_propagate(uint32_t q, const Eigen::Matrix2cd& proj);
 };
-

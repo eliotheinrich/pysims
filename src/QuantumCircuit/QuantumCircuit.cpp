@@ -80,10 +80,10 @@ QuantumCircuit QuantumCircuit::bind_params(const std::vector<double>& params) co
 	for (auto const &inst : instructions) {
 		std::visit(quantumcircuit_utils::overloaded{
 			[&qc, &n, &params](std::shared_ptr<Gate> gate) {
-				std::vector<double> gate_params;
+				std::vector<double> gate_params(gate->num_params());
 
-				for (uint32_t i = n; i < n + gate->num_params(); i++)
-					gate_params.push_back(params[i]);
+				for (uint32_t i = 0; i < gate->num_params(); i++)
+					gate_params[i] = params[i + n];
 			
 				n += gate->num_params();
 				qc.add_gate(gate->define(gate_params), gate->qbits);
@@ -190,17 +190,17 @@ QuantumCircuit hardware_efficient_ansatz(
 
 	for (uint32_t i = 0; i < depth; i++) {
 		for (uint32_t q = 0; q < num_qubits/2; q++) {
-			auto targets = get_targets(i, q, num_qubits);
+			auto [q1, q2] = get_targets(i, q, num_qubits);
 
 			for (auto const &s : rotation_gates) {
-				auto gate = parse_gate(s, std::vector<uint32_t>{targets.first});
+				auto gate = parse_gate(s, std::vector<uint32_t>{q1});
 				assert(gate->num_qubits == 1);
 				circuit.add_gate(gate);
-				gate = parse_gate(s, std::vector<uint32_t>{targets.second});
+				gate = parse_gate(s, std::vector<uint32_t>{q2});
 				circuit.add_gate(gate);
 			}
 
-			auto entangler = parse_gate(entangling_gate, std::vector<uint32_t>{targets.first, targets.second});
+			auto entangler = parse_gate(entangling_gate, std::vector<uint32_t>{q1, q2});
 			assert(entangler->num_qubits == 2);
 			circuit.add_gate(entangler);
 		}

@@ -1,15 +1,11 @@
 #pragma once
 
-#include <DataFrame.hpp>
-#include <Entropy.hpp>
+#include <Simulator.hpp>
 #include <QuantumState.h>
 
-
-
-class GroverProjectionSimulator : public EntropySimulator {
+class GroverProjectionSimulator : public Simulator {
 	private:
-		std::binomial_distribution<uint32_t> dist;
-
+		uint32_t system_size;
 		float mzr_prob;
 		uint32_t nmax;
 		double eps;
@@ -18,6 +14,11 @@ class GroverProjectionSimulator : public EntropySimulator {
 
 
 		bool offset;
+
+		std::binomial_distribution<uint32_t> dist;
+
+		EntropySampler sampler;
+
 
 	public:
 		std::shared_ptr<UnitaryState> state;
@@ -32,7 +33,6 @@ class GroverProjectionSimulator : public EntropySimulator {
 		GroverProjectionSimulator(Params &params);
 
 		virtual void init_state(uint32_t num_threads) override;
-		virtual double entropy(const std::vector<uint32_t> &qubits, uint32_t index) const override { return state->entropy(qubits, index); }
 		virtual void timesteps(uint32_t num_steps) override;
 
 		CLONE(Simulator, GroverProjectionSimulator)

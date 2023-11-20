@@ -2,6 +2,8 @@
 #include <unsupported/Eigen/MatrixFunctions>
 #include <unordered_set>
 
+#include <iostream>
+
 
 bool qargs_unique(const std::vector<uint32_t>& qargs) {
 	std::unordered_set<uint32_t> unique;
@@ -93,10 +95,10 @@ Eigen::MatrixXcd random_real_unitary() {
 }
 
 Eigen::MatrixXcd full_circuit_unitary(const Eigen::MatrixXcd &gate, const std::vector<uint32_t> &qubits, uint32_t total_qubits) {
-	if (total_qubits >= qubits.size())
+	if (total_qubits < qubits.size())
 		throw std::invalid_argument("Too many qubits provided for gate.");
 
-	if (1u << qubits.size() == gate.rows() && 1u << qubits.size() == gate.cols())
+	if (!((1u << qubits.size()) == gate.rows() && (1u << qubits.size()) == gate.cols()))
 		throw std::invalid_argument("Gate has invalid dimensions for provided qubits.");
 
 	uint32_t s = 1u << total_qubits;
@@ -125,7 +127,7 @@ Eigen::MatrixXcd full_circuit_unitary(const Eigen::MatrixXcd &gate, const std::v
 			full_gate(i, j) = gate(r, c);
 		}
 	}
-
+	
 	return full_gate;
 }
 

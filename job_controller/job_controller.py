@@ -26,18 +26,24 @@ def submit_jobs(
         atol=1e-5,
         rtol=1e-5,
         serialize=False,
-        average_congruent_runs=True
+        average_congruent_runs=True,
+        record_error=True,
+        parallelization_type=0
     ):
 
     metaparams = {
         "num_threads": ncores,
         "num_threads_per_task": ncores_per_task,
+        
         "atol": atol,
         "rtol": rtol,
+         
+        "average_congruent_runs": average_congruent_runs,
+        "parallelization_type": parallelization_type,
+        
         "serialize": serialize,
-        "average_congruent_runs": average_congruent_runs
+        "record_error": record_error
     }
-    
     
     
     if partition == "default":
@@ -66,9 +72,11 @@ def submit_jobs(
 
             os.chdir(f'{case_dir}')
             subprocess.run(script)
+        
+        
 
             
-        combine_script = ["python", "../combine_data.py", job_name]
+        combine_script = ["python", "../combine_data.py", job_name, record_error]
         subprocess.run(combine_script)
         subprocess.run(["mv", "-f", f"{job_name}.json", ".."])
         if cleanup:
@@ -110,14 +118,14 @@ def submit_jobs(
             f"#SBATCH --job-name={job_name}",
             f"#SBATCH --cpus-per-task=1",
             f"#SBATCH --nodes=1 --ntasks=1",
-            f"#SBATCH --mem=8gb",
+            f"#SBATCH --mem=50gb",
             f"#SBATCH --time=00:30:00",
 
             f"module load anaconda/2021.11-p3.9",
             f"conda activate test",
             f"cd {case_dir}",
             
-            f"python ../combine_data.py {job_name}",
+            f"python ../combine_data.py {job_name} {record_error}",
             f"mv -f {job_name}.json ..",
         ]
         

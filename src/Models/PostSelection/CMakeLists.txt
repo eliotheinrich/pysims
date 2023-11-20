@@ -3,4 +3,4 @@ add_library(post_selection
     GroverProjectionSimulator.cpp
 )
 target_link_libraries(post_selection clifford_state quantum_circuit random_clifford)
-target_include_directories(post_selection PUBLIC ${CMAKE_SOURCE_DIR}/src ${CLIFFORD_DIR} ${QUANTUMCIRCUIT_DIR} ${RC_DIR})
+target_include_directories(post_selection PUBLIC ${CLIFFORD_DIR} ${QUANTUMCIRCUIT_DIR} ${RC_DIR})

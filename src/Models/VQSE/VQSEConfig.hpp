@@ -1,8 +1,6 @@
 #pragma once
 
 #include "VQSE.hpp"
-#include <DataFrame.hpp>
-
 
 // Ansatz types
 #define HARDWARE_EFFICIENT_ANSATZ 0
@@ -16,15 +14,22 @@
 #define DEFAULT_POST_MEASUREMENT_LAYERS 0
 #define DEFAULT_DENSITY_MATRIX_TARGET true
 
+// VQSE settings
 #define DEFAULT_SIMULATED_SAMPLING false
 #define DEFAULT_NUM_SHOTS 1024
-
 #define DEFAULT_UPDATE_FREQUENCY 30
 
+// Gradient settings
 #define DEFAULT_GRADIENT_TYPE 0
 #define DEFAULT_NOISY_GRADIENTS false
 #define DEFAULT_GRADIENT_NOISE 0.01
 
+// Parameter initialization settings
+#define ZERO_PARAMS 0
+#define RANDOM_PARAMS 1
+#define DEFAULT_PARAMS_INIT RANDOM_PARAMS
+
+// Data recording settings
 #define DEFAULT_RECORD_ERR true
 #define DEFAULT_RECORD_FIDELITY false
 #define DEFAULT_RECORD_ENERGY_LEVELS false
@@ -44,6 +49,8 @@ class VQSEConfig : public Config {
 		uint32_t gradient_type;
 		bool noisy_gradients;
 		double gradient_noise;
+
+		uint32_t params_init;
 	
 		bool density_matrix_target;
 		bool simulated_sampling;
@@ -139,6 +146,26 @@ class VQSEConfig : public Config {
 			return prepare_ansatz(num_qubits, ansatz_depth, DEFAULT_ANSATZ, rotation_gates, entangling_gate);
 		}
 
+		std::vector<double> initialize_params() const {
+			uint32_t num_params = ansatz.num_params();
+
+			std::vector<double> params(num_params, 0.0);
+
+			thread_local std::random_device rd;
+			std::mt19937 gen(rd());
+
+			if (params_init == ZERO_PARAMS) { // All params init to 0
+				// Do nothing
+			} else if (params_init == RANDOM_PARAMS) { // Randomly on [0, 2*pi]
+				for (uint32_t i = 0; i < num_params; i++) {
+					params[i] = 2*PI*double(gen())/double(RAND_MAX);
+				}
+			}
+
+			return params;
+		}
+
+
 	public:
 		VQSEConfig(Params &params) : Config(params) {
 			// VQSE configuration
@@ -149,6 +176,7 @@ class VQSEConfig : public Config {
 			update_frequency = get<int>(params, "update_frequency", DEFAULT_UPDATE_FREQUENCY);
 			simulated_sampling = get<int>(params, "simulated_sampling", DEFAULT_SIMULATED_SAMPLING);
 			num_shots = get<int>(params, "num_shots", DEFAULT_NUM_SHOTS);
+			params_init = get<int>(params, "params_init", DEFAULT_PARAMS_INIT);
 
 			// Gradient configuration	
 			gradient_type = get<int>(params, "gradient_type", DEFAULT_GRADIENT_TYPE);
@@ -224,7 +252,7 @@ class VQSEConfig : public Config {
 			ansatz = VQSEConfig::prepare_ansatz(num_qubits, ansatz_depth, ansatz_type, rotation_gates, entangling_gate);
 			ADAMOptimizer optimizer(std::nullopt, std::nullopt, std::nullopt, std::nullopt, gradient_type, noisy_gradients, gradient_noise);
 			vqse = VQSE(ansatz, m, num_iterations, hamiltonian_type, update_frequency, simulated_sampling, num_shots, optimizer);
-
+			
 			// Randomly select qubits to measure
 			std::vector<uint32_t> qubits(num_qubits);
 			std::iota(qubits.begin(), qubits.end(), 0);
@@ -282,7 +310,7 @@ class VQSEConfig : public Config {
 				}
 			};
 
-			std::vector<double> initial_params(ansatz.num_params());
+			std::vector<double> initial_params = initialize_params();
 			vqse.optimize(target, initial_params, callback);
 
 

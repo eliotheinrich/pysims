@@ -1,7 +1,6 @@
 #pragma once
 
-#include <DataFrame.hpp>
-#include <Entropy.hpp>
+#include <Simulator.hpp>
 #include <QuantumGraphState.h>
 
 enum EvolutionType {
@@ -16,23 +15,27 @@ enum FeedbackType {
 	DistanceThreshold
 };
 
-class SelfOrganizedCliffordSimulator : public EntropySimulator {
+class SelfOrganizedCliffordSimulator : public Simulator {
 	private:
+		uint32_t system_size;
+
 		FeedbackType feedback_type;
 		EvolutionType evolution_type;
 
-		std::unique_ptr<QuantumGraphState> state;
-		float mzr_prob;
-		float x;
+		std::shared_ptr<QuantumGraphState> state;
+		double mzr_prob;
+		double x;
 
 		uint32_t gate_width;
 
-		float threshold;
-		float dx;
+		double threshold;
+		double dx;
 
 		bool initial_offset;
 
 		uint32_t avalanche_size;
+
+		EntropySampler sampler;
 
 		
 		uint32_t dist(int i, int j) const;
@@ -59,7 +62,6 @@ class SelfOrganizedCliffordSimulator : public EntropySimulator {
 		SelfOrganizedCliffordSimulator(Params &params);
 
 		virtual void init_state(uint32_t) override;
-		virtual double entropy(const std::vector<uint32_t> &qubits, uint32_t index) const override { return state->entropy(qubits); }
 		virtual void timesteps(uint32_t num_steps) override;
 
 		virtual data_t take_samples() override;

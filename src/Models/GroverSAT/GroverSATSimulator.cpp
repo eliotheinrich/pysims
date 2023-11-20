@@ -81,7 +81,9 @@ bool ConjugateNormalForm::evaluate(const std::vector<bool>& vals) const {
 	return true;
 }
 
-GroverSATSimulator::GroverSATSimulator(Params &params) : EntropySimulator(params) {
+GroverSATSimulator::GroverSATSimulator(Params &params) : Simulator(params), sampler(params) {
+	system_size = get<int>(params, "system_size");
+
 	num_variables = get<int>(params, "num_variables");
 	num_clauses = get<int>(params, "num_clauses");
 
@@ -133,7 +135,8 @@ void GroverSATSimulator::add_fidelity_samples(data_t& samples) {
 }
 
 data_t GroverSATSimulator::take_samples() {
-	data_t samples = EntropySimulator::take_samples();
+	data_t samples;
+	sampler.add_samples(samples, state);
 
 	if (record_fidelity)
 		add_fidelity_samples(samples);

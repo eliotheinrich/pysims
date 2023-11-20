@@ -1,11 +1,12 @@
 #pragma once
 
-#include <DataFrame.hpp>
-#include "Entropy.hpp"
-#include "QuantumGraphState.h"
+#include <Simulator.hpp>
+#include <QuantumGraphState.h>
 
-class GraphCliffordSimulator : public EntropySimulator {
+class GraphCliffordSimulator : public Simulator {
 	private:
+		uint32_t system_size;
+
 		std::string evolution_type;
 
 		std::shared_ptr<QuantumGraphState> state;
@@ -18,6 +19,8 @@ class GraphCliffordSimulator : public EntropySimulator {
 		float a;
 
 		std::minstd_rand rng;
+
+		EntropySampler sampler;
 
 		void mzr(uint32_t q);
 
@@ -37,7 +40,6 @@ class GraphCliffordSimulator : public EntropySimulator {
 
 		virtual void init_state(uint32_t) override;
 
-		virtual double entropy(const std::vector<uint32_t> &qubits, uint32_t index) const override { return state->entropy(qubits); }
 		virtual void timesteps(uint32_t num_steps) override;
 		virtual data_t take_samples() override;
 

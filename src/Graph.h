@@ -10,11 +10,10 @@
 #define DEFAULT_VAL 0
 
 class Graph {
-	private:
+	public:
 		std::vector<std::map<uint32_t, int>> edges;
 		std::vector<uint32_t> vals;
 
-	public:
 		uint32_t num_vertices;
 
 		Graph() : num_vertices(0) {}
@@ -22,6 +21,7 @@ class Graph {
 		Graph(const Graph &g);
 
 		static Graph erdos_renyi_graph(uint32_t num_vertices, float p);
+		static Graph scale_free_graph(uint32_t num_vertices, float alpha);
 
 		std::string to_string() const;
 

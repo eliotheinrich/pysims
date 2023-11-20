@@ -1,14 +1,15 @@
 #include "QuantumState.h"
 
-Statevector::Statevector(uint32_t num_qubits) : Statevector(num_qubits, 0) {}
-
 Statevector::Statevector(uint32_t num_qubits, uint32_t qregister) : QuantumState(num_qubits) {
 	data = Eigen::VectorXcd::Zero(1u << num_qubits);
 	data(qregister) = 1.;
 }
 
+
+Statevector::Statevector(uint32_t num_qubits) : Statevector(num_qubits, 0) {}
+
 Statevector::Statevector(const QuantumCircuit &circuit) : Statevector(circuit.num_qubits) {
-	QuantumState::evolve(circuit);
+	evolve(circuit);
 }
 
 Statevector::Statevector(const Statevector& other) : Statevector(other.data) {}
@@ -18,7 +19,6 @@ Statevector::Statevector(const Eigen::VectorXcd& vec) : Statevector(std::log2(ve
 	if ((s & (s - 1)) != 0)
 		throw std::invalid_argument("Provided data to Statevector does not have a dimension which is a power of 2.");
 
-	num_qubits = std::log2(s);
 	data = vec;
 }
 

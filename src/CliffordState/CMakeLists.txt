@@ -4,5 +4,5 @@ add_library(clifford_state
 	QuantumCHPState.hpp
 	QuantumGraphState.cpp
 )
-target_link_libraries(clifford_state simulator)
-target_include_directories(clifford_state PUBLIC ${CMAKE_SOURCE_DIR}/src)
+target_link_libraries(clifford_state graph samplers)
+target_include_directories(clifford_state PUBLIC ${CMAKE_SOURCE_DIR}/src ${SAMPLERS_DIR})

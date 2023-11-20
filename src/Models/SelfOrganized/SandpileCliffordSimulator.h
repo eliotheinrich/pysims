@@ -1,17 +1,16 @@
 #pragma once
 
-#include <DataFrame.hpp>
-#include <Entropy.hpp>
+#include <Simulator.hpp>
+#include <InterfaceSampler.hpp>
 #include <QuantumCHPState.hpp>
 
-class SandpileCliffordSimulator : public EntropySimulator {
+class SandpileCliffordSimulator : public Simulator {
 	private:
-		std::unique_ptr<QuantumCHPState<Tableau>> state;
+		std::shared_ptr<QuantumCHPState<Tableau>> state;
+		uint32_t system_size;
 
 		float unitary_prob;
 		float mzr_prob;
-
-		uint32_t system_size;
 
 		std::string boundary_condition;
 		uint32_t feedback_mode;
@@ -21,6 +20,12 @@ class SandpileCliffordSimulator : public EntropySimulator {
 		uint32_t mzr_mode;
 		
 		std::vector<uint32_t> feedback_strategy;
+
+		bool start_sampling;
+		bool sample_avalanche_sizes;
+		
+		InterfaceSampler interface_sampler;
+		EntropySampler entropy_sampler;
 
 		void feedback(uint32_t q);
 
@@ -38,10 +43,14 @@ class SandpileCliffordSimulator : public EntropySimulator {
 		SandpileCliffordSimulator(Params &params);
 
 		virtual void init_state(uint32_t) override { 
-			state = std::make_unique<QuantumCHPState<Tableau>>(system_size);
+			state = std::make_shared<QuantumCHPState<Tableau>>(system_size);
 		}
 
-		virtual double entropy(const std::vector<uint32_t> &qubits, uint32_t index) const override { return state->entropy(qubits); }
+		virtual void equilibration_timesteps(uint32_t num_steps) override {
+			start_sampling = false;
+			timesteps(num_steps);
+			start_sampling = true;
+		}
 
 		virtual void timesteps(uint32_t num_steps) override;
 		virtual std::string serialize() const override {
@@ -53,12 +62,12 @@ class SandpileCliffordSimulator : public EntropySimulator {
 
 		virtual std::shared_ptr<Simulator> deserialize(Params &params, const std::string &data) override {
 			std::shared_ptr<SandpileCliffordSimulator> sim(new SandpileCliffordSimulator(params));
-			sim->state = std::unique_ptr<QuantumCHPState<Tableau>>(
-				new QuantumCHPState(data)
-			);
+			sim->state = std::make_shared<QuantumCHPState<Tableau>>(data);
 
 			return sim;
 		}
+
+		virtual data_t take_samples() override;
 
 		CLONE(Simulator, SandpileCliffordSimulator)
 };

@@ -17,4 +17,4 @@ if __name__ == "__main__":
 	pc.compute(verbose = True)
 	
 	pc.write_json(f'{job_name}.json')
-	pc.write_serialize_json(f'serialize/{job_name}_serialize.json')
+	pc.write_serialize_json(f'/data/heinriea/cliffordsim/job_controller/serialized/{job_name}_serialize.json')

@@ -1,27 +1,27 @@
 #pragma once
 
-#include <vector>
-#include <string>
-#include <Simulator.hpp>
 #include "CliffordState.hpp"
 #include "Tableau.hpp"
 
 template <class TableauType = Tableau>
 class QuantumCHPState : public CliffordState {
     private:
-        uint32_t num_qubits;
         TableauType tableau;
+
+        static uint32_t get_num_qubits(const std::string &s) {
+            auto substrings = split(s, "\n");
+            return substrings.size()/2;
+        }
+        
 
     public:
         QuantumCHPState(uint32_t num_qubits, int seed=-1)
-         : CliffordState(seed), num_qubits(num_qubits), tableau(TableauType(num_qubits)) {}
+         : CliffordState(num_qubits, seed), tableau(TableauType(num_qubits)) {}
         
-        QuantumCHPState(const std::string &s) {
+        QuantumCHPState(const std::string &s) : CliffordState(get_num_qubits(s)) {
             auto substrings = split(s, "\n");
 
-            num_qubits = substrings.size()/2;
-
-            tableau = TableauType(num_qubits);
+            tableau = TableauType(system_size());
 
             for (uint32_t i = 0; i < substrings.size()-1; i++) {
                 substrings[i] = substrings[i].substr(1, substrings[i].size() - 3);
@@ -30,20 +30,24 @@ class QuantumCHPState : public CliffordState {
                 auto row = chars[0];
                 bool r = chars[1][0] == '1';
 
-                for (uint32_t j = 0; j < num_qubits; j++) {
+                for (uint32_t j = 0; j < system_size(); j++) {
                     tableau.set_x(i, j, row[j] == '1');
-                    tableau.set_z(i, j, row[j + num_qubits] == '1');
+                    tableau.set_z(i, j, row[j + system_size()] == '1');
                 }
 
                 tableau.set_r(i, r);
             }
         }
 
-        virtual uint32_t system_size() const override { return num_qubits; }
-
         std::string to_string() const {
             std::string s = "";
             s += "Tableau: \n" + tableau.to_string();
+            return s;
+        }
+
+        std::string to_string_ops() const {
+            std::string s = "";
+            s += "Tableau: \n" + tableau.to_string_ops();
             return s;
         }
 
@@ -74,18 +78,29 @@ class QuantumCHPState : public CliffordState {
         }
 
         virtual bool mzr(uint32_t a) override {
-            bool outcome = rand() % 2;
-            tableau.mzr(a, outcome);
-            return outcome;
+            return tableau.mzr(a, rng);
         }
 
         virtual double sparsity() const override {
             return tableau.sparsity();
         }
 
-        virtual double entropy(const std::vector<uint32_t> &qubits) const override {
+        virtual double entropy(const std::vector<uint32_t> &qubits, uint32_t index) const override {
             uint32_t system_size = this->system_size();
             uint32_t partition_size = qubits.size();
+
+            // Optimization; if partition size is larger than half the system size, 
+            // compute the entropy for the smaller subsystem
+            if (partition_size > system_size / 2) {
+                std::vector<uint32_t> qubits_complement;
+                for (uint32_t q = 0; q < system_size; q++) {
+                    if (std::find(qubits.begin(), qubits.end(), q) == qubits.end()) {
+                        qubits_complement.push_back(q);
+                    }
+                }
+
+                return entropy(qubits_complement, index);
+            }
 
             // TODO redo with Tableau?
             std::vector<std::vector<bool>> ttableau(system_size, std::vector<bool>(2*partition_size, false));
@@ -138,6 +153,8 @@ class QuantumCHPState : public CliffordState {
                 }
             }
 
-            return rank - partition_size;
+            int s = rank - partition_size;
+
+            return static_cast<double>(s);
         }
 };

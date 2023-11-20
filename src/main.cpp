@@ -86,13 +86,13 @@ int main(int argc, char *argv[]) {
     Params metaparams;
     metaparams["num_threads"] = (int) num_threads;
     metaparams["num_threads_per_task"] = (int) num_threads_per_task;
-    metaparams["average_congruent_runs"] = 1;
-    metaparams["atol"] = 1e-10;
-    metaparams["rtol"] = 1e-10;
+    //metaparams["average_congruent_runs"] = 1;
+    //metaparams["atol"] = 1e-10;
+    //metaparams["rtol"] = 1e-10;
 
     ParallelCompute pc = build_pc(metaparams, data.dump());
     pc.compute(true);
 
     std::string data_prefix = "../data";
-    pc.write_json(data_prefix + data_filename + ".json");
+    pc.write_json(data_prefix + "/" + data_filename);
 } 

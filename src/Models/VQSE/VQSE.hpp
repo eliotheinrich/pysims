@@ -57,7 +57,7 @@ class VQSE {
 
 		std::map<uint32_t, double> get_outcomes_exact(const QuantumCircuit& circuit, const target_t& target) {
 			DensityMatrix rho = VQSE::make_target(target);
-			rho.QuantumState::evolve(circuit);
+			rho.evolve(circuit);
 
 			return rho.probabilities();
 		}
@@ -67,7 +67,7 @@ class VQSE {
 			if (target.index() == 0) { // QuantumCircuit
 				for (uint32_t i = 0; i < num_shots; i++) {
 					Statevector state(std::get<QuantumCircuit>(target));
-					state.QuantumState::evolve(circuit);
+					state.evolve(circuit);
 					uint32_t outcome = to_uint(state.measure_all());
 					if (outcome_hist.count(outcome))
 						outcome_hist[outcome]++;
@@ -76,7 +76,7 @@ class VQSE {
 				}
 			} else if (target.index() == 1) { // DensityMatrix
 				DensityMatrix rho = std::get<DensityMatrix>(target);
-				rho.QuantumState::evolve(circuit);
+				rho.evolve(circuit);
 				auto probabilities = rho.diagonal();
 
 				std::discrete_distribution<uint32_t> dist(probabilities.begin(), probabilities.end());
@@ -123,17 +123,6 @@ class VQSE {
 				outcomes = get_outcomes_exact(circuit, target);
 			}
 
-			//std::cout << "Simulated outcomes: \n{";
-			//for (auto const &[b, c] : get_outcomes_simulated(circuit, target)) {
-			//	std::cout << b << ": " << c << " ";
-			//} std::cout << "}\n";
-			//std::cout << "Exact outcomes: \n{";
-			//for (auto const &[b, c] : get_outcomes_exact(circuit, target)) {
-			//	std::cout << b << ": " << c << " ";
-			//} std::cout << "}\n\n";
-
-
-
 			if (epoch % update_frequency == 0)
 				update_eigenvalue_estimates(outcomes);
 
@@ -153,6 +142,7 @@ class VQSE {
 
 		double local_energy(const std::map<uint32_t, double>& outcomes) const {
 			double energy = 1.;
+
 			for (auto const &[b, p] : outcomes) {
 				for (uint32_t j = 0; j < ansatz.num_qubits; j++)
 					energy += r[j]*(2*int((b >> j) & 1) - 1)*p;
@@ -263,7 +253,7 @@ class VQSE {
 
 			for (uint32_t i = 0; i < m; i++) {
 				Statevector state(num_qubits, bitstring_estimates[i]);
-				state.QuantumState::evolve(circuit);
+				state.evolve(circuit);
 				eigenvectors.row(i) = state.data;
 			}
 
@@ -339,9 +329,6 @@ class VQSE {
 				Statevector true_state(true_eigenvectors.row(i));
 				Statevector estimated_state(estimated_eigenvectors.row(i));
 
-				//std::cout << "True eigenvec[" << i << "]: \n" << true_state.data << "\n\n";
-				//std::cout << "Est eigenvec[" << i << "]: \n" << estimated_state.data << "\n\n";
-				//std::cout << "Fidelity: " << std::abs(true_state.inner(estimated_state)) << "\n\n";
 				f.push_back(std::abs(true_state.inner(estimated_state)));
 			}
 		

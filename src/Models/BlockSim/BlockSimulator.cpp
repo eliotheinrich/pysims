@@ -12,10 +12,14 @@
 //       |   o   | o   o | o     | o o   | o o   |
 // o o o | o o o | o o o | o o o | o o o | o o o |
 
-BlockSimulator::BlockSimulator(Params &params) : Simulator(params), start_sampling(false) {
+
+BlockSimulator::BlockSimulator(Params &params) : Simulator(params), sampler(params) {
     system_size = get<int>(params, "system_size");
+	
     pm = get<double>(params, "pm");
     pu = get<double>(params, "pu");
+	
+	params.emplace("u", pu/pm);
 
     precut = get<int>(params, "precut", DEFAULT_PRECUT);
 
@@ -56,8 +60,7 @@ BlockSimulator::BlockSimulator(Params &params) : Simulator(params), start_sampli
 	else if (feedback_mode == 29) feedback_strategy = std::vector<uint32_t>{1, 2, 4, 5, 6};
 	else if (feedback_mode == 30) feedback_strategy = std::vector<uint32_t>{1, 3, 4, 5, 6};
 
-	sample_avalanche_sizes = get<int>(params, "sample_avalanche_sizes", DEFAULT_SAMPLE_AVALANCHE_SIZES);
-	avalanche_sizes = std::vector<uint32_t>(system_size, 0);
+	start_sampling = false;
 }
 
 std::string BlockSimulator::to_string() const {
@@ -83,8 +86,6 @@ uint32_t BlockSimulator::get_shape(uint32_t s0, uint32_t s1, uint32_t s2) const 
 	else if ((ds1 == -1) && (ds2 == 1))   return 6; // 0 1 2 (f)
 	else if ((ds1 == 1)  && (ds2 == -1))  return 6; // 2 1 0
 	else {
-std::cout << s0 << " " << s1 << " " << s2 << std::endl;
-std::cout << "ds1 = " << ds1 << ", " << "ds2 = " << ds2 << std::endl;
 		throw std::invalid_argument("Something has gone wrong with the entropy substrate.");
 	}
 }
@@ -102,8 +103,8 @@ void BlockSimulator::avalanche(uint32_t i) {
 	for (uint32_t j = i+1; j < right+1; j++) surface[j]--;
     
     uint32_t size = right - left;
-    if (size > 0)
-        record_size(size);
+    if (size > 0 && start_sampling)
+        sampler.record_size(size);
 }
 
 bool BlockSimulator::can_deposit(uint32_t i) const {
@@ -112,10 +113,8 @@ bool BlockSimulator::can_deposit(uint32_t i) const {
 
 	uint32_t shape = get_shape(surface[i-1], surface[i], surface[i+1]);
 
-	bool b = shape == 1 || shape == 3 || shape == 4;
-
 	//             (a)           (c)           (d)
-	return b;
+	return shape == 1 || shape == 3 || shape == 4;
 }
 
 void BlockSimulator::deposit(uint32_t i) {
@@ -146,7 +145,7 @@ void BlockSimulator::deposit(uint32_t i) {
 }
 
 void BlockSimulator::timesteps(uint32_t num_steps) {
-    for (uint32_t i = 0; i < num_steps; i++) {
+    for (uint32_t k = 0; k < num_steps; k++) {
         for (uint32_t i = 1; i < system_size - 1; i++) {
             uint32_t q = random_sites ? rand() % (system_size - 2) + 1 : i;
             
@@ -163,29 +162,9 @@ void BlockSimulator::timesteps(uint32_t num_steps) {
     }
 }
 
-void BlockSimulator::add_avalanche_samples(data_t &samples) {
-	uint32_t total_avalanches = 0;
-	for (uint32_t i = 0; i < system_size; i++)
-		total_avalanches += avalanche_sizes[i];
-
-	if (total_avalanches == 0) {
-		for (uint32_t i = 0; i < system_size; i++) 
-			samples.emplace("avalanche_" + std::to_string(i), 0.0);
-	} else {
-		for (uint32_t i = 0; i < system_size; i++) 
-			samples.emplace("avalanche_" + std::to_string(i), double(avalanche_sizes[i])/total_avalanches);
-	}
-
-    avalanche_sizes = std::vector<uint32_t>(system_size, 0);
-}
-
 data_t BlockSimulator::take_samples() {
     data_t samples;
-    for (uint32_t i = 0; i < system_size; i++) samples.emplace("surface_" + std::to_string(i), surface[i]);
-
-	if (sample_avalanche_sizes)
-		add_avalanche_samples(samples);
-
+	sampler.add_samples(samples, surface);
     return samples;
 }
 

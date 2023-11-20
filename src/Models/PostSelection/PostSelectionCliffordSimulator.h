@@ -1,14 +1,16 @@
 #pragma once
 
-#include <DataFrame.hpp>
-#include <Entropy.hpp>
+#include <Simulator.hpp>
 #include <QuantumCHPState.hpp>
 
-class PostSelectionCliffordSimulator : public EntropySimulator {
+class PostSelectionCliffordSimulator : public Simulator {
 	private:
 		std::shared_ptr<QuantumCHPState<Tableau>> state;
 
-		float mzr_prob;
+		uint32_t system_size;
+		double mzr_prob;
+
+		EntropySampler sampler;
 
 
 		void mzr(uint32_t i);
@@ -20,8 +22,9 @@ class PostSelectionCliffordSimulator : public EntropySimulator {
 			state = std::shared_ptr<QuantumCHPState<Tableau>>(new QuantumCHPState(system_size));
 		}
 
-		virtual double entropy(const std::vector<uint32_t> &qubits, uint32_t index) const override { return state->entropy(qubits); }
 		virtual void timesteps(uint32_t num_steps) override;
+
+		virtual data_t take_samples() override;
 
 		CLONE(Simulator, PostSelectionCliffordSimulator)
 };

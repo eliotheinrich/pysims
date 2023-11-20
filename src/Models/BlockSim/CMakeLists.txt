@@ -1,5 +1,7 @@
 add_library(blocksim
 	BlockSimulator.cpp
+	RPMSimulator.cpp
 )
-target_link_libraries(blocksim simulator)
-target_include_directories(blocksim PUBLIC ${CMAKE_SOURCE_DIR}/src)
+message(${SAMPLERS_DIR})
+target_link_libraries(blocksim ${PFFFT_LIB})
+target_include_directories(blocksim PRIVATE ${SAMPLERS_DIR})

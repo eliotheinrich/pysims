@@ -4,7 +4,8 @@
 
 #define DEFAULT_CLIFFORD_TYPE "chp"
 
-PostSelectionCliffordSimulator::PostSelectionCliffordSimulator(Params &params) : EntropySimulator(params) {
+PostSelectionCliffordSimulator::PostSelectionCliffordSimulator(Params &params) : Simulator(params), sampler(params) {
+	system_size = get<int>(params, "system_size");
 	mzr_prob = get<double>(params, "mzr_prob");
 }
 
@@ -24,4 +25,9 @@ void PostSelectionCliffordSimulator::timesteps(uint32_t num_steps) {
 	}
 }
 
+data_t PostSelectionCliffordSimulator::take_samples() {
+	data_t samples;
+	sampler.add_samples(samples, state);
+	return samples;
+}
 

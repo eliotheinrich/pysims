@@ -3,5 +3,5 @@ add_library(vqse
     VQSE.hpp
     VQSEConfig.hpp
 )
-target_link_libraries(vqse simulator quantum_circuit)
-target_include_directories(vqse PUBLIC ${CMAKE_SOURCE_DIR}/src)
+target_link_libraries(vqse quantum_circuit)
+target_include_directories(vqse PUBLIC ${QUANTUMCIRCUIT_DIR})

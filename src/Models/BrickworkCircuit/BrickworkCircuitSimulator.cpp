@@ -3,7 +3,9 @@
 #define RANDOM_HAAR 0
 #define RANDOM_REAL 1
 
-BrickworkCircuitSimulator::BrickworkCircuitSimulator(Params &params) : EntropySimulator(params) {
+BrickworkCircuitSimulator::BrickworkCircuitSimulator(Params &params) : Simulator(params), sampler(params) {
+	system_size = get<int>(params, "system_size");
+
 	mzr_prob = get<double>(params, "mzr_prob");
 	gate_type = get<int>(params, "gate_type", RANDOM_HAAR);
 	offset = false;
@@ -34,4 +36,10 @@ void BrickworkCircuitSimulator::timesteps(uint32_t num_steps) {
 
 		offset = !offset;
 	}
+}
+
+data_t BrickworkCircuitSimulator::take_samples() {
+	data_t samples;
+	sampler.add_samples(samples, state);
+	return samples;
 }

@@ -1,5 +1,4 @@
 #include "GraphCliffordSimulator.h"
-#include "QuantumGraphState.h"
 #include "RandomCliffordSimulator.h"
 #include "QuantumAutomatonSimulator.h"
 #include <iostream>
@@ -16,9 +15,10 @@ static inline float sample_powerlaw(float y, float x0, float x1, float a) {
 	return std::pow((std::pow(x1, a+1) - std::pow(x0, a+1))*y + std::pow(x0, a+1), 1./(a+1.));
 }
 
-GraphCliffordSimulator::GraphCliffordSimulator(Params &params) : EntropySimulator(params) {
-	evolution_type = get<std::string>(params, "evolution_type", DEFAULT_EVOLUTION_TYPE);
+GraphCliffordSimulator::GraphCliffordSimulator(Params &params) : Simulator(params), sampler(params) {
+	system_size = get<int>(params, "system_size");
 
+	evolution_type = get<std::string>(params, "evolution_type", DEFAULT_EVOLUTION_TYPE);
 
 	if (evolution_type == RANDOM_CLIFFORD) {
 		gate_width = get<int>(params, "gate_width", DEFAULT_GATE_WIDTH);
@@ -193,7 +193,8 @@ void GraphCliffordSimulator::add_degree_distribution(data_t &samples) const {
 }
 
 data_t GraphCliffordSimulator::take_samples() {
-	data_t samples = EntropySimulator::take_samples();
+	data_t samples;
+	sampler.add_samples(samples, state);
 	
 	add_avg_max_dist(samples);
 

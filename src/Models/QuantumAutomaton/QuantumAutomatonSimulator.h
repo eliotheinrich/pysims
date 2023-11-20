@@ -1,8 +1,7 @@
 #pragma once
 
-#include <DataFrame.hpp>
-#include "Entropy.hpp"
-#include "CliffordState.hpp"
+#include <Simulator.hpp>
+#include <CliffordState.hpp>
 
 inline static void qa_layer(std::shared_ptr<CliffordState> state, bool offset, bool gate_type) {
 	uint32_t system_size = state->system_size();
@@ -24,8 +23,10 @@ inline static void qa_timestep(std::shared_ptr<CliffordState> state) {
 	qa_layer(state, true, true);   // offset,    cz
 }
 
-class QuantumAutomatonSimulator : public EntropySimulator {
+class QuantumAutomatonSimulator : public Simulator {
 	private:
+		uint32_t system_size;
+
 		std::shared_ptr<CliffordState> state;
 		CliffordType clifford_type;
 		float mzr_prob;
@@ -34,12 +35,15 @@ class QuantumAutomatonSimulator : public EntropySimulator {
 
 		int vsample_idx;
 
+		EntropySampler sampler;
+
 	public:
 		QuantumAutomatonSimulator(Params &params);
 
 		virtual void init_state(uint32_t) override;
-		virtual double entropy(const std::vector<uint32_t> &qubits, uint32_t index) const override { return state->entropy(qubits); }
 		virtual void timesteps(uint32_t num_steps) override;
+
+		virtual data_t take_samples() override;
 
 		CLONE(Simulator, QuantumAutomatonSimulator)
 };

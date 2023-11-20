@@ -24,12 +24,55 @@ std::string Graph::to_string() const {
 
 Graph Graph::erdos_renyi_graph(uint32_t num_vertices, float p) {
 	Graph g(num_vertices);
-	thread_local std::minstd_rand r;
+	thread_local std::random_device rd;
+	thread_local std::minstd_rand r(rd());
 	for (uint32_t i = 0; i < num_vertices-1; i++) {
 		for (uint32_t j = i+1; j < num_vertices; j++) {
 			if (float(r())/float(RAND_MAX) < p)
 				g.toggle_edge(i, j);
 		}
+	}
+
+	return g;
+}
+
+Graph Graph::scale_free_graph(uint32_t num_vertices, float alpha) {
+	Graph g(num_vertices);
+
+	thread_local std::random_device rd;
+	thread_local std::mt19937 gen(rd());
+	std::uniform_real_distribution<> dis(0.0, 1.0);
+
+	std::vector<uint32_t> degrees(num_vertices);
+	for (uint32_t i = 0; i < num_vertices; i++) {
+		double u = dis(gen);
+		double x = std::pow(1.0 - u * (1.0 - std::pow(1.0/num_vertices, 1.0 - alpha)), 1.0 / (1.0 - alpha));
+
+		degrees[i] = x * (num_vertices - 1) + 1;
+	}
+
+	// Sort in reverse order
+	std::sort(degrees.begin(), degrees.end(), [](uint32_t a, uint32_t b) { return a > b; });
+
+	std::vector<uint32_t> all_vertices(num_vertices);
+	std::iota(all_vertices.begin(), all_vertices.end(), 0);
+
+
+	for (uint32_t i = 0; i < num_vertices-1; i++) {
+		std::vector<uint32_t> random_vertices;
+		uint32_t j = i+1;
+		uint32_t residual_vertices = degrees[i] - g.degree(i);
+		while (random_vertices.size() < residual_vertices && j < num_vertices) {
+			if (g.degree(j) < degrees[j])
+				random_vertices.push_back(j);
+
+			j++;
+		}
+
+		std::shuffle(random_vertices.begin(), random_vertices.end(), gen);
+
+		for (uint32_t j = 0; j < random_vertices.size(); j++)
+			g.add_edge(i, random_vertices[j]);
 	}
 
 	return g;

@@ -4,8 +4,10 @@
 #include <SandpileCliffordSimulator.h>
 #include <SelfOrganizedCliffordSimulator.h>
 #include <MinCutSimulator.h>
-#include <BlockSimulator.h>
 #include <GraphCliffordSimulator.h>
+#include <PhaselessSimulator.h>
+#include <NetworkCliffordSimulator.h>
+#include <EnvironmentSimulator.h>
 
 // Full quantum simulators
 #include <GroverProjectionSimulator.h>
@@ -15,6 +17,8 @@
 
 // Misc
 #include <PartneringSimulator.h>
+#include <BlockSimulator.h>
+#include <RPMSimulator.h>
 
 #include <DataFrame.hpp>
 #include <nlohmann/json.hpp>
@@ -28,14 +32,19 @@ std::shared_ptr<Config> assemble_config(Params &param) {
     else if (circuit_type == "sandpile_clifford") return prepare_timeconfig<SandpileCliffordSimulator>(param);
     else if (circuit_type == "mincut") return prepare_timeconfig<MinCutSimulator>(param);
     else if (circuit_type == "blocksim") return prepare_timeconfig<BlockSimulator>(param);
+    else if (circuit_type == "rpm") return prepare_timeconfig<RPMSimulator>(param);
     else if (circuit_type == "graphsim") return prepare_timeconfig<GraphCliffordSimulator>(param);
     else if (circuit_type == "grover_projection") return prepare_timeconfig<GroverProjectionSimulator>(param);
     else if (circuit_type == "brickwork_circuit") return prepare_timeconfig<BrickworkCircuitSimulator>(param);
     else if (circuit_type == "vqse") return std::make_shared<VQSEConfig>(param);
     else if (circuit_type == "partner") prepare_timeconfig<PartneringSimulator>(param);
     else if (circuit_type == "groversat") return prepare_timeconfig<GroverSATSimulator>(param);
+    else if (circuit_type == "phaseless") return prepare_timeconfig<PhaselessSimulator>(param);
+    else if (circuit_type == "network_clifford") return prepare_timeconfig<NetworkCliffordSimulator>(param);
+    else if (circuit_type == "env_sim") return prepare_timeconfig<EnvironmentSimulator>(param);
     else {
-        throw std::invalid_argument("Invalid circuit type.");
+        std::string error_message = "Invalid circuit type: " + circuit_type + ".";
+        throw std::invalid_argument(error_message);
     }
 }
 
@@ -44,7 +53,7 @@ ParallelCompute build_pc(Params& metaparams, std::vector<Params>& params) {
 
     for (auto param : params)
         configs.push_back(assemble_config(param));
-
+    
     return ParallelCompute(metaparams, configs);
 }
 

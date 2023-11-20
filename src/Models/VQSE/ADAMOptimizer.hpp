@@ -58,7 +58,6 @@ class ADAMOptimizer {
 			uint32_t num_iterations, 
 			std::optional<std::function<void(const std::vector<double>&)>> callback = std::nullopt
 		) {
-
 			uint32_t num_params = initial_params.size();
 			m.resize(num_params, 0.0);
 			v.resize(num_params, 0.0);

@@ -1,7 +1,6 @@
 #pragma once
 
-#include <DataFrame.hpp>
-#include <Entropy.hpp>
+#include <Simulator.hpp>
 #include <QuantumState.h>
 
 #define SQRT2 1.41421356237
@@ -62,8 +61,10 @@ static Eigen::VectorXcd generate_householder(uint32_t num_qubits) {
 	return -householder;
 }
 
-class GroverSATSimulator : public EntropySimulator {
+class GroverSATSimulator : public Simulator {
 	private:
+		uint32_t system_size; 
+
 		double alpha;
 
 		uint32_t num_variables;
@@ -75,6 +76,8 @@ class GroverSATSimulator : public EntropySimulator {
 		Eigen::VectorXcd oracle;
 		Eigen::VectorXcd householder;
 
+		EntropySampler sampler;
+
 		void hadamard_transform();
 
 	public:
@@ -83,7 +86,6 @@ class GroverSATSimulator : public EntropySimulator {
 		GroverSATSimulator(Params &params);
 
 		virtual void init_state(uint32_t num_threads) override;
-		virtual double entropy(const std::vector<uint32_t> &qubits, uint32_t index) const override { return state->entropy(qubits, index); }
 		virtual void timesteps(uint32_t num_steps) override;
 
 		void add_fidelity_samples(data_t& samples);

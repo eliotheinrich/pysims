@@ -1,8 +1,8 @@
 #pragma once
 
-#include <DataFrame.hpp>
-#include <Entropy.hpp>
-#include <QuantumCHPState.hpp>
+#include <Simulator.hpp>
+#include <CliffordState.hpp>
+#include <InterfaceSampler.hpp>
 
 inline static void rc_timestep(std::shared_ptr<CliffordState> state, uint32_t gate_width, bool offset_layer, bool periodic_bc = true) {
 	uint32_t system_size = state->system_size();
@@ -28,11 +28,12 @@ inline static void rc_timestep(std::shared_ptr<CliffordState> state, uint32_t ga
 	}
 }
 
-class RandomCliffordSimulator : public EntropySimulator {
+class RandomCliffordSimulator : public Simulator {
 	private:
 		std::shared_ptr<CliffordState> state;
 
-		float mzr_prob;
+		uint32_t system_size;
+		double mzr_prob;
 		uint32_t gate_width;
 
 		std::string simulator_type;
@@ -41,12 +42,21 @@ class RandomCliffordSimulator : public EntropySimulator {
 		bool periodic_bc;
 
 		bool sample_sparsity;
+		bool sample_avalanche_sizes;
+
+		EntropySampler entropy_sampler;
+		InterfaceSampler interface_sampler;
+		bool start_sampling;
 
 	public:
 		RandomCliffordSimulator(Params &params);
 
 		virtual void init_state(uint32_t) override;
-		virtual double entropy(const std::vector<uint32_t> &qubits, uint32_t index) const override { return state->entropy(qubits); }
+		virtual void equilibration_timesteps(uint32_t num_steps) override {
+			start_sampling = false;
+			timesteps(num_steps);
+			start_sampling = true;
+		}
 		virtual void timesteps(uint32_t num_steps) override;
 
 		virtual std::string serialize() const override {
@@ -56,14 +66,7 @@ class RandomCliffordSimulator : public EntropySimulator {
 			return join(substrings, "\n");
 		}
 
-		virtual std::shared_ptr<Simulator> deserialize(Params &params, const std::string &data) override {
-			std::shared_ptr<RandomCliffordSimulator> sim(new RandomCliffordSimulator(params));
-			sim->state = std::shared_ptr<CliffordState>(
-				new QuantumCHPState(data)
-			);
-
-			return sim;
-		}
+		virtual std::shared_ptr<Simulator> deserialize(Params &params, const std::string &data) override;
 
 		virtual data_t take_samples() override;
 

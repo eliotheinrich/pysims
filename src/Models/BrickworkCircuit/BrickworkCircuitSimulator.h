@@ -1,17 +1,18 @@
 #pragma once
 
-#include <DataFrame.hpp>
-#include <Entropy.hpp>
+#include <Simulator.hpp>
 #include <QuantumState.h>
 
-
-
-class BrickworkCircuitSimulator : public EntropySimulator {
+class BrickworkCircuitSimulator : public Simulator {
 	private:
-		float mzr_prob;
+		uint32_t system_size;
+
+		double mzr_prob;
 		int gate_type;
 
 		bool offset;
+
+		EntropySampler sampler;
 
 		void mzr(uint32_t q);
 
@@ -25,8 +26,9 @@ class BrickworkCircuitSimulator : public EntropySimulator {
 			state = std::make_shared<Statevector>(system_size);
 		}
 
-		virtual double entropy(const std::vector<uint32_t> &qubits, uint index) const override { return state->entropy(qubits, index); }
 		virtual void timesteps(uint32_t num_steps) override;
+
+		virtual data_t take_samples() override;
 
 		CLONE(Simulator, BrickworkCircuitSimulator)
 };

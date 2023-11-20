@@ -26,7 +26,9 @@ static FeedbackType parse_feedback_type(std::string s) {
 	}
 }
 
-SelfOrganizedCliffordSimulator::SelfOrganizedCliffordSimulator(Params &params) : EntropySimulator(params) {
+SelfOrganizedCliffordSimulator::SelfOrganizedCliffordSimulator(Params &params) : Simulator(params), sampler(params) {
+	system_size = get<int>(params, "system_size");
+
 	mzr_prob = get<double>(params, "mzr_prob");
 	x = std::log(mzr_prob/(1. - mzr_prob));
 
@@ -44,7 +46,7 @@ SelfOrganizedCliffordSimulator::SelfOrganizedCliffordSimulator(Params &params) :
 }
 
 void SelfOrganizedCliffordSimulator::init_state(uint32_t) {
-	state = std::make_unique<QuantumGraphState>(system_size);
+	state = std::make_shared<QuantumGraphState>(system_size);
 	if (evolution_type == EvolutionType::QuantumAutomaton) { // quantum automaton circuit must be polarized
 		for (uint32_t i = 0; i < system_size; i++) state->h_gate(i);
 	}
@@ -129,7 +131,8 @@ void SelfOrganizedCliffordSimulator::qa_timestep(bool offset, bool gate_type) {
 }
 
 void SelfOrganizedCliffordSimulator::qa_timesteps(uint32_t num_steps) {
-	assert(system_size % 2 == 0);
+	if (system_size % gate_width != 0)
+		throw std::invalid_argument("Invalid gate width. Must divide system size.");
 
 	for (uint32_t i = 0; i < num_steps; i++) {
 		qa_timestep(false, false); // no offset, cx
@@ -143,8 +146,10 @@ void SelfOrganizedCliffordSimulator::qa_timesteps(uint32_t num_steps) {
 
 void SelfOrganizedCliffordSimulator::rc_timesteps(uint32_t num_steps) {
 	uint32_t num_qubits = system_size;
-	assert(num_qubits % gate_width == 0);
-	assert(gate_width % 2 == 0); // So that offset is a whole number
+	if (system_size % gate_width != 0)
+		throw std::invalid_argument("Invalid gate width. Must divide system size.");
+	if (gate_width % 2 != 0)
+		throw std::invalid_argument("Gate width must be even.");
 
 	uint32_t num_gates = num_qubits / gate_width;
 	bool offset_layer = initial_offset;
@@ -219,7 +224,8 @@ void SelfOrganizedCliffordSimulator::add_distance_distribution(data_t &samples) 
 }
 
 data_t SelfOrganizedCliffordSimulator::take_samples() {
-	data_t samples = EntropySimulator::take_samples();
+	data_t samples;
+	sampler.add_samples(samples, state);
 
 	if (feedback_type == FeedbackType::ClusterThreshold) {
 		samples.emplace("mzr_prob_f", mzr_prob);

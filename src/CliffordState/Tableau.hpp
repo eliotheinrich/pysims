@@ -6,10 +6,6 @@
 #include <variant>
 #include <unordered_set>
 #include <algorithm>
-#include <assert.h>
-#include <iostream>
-
-#define DEFAULT_PRINT_OPS false
 
 namespace tableau_utils {
 
@@ -95,8 +91,8 @@ class PauliString {
             } else if (P == "Z") {
                 p.set_z(q, true);
             } else {
-                std::cout << P << " is not a valid basis. Must provide one of X,Y,Z.\n";
-                assert(false);
+                std::string error_message = P + " is not a valid basis. Must provide one of X,Y,Z.\n";
+                throw std::invalid_argument(error_message);
             }
 
             p.set_r(r);
@@ -125,24 +121,25 @@ class PauliString {
             else return "I";
         }
 
-        std::string to_string(bool to_ops) const {
+        std::string to_string() const {
             std::string s = "";
-            if (to_ops) {
-                if (phase) { s += "-"; } else { s += "+"; }
-                for (uint32_t i = 0; i < num_qubits; i++) {
-                    s += to_op(i);
-                }
-                return s;
-            } else {
-                for (uint32_t i = 0; i < 2*num_qubits; i++) {
-                    if (bit_string[i]) { s += "1"; } else { s += "0"; }
-                }
-                s += " | ";
-
-                if (phase) { s += "1 ]"; } else { s += "0 ]"; }
-
-                return s;
+            for (uint32_t i = 0; i < 2*num_qubits; i++) {
+                if (bit_string[i]) { s += "1"; } else { s += "0"; }
             }
+            s += " | ";
+
+            if (phase) { s += "1 ]"; } else { s += "0 ]"; }
+
+            return s;
+        }
+
+        std::string to_string_ops() const {
+            std::string s = "";
+            if (phase) { s += "-"; } else { s += "+"; }
+            for (uint32_t i = 0; i < num_qubits; i++) {
+                s += to_op(i);
+            }
+            return s;
         }
 
         void s_gate(uint32_t a) {
@@ -184,7 +181,9 @@ class PauliString {
         }
 
         bool commutes(PauliString &p) const {
-            assert(num_qubits == p.num_qubits);
+            if (num_qubits != p.num_qubits)
+                throw std::invalid_argument("number of p does not have the same number of qubits.");
+
             uint32_t anticommuting_indices = 0u;
             for (uint32_t i = 0; i < num_qubits; i++) {
                 if (!commutes_at(p, i)) anticommuting_indices++;
@@ -263,8 +262,8 @@ class SparsePauliString {
             } else if (P == "Z") {
                 p.set_z(q, true);
             } else {
-                std::cout << P << " is not a valid basis. Must provide one of X,Y,Z.\n";
-                assert(false);
+                std::string error_message = P + " is not a valid basis. Must provide one of X,Y,Z.\n";
+                throw std::invalid_argument(error_message);
             }
 
             p.set_r(r);
@@ -294,26 +293,26 @@ class SparsePauliString {
             else return "I";
         }
 
-        std::string to_string(bool to_ops) const {
-            if (to_ops) {
-                std::string s = "[";
-                if (phase) { s += "-"; } else { s += "+"; }
-                for (uint32_t i = 0; i < num_qubits; i++) {
-                    s += to_op(i);
-                }
-                s += "]";
-                return s;
-            } else {
-                std::string s = "[";
-                for (uint32_t i = 0; i < 2*num_qubits; i++) {
-                    if (bits.count(i)) { s += "1"; } else { s += "0"; }
-                }
-                s += " | ";
-
-                if (phase) { s += "1 ]"; } else { s += "0 ]"; }
-
-                return s;
+        std::string to_string() const {
+            std::string s = "[";
+            for (uint32_t i = 0; i < 2*num_qubits; i++) {
+                if (bits.count(i)) { s += "1"; } else { s += "0"; }
             }
+            s += " | ";
+
+            if (phase) { s += "1 ]"; } else { s += "0 ]"; }
+
+            return s;
+        }
+
+        std::string to_string_ops() const {
+            std::string s = "[";
+            if (phase) { s += "-"; } else { s += "+"; }
+            for (uint32_t i = 0; i < num_qubits; i++) {
+                s += to_op(i);
+            }
+            s += "]";
+            return s;
         }
 
         void s_gate(uint32_t a) {
@@ -355,7 +354,9 @@ class SparsePauliString {
         }
 
         bool commutes(SparsePauliString &p) const {
-            assert(num_qubits == p.num_qubits);
+            if (num_qubits != p.num_qubits)
+                throw std::invalid_argument("number of p does not have the same number of qubits.");
+
             uint32_t anticommuting_indices = 0u;
             for (uint32_t i = 0; i < num_qubits; i++) {
                 if (!commutes_at(p, i)) anticommuting_indices++;
@@ -418,17 +419,14 @@ class Tableau {
     private:
         uint32_t num_qubits;
         bool track_destabilizers;
-        bool print_ops;
 
     public:
         std::vector<PauliString> rows;
 
-        Tableau() {
-            num_qubits = 0;
-        }
+        Tableau() = default;
 
         Tableau(uint32_t num_qubits)
-         : num_qubits(num_qubits), track_destabilizers(true), print_ops(DEFAULT_PRINT_OPS) {
+         : num_qubits(num_qubits), track_destabilizers(true) {
             rows = std::vector<PauliString>(2*num_qubits + 1, PauliString(num_qubits));
             for (uint32_t i = 0; i < num_qubits; i++) {
                 rows[i].set_x(i, true);
@@ -437,16 +435,34 @@ class Tableau {
         }
 
         Tableau(uint32_t num_qubits, std::vector<PauliString> rows)
-         : num_qubits(num_qubits), track_destabilizers(false), print_ops(DEFAULT_PRINT_OPS), rows(rows) {}
+         : num_qubits(num_qubits), track_destabilizers(false), rows(rows) {}
 
         uint32_t num_rows() const { if (track_destabilizers) { return rows.size() - 1; } else { return rows.size(); }}
+
+        inline void validate_qubit(uint32_t a) const {
+            if (!(a >= 0 && a < num_qubits)) {
+                std::string error_message = "A gate was applied to qubit " + std::to_string(a) + 
+                                            ", which is outside of the allowed range (0, " + std::to_string(num_qubits) + ").";
+                throw std::invalid_argument(error_message);
+            }
+        }
 
         std::string to_string() const {
             std::string s = "";
             for (uint32_t i = 0; i < num_rows(); i++) {
                 if (i == 0) { s += "["; } else { s += " "; }
-                s += rows[i].to_string(print_ops);
-                if (i == 2*rows.size()) { s += "]"; } else { s += "\n"; }
+                s += rows[i].to_string();
+                if (i == 2*rows.size() - 1) { s += "]"; } else { s += "\n"; }
+            }
+            return s;
+        }
+
+        std::string to_string_ops() const {
+            std::string s = "";
+            for (uint32_t i = 0; i < num_rows(); i++) {
+                if (i == 0) { s += "["; } else { s += " "; }
+                s += rows[i].to_string_ops();
+                if (i == 2*rows.size() - 1) { s += "]"; } else { s += "\n"; }
             }
             return s;
         }
@@ -466,14 +482,15 @@ class Tableau {
         }
 
         void rowsum(uint32_t h, uint32_t i) {
-            assert(track_destabilizers);
+            if (!track_destabilizers)
+                throw std::invalid_argument("Cannot perform rowsum without track_destabilizers.");
+
             int s = 0;
             if (r(i)) { s += 2; }
             if (r(h)) { s += 2; }
 
-            for (uint32_t j = 0; j < num_qubits; j++) {
+            for (uint32_t j = 0; j < num_qubits; j++)
                 s += Tableau::g(x(i,j), z(i,j), x(h,j), z(h,j));
-            }
 
             if (s % 4 == 0) {
                 set_r(h, false);
@@ -488,16 +505,20 @@ class Tableau {
         }
 
         void h_gate(uint32_t a) {
+            validate_qubit(a);
             for (uint32_t i = 0; i < num_rows(); i++)
                 rows[i].h_gate(a);
         }
 
         void s_gate(uint32_t a) {
+            validate_qubit(a);
             for (uint32_t i = 0; i < num_rows(); i++)
                 rows[i].s_gate(a);
         }
 
         void cx_gate(uint32_t a, uint32_t b) {
+            validate_qubit(a);
+            validate_qubit(b);
             for (uint32_t i = 0; i < num_rows(); i++)
                 rows[i].cx_gate(a, b);
         }
@@ -505,7 +526,8 @@ class Tableau {
         // Returns a pair containing (1) wether the outcome of a measurement on qubit a is deterministic
         // and (2) the index on which the CHP algorithm performs rowsum if the mzr is random
         std::pair<bool, uint32_t> mzr_deterministic(uint32_t a) {
-            assert(track_destabilizers);
+            if (!track_destabilizers)
+                throw std::invalid_argument("Cannot check mzr_deterministic without track_destabilizers.");
 
             for (uint32_t p = num_qubits; p < 2*num_qubits; p++) {
                 // Suitable p identified; outcome is random
@@ -516,14 +538,16 @@ class Tableau {
             return std::pair(true, 0);
         }
 
-        bool mzr(uint32_t a, bool outcome) {
-            assert(track_destabilizers);
+        bool mzr(uint32_t a, std::minstd_rand& rng) {
+            validate_qubit(a);
+            if (!track_destabilizers)
+                throw std::invalid_argument("Cannot mzr without track_destabilizers.");
 
-            std::pair<bool, uint32_t> result_deterministic = mzr_deterministic(a);
-            bool deterministic = result_deterministic.first;
-            uint32_t p = result_deterministic.second;
+
+            auto [deterministic, p] = mzr_deterministic(a);
 
             if (!deterministic) {
+                bool outcome = rng() % 2;
                 for (uint32_t i = 0; i < 2*num_qubits; i++) {
                     if (i != p && x(i, a)) {
                         rowsum(i, p);
@@ -538,7 +562,7 @@ class Tableau {
                 set_z(p, a, true);
 
                 return outcome;
-            } else {
+            } else { // deterministic
                 rows[2*num_qubits] = PauliString(num_qubits);
                 for (uint32_t i = 0; i < num_qubits; i++) {
                     rowsum(2*num_qubits, i + num_qubits);
@@ -593,7 +617,6 @@ class SparseTableau {
     private:
         uint32_t num_qubits;
         bool track_destabilizers;
-        bool print_ops;
 
     public:
         std::vector<SparsePauliString> rows;
@@ -603,7 +626,7 @@ class SparseTableau {
         }
 
         SparseTableau(uint32_t num_qubits)
-         : num_qubits(num_qubits), track_destabilizers(true), print_ops(DEFAULT_PRINT_OPS) {
+         : num_qubits(num_qubits), track_destabilizers(true) {
             rows = std::vector<SparsePauliString>(2*num_qubits + 1, SparsePauliString(num_qubits));
             for (uint32_t i = 0; i < num_qubits; i++) {
                 rows[i].set_x(i, true);
@@ -612,14 +635,21 @@ class SparseTableau {
         }
 
         SparseTableau(uint32_t num_qubits, std::vector<SparsePauliString> rows)
-         : num_qubits(num_qubits), track_destabilizers(false), print_ops(DEFAULT_PRINT_OPS), rows(rows) {}
+         : num_qubits(num_qubits), track_destabilizers(false), rows(rows) {}
 
         uint32_t num_rows() const { if (track_destabilizers) { return rows.size() - 1; } else { return rows.size(); }}
 
         std::string to_string() const {
             std::string s = "";
             for (uint32_t i = 0; i < num_rows(); i++)
-                s += rows[i].to_string(print_ops) + "\n";
+                s += rows[i].to_string() + "\n";
+            return s;
+        }
+
+        std::string to_string_ops() const {
+            std::string s = "";
+            for (uint32_t i = 0; i < num_rows(); i++)
+                s += rows[i].to_string_ops() + "\n";
             return s;
         }
 
@@ -638,7 +668,8 @@ class SparseTableau {
         }
 
         void rowsum(uint32_t h, uint32_t i) {
-            assert(track_destabilizers);
+            if (!track_destabilizers)
+                throw std::invalid_argument("Cannot perform rowsum without track_destabilizers.");
 
             // Don't track phase
             //int s = 0;
@@ -685,7 +716,8 @@ class SparseTableau {
         // Returns a pair containing (1) whether the outcome of a measurement on qubit a is deterministic
         // and (2) the index on which the CHP algorithm performs rowsum if the mzr is random
         std::pair<bool, uint32_t> mzr_deterministic(uint32_t a) {
-            assert(track_destabilizers);
+            if (!track_destabilizers)
+                throw std::invalid_argument("Cannot check mzr_deterministic without track_destabilizers.");
 
             for (uint32_t p = num_qubits; p < 2*num_qubits; p++) {
                 // Suitable p identified; outcome is random
@@ -696,14 +728,14 @@ class SparseTableau {
             return std::pair(true, 0);
         }
 
-        bool mzr(uint32_t a, bool outcome) {
-            assert(track_destabilizers);
+        bool mzr(uint32_t a, std::minstd_rand& rng) {
+            if (!track_destabilizers)
+                throw std::invalid_argument("Cannot mzr without track_destabilizers.");
 
-            std::pair<bool, uint32_t> result_deterministic = mzr_deterministic(a);
-            bool deterministic = result_deterministic.first;
-            uint32_t p = result_deterministic.second;
+            auto [deterministic, p] = mzr_deterministic(a);
 
             if (!deterministic) {
+                bool outcome = rng() % 2;
                 for (uint32_t i = 0; i < 2*num_qubits; i++) {
                     if (i != p && x(i, a)) {
                         rowsum(i, p);

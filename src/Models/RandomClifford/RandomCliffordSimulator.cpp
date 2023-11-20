@@ -1,7 +1,6 @@
 #include "RandomCliffordSimulator.h"
 #include <QuantumCHPState.hpp>
 #include <QuantumGraphState.h>
-#include <iostream>
 
 #define DEFAULT_GATE_WIDTH 2
 
@@ -11,16 +10,23 @@
 
 #define DEFAULT_SAMPLE_SPARSITY false
 
-RandomCliffordSimulator::RandomCliffordSimulator(Params &params) : EntropySimulator(params) {
+RandomCliffordSimulator::RandomCliffordSimulator(Params &params) : Simulator(params), entropy_sampler(params), interface_sampler(params) {
+	system_size = get<int>(params, "system_size");
+
 	mzr_prob = get<double>(params, "mzr_prob");
 	gate_width = get<int>(params, "gate_width", DEFAULT_GATE_WIDTH);
 
 	simulator_type = get<std::string>(params, "simulator_type", DEFAULT_CLIFFORD_SIMULATOR);
 
+	sample_avalanche_sizes = get<int>(params, "sample_avalanche_sizes", false);
+
 	initial_offset = false;
 	periodic_bc = get<int>(params, "periodic_bc", DEFAULT_PERIODIC_BC);
 
 	sample_sparsity = get<int>(params, "sample_sparsity", DEFAULT_SAMPLE_SPARSITY);	
+
+
+	start_sampling = false;
 }
 
 void RandomCliffordSimulator::init_state(uint32_t) {
@@ -32,9 +38,17 @@ void RandomCliffordSimulator::init_state(uint32_t) {
 		state = std::make_shared<QuantumGraphState>(system_size);
 }
 
+std::shared_ptr<Simulator> RandomCliffordSimulator::deserialize(Params &params, const std::string &data) {
+	std::shared_ptr<RandomCliffordSimulator> sim(new RandomCliffordSimulator(params));
+	sim->state = std::make_shared<QuantumCHPState<Tableau>>(data);
+	return sim;
+}
+
 void RandomCliffordSimulator::timesteps(uint32_t num_steps) {
-	assert(system_size % gate_width == 0);
-	assert(gate_width % 2 == 0); // So that offset is a whole number
+	if (system_size % gate_width != 0)
+		throw std::invalid_argument("Invalid gate width. Must divide system size.");
+	if (gate_width % 2 != 0)
+		throw std::invalid_argument("Gate width must be even.");
 
 	bool offset_layer = initial_offset;
 
@@ -44,9 +58,19 @@ void RandomCliffordSimulator::timesteps(uint32_t num_steps) {
 		// Apply measurements
 		for (uint32_t j = 0; j < system_size; j++) {
 			if (state->randf() < mzr_prob) {
-				take_avalanche_samples();
-				state->mzr(j);
-				take_avalanche_samples();
+				if (sample_avalanche_sizes && start_sampling) {
+					std::vector<int> surface1 = state->get_entropy_surface<int>(2);
+					state->mzr(j);
+					std::vector<int> surface2 = state->get_entropy_surface<int>(2);
+
+					int s = 0.0;
+					for (uint32_t i = 0; i < system_size; i++)
+						s += std::abs(surface1[i] - surface2[i]);
+
+					interface_sampler.record_size(s);
+				} else {
+					state->mzr(j);
+				}
 			}
 		}
 
@@ -57,7 +81,12 @@ void RandomCliffordSimulator::timesteps(uint32_t num_steps) {
 }
 
 data_t RandomCliffordSimulator::take_samples() {
-	data_t samples = EntropySimulator::take_samples();
+	data_t samples;
+
+	entropy_sampler.add_samples(samples, state);
+
+	std::vector<int> surface = state->get_entropy_surface<int>(2);
+	interface_sampler.add_samples(samples, surface);
 
 	if (sample_sparsity)
 		samples.emplace("sparsity", state->sparsity());
