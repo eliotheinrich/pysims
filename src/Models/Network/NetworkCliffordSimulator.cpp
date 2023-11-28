@@ -14,7 +14,7 @@ NetworkCliffordSimulator::NetworkCliffordSimulator(Params &params) : Simulator(p
 }
 
 void NetworkCliffordSimulator::init_state(uint32_t) {
-	state = std::make_shared<QuantumCHPState<Tableau>>(system_size);
+	state = std::make_shared<QuantumCHPState>(system_size);
 	network = Graph::scale_free_graph(system_size, alpha);
 }
 

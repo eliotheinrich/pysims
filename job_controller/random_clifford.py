@@ -51,7 +51,9 @@ def generate_config_very_high_fidelity(system_sizes=[128], simulator_type="chp",
 
     return config_to_string(config)
 
-def generate_config_very_high_fidelity_temporal(system_sizes=[128], simulator_type="chp"):
+def generate_config_very_high_fidelity_temporal(system_sizes=[128], simulator_type="chp", mzr_probs=None):
+    if mzr_probs is None:
+        mzr_probs = [0.00, 0.02, 0.04, 0.06, 0.08, 0.10, 0.12, 0.14, 0.15, 0.16, 0.17, 0.18, 0.20, 0.22, 0.24, 0.26, 0.28, 0.30, 0.50, 1.00]
     config = {}
     config["circuit_type"] = "random_clifford"
     config["num_runs"] = 1
@@ -66,7 +68,7 @@ def generate_config_very_high_fidelity_temporal(system_sizes=[128], simulator_ty
     
     config["sample_entropy"] = False
 
-    config["mzr_prob"] = [0.1]
+    config["mzr_prob"] = mzr_probs
 
     config["spatial_avg"] = False
     config["temporal_avg"] = False
@@ -88,6 +90,9 @@ if __name__ == "__main__":
     #submit_jobs(config, f"rc_sim_scaling", ncores=48, nodes=4, memory="10gb", time="48:00:00", record_error=True)
 
     
-    config = generate_config_very_high_fidelity_temporal(system_sizes=[10], simulator_type=["chp", "graph"])
-    submit_jobs(config, 'rc_test', ncores=2, run_local=True)
-    #submit_jobs(config, f"rc_{L}_3", ncores=4, nodes=1, memory="10gb", time="48:00:00", record_error=False, cleanup=False, run_local=True)
+    #config = generate_config_very_high_fidelity_temporal(system_sizes=[128], simulator_type=["chp"])
+    #submit_jobs(config, 'rc_test', ncores=2, run_local=True)
+    #submit_jobs(config, f"rc_test", ncores=4, nodes=1, memory="10gb", time="48:00:00", record_error=False, run_local=True)
+    
+    config = generate_config_very_high_fidelity(system_sizes=[64], simulator_type=["chp"], sample_structure_function=False)
+    submit_jobs(config, f"rc_test", ncores=4, nodes=1, memory="10gb", time="48:00:00", record_error=False, run_local=True)

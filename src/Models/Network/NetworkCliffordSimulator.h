@@ -15,7 +15,7 @@ class NetworkCliffordSimulator : public Simulator {
 
 		uint32_t num_partitions;
 
-		std::shared_ptr<QuantumCHPState<Tableau>> state;
+		std::shared_ptr<QuantumCHPState> state;
 		Graph network;
 
 		EntropySampler sampler;

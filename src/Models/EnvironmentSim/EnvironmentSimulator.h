@@ -12,7 +12,7 @@ class EnvironmentSimulator : public Simulator {
 		uint32_t env_dim;
 		uint32_t env_size;
 		
-		std::shared_ptr<QuantumCHPState<Tableau>> state;
+		std::shared_ptr<QuantumCHPState> state;
 
 		bool offset;
 

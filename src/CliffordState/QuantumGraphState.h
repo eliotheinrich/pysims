@@ -49,7 +49,7 @@ class QuantumGraphState : public CliffordState {
         QuantumGraphState(uint32_t num_qubits, int seed=-1);
         QuantumGraphState(Graph &graph, int seed=-1);
 
-		QuantumCHPState<Tableau> to_chp() const;
+		QuantumCHPState to_chp() const;
 
         virtual std::string to_string() const override;
 

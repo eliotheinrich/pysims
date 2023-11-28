@@ -19,7 +19,7 @@ EnvironmentSimulator::EnvironmentSimulator(Params &params) : Simulator(params), 
 }
 
 void EnvironmentSimulator::init_state(uint32_t) {
-	state = std::make_shared<QuantumCHPState<Tableau>>(system_size + env_size);
+	state = std::make_shared<QuantumCHPState>(system_size + env_size);
 
 	offset = false;
 }

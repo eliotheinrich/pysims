@@ -18,7 +18,7 @@ PhaselessSimulator::PhaselessSimulator(Params &params) : Simulator(params), samp
 }
 
 void PhaselessSimulator::init_state(uint32_t) {
-	state = std::make_shared<QuantumCHPState<Tableau>>(system_size);
+	state = std::make_shared<QuantumCHPState>(system_size);
 	offset = false;
 
 	std::vector<uint32_t> q(system_size);

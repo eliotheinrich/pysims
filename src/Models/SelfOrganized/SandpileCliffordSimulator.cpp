@@ -78,7 +78,7 @@ SandpileCliffordSimulator::SandpileCliffordSimulator(Params &params) : Simulator
 
 void SandpileCliffordSimulator::init_state(uint32_t) {
 	if (simulator_type == "chp") {
-		state = std::make_shared<QuantumCHPState<Tableau>>(system_size);
+		state = std::make_shared<QuantumCHPState>(system_size);
 	} else if (simulator_type == "graph") {
 		state = std::make_shared<QuantumGraphState>(system_size);
 	}

@@ -217,10 +217,10 @@ QuantumGraphState::QuantumGraphState(Graph &graph, int seed) : CliffordState(gra
 	this->graph = Graph(graph);
 }
 
-QuantumCHPState<Tableau> QuantumGraphState::to_chp() const {
+QuantumCHPState QuantumGraphState::to_chp() const {
 	uint32_t num_qubits = graph.num_vertices;
 
-	QuantumCHPState<Tableau> chp(num_qubits);
+	QuantumCHPState chp(num_qubits);
 
 	for (uint32_t i = 0; i < num_qubits; i++)
 		chp.h_gate(i);

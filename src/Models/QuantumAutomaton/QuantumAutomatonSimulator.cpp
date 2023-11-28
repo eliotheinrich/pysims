@@ -19,7 +19,7 @@ QuantumAutomatonSimulator::QuantumAutomatonSimulator(Params &params) : Simulator
 
 void QuantumAutomatonSimulator::init_state(uint32_t) {
 	switch (clifford_type) {
-		case CliffordType::CHP : state = std::make_shared<QuantumCHPState<Tableau>>(system_size); break;
+		case CliffordType::CHP : state = std::make_shared<QuantumCHPState>(system_size); break;
 		case CliffordType::GraphSim : state = std::make_shared<QuantumGraphState>(system_size); break;
 	}
 

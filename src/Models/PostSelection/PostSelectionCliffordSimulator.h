@@ -5,7 +5,7 @@
 
 class PostSelectionCliffordSimulator : public Simulator {
 	private:
-		std::shared_ptr<QuantumCHPState<Tableau>> state;
+		std::shared_ptr<QuantumCHPState> state;
 
 		uint32_t system_size;
 		double mzr_prob;
@@ -19,7 +19,7 @@ class PostSelectionCliffordSimulator : public Simulator {
 		PostSelectionCliffordSimulator(Params &params);
 
 		virtual void init_state(uint32_t) override {
-			state = std::shared_ptr<QuantumCHPState<Tableau>>(new QuantumCHPState(system_size));
+			state = std::shared_ptr<QuantumCHPState>(new QuantumCHPState(system_size));
 		}
 
 		virtual void timesteps(uint32_t num_steps) override;

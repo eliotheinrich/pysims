@@ -15,7 +15,7 @@ class PhaselessSimulator : public Simulator {
 		
 		bool sample_measurement_outcomes;
 
-		std::shared_ptr<QuantumCHPState<Tableau>> state;
+		std::shared_ptr<QuantumCHPState> state;
 		bool offset;
 
 		EntropySampler sampler;

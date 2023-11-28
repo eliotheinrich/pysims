@@ -310,7 +310,7 @@ bool test_parametrized_circuit() {
 int main() {
     uint32_t system_size = 10;
     int seed = 314;
-    QuantumCHPState<Tableau> state1(system_size, seed);
+    QuantumCHPState state1(system_size, seed);
     QuantumGraphState state2(system_size, seed);
 
     std::random_device rng;

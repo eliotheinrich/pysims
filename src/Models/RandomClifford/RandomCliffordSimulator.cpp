@@ -32,16 +32,14 @@ RandomCliffordSimulator::RandomCliffordSimulator(Params &params) : Simulator(par
 
 void RandomCliffordSimulator::init_state(uint32_t) {
 	if (simulator_type == "chp")
-		state = std::make_shared<QuantumCHPState<Tableau>>(system_size, seed);
-	else if (simulator_type == "chp_sparse")
-		state = std::make_shared<QuantumCHPState<SparseTableau>>(system_size, seed);
+		state = std::make_shared<QuantumCHPState>(system_size, seed);
 	else if (simulator_type == "graph")
 		state = std::make_shared<QuantumGraphState>(system_size, seed);
 }
 
 std::shared_ptr<Simulator> RandomCliffordSimulator::deserialize(Params &params, const std::string &data) {
 	std::shared_ptr<RandomCliffordSimulator> sim(new RandomCliffordSimulator(params));
-	sim->state = std::make_shared<QuantumCHPState<Tableau>>(data);
+	sim->state = std::make_shared<QuantumCHPState>(data);
 	return sim;
 }
 
