@@ -182,7 +182,7 @@ Eigen::VectorXd DensityMatrix::diagonal() const {
 	return data.diagonal().cwiseAbs();
 }
 
-std::map<uint32_t, double> DensityMatrix::probabilities() const {
+std::map<uint32_t, double> DensityMatrix::probabilities_map() const {
 	std::map<uint32_t, double> outcomes;
 
 	for (uint32_t i = 0; i < basis; i++)
@@ -191,3 +191,10 @@ std::map<uint32_t, double> DensityMatrix::probabilities() const {
 	return outcomes;
 }
 
+std::vector<double> DensityMatrix::probabilities() const {
+	std::vector<double> probs(basis);
+	for (uint32_t i = 0; i < basis; i++)
+		probs[i] = data(i, i).real();
+
+	return probs;
+}

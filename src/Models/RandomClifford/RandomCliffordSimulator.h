@@ -31,6 +31,7 @@ inline static void rc_timestep(std::shared_ptr<CliffordState> state, uint32_t ga
 class RandomCliffordSimulator : public Simulator {
 	private:
 		std::shared_ptr<CliffordState> state;
+		int seed;
 
 		uint32_t system_size;
 		double mzr_prob;
@@ -39,7 +40,7 @@ class RandomCliffordSimulator : public Simulator {
 		std::string simulator_type;
 		
 		bool initial_offset;
-		bool periodic_bc;
+		bool pbc;
 
 		bool sample_sparsity;
 		bool sample_avalanche_sizes;

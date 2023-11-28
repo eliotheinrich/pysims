@@ -1,14 +1,15 @@
 from job_controller import config_to_string, submit_jobs, save_config
 import numpy as np
 
-def generate_config_very_high_fidelity(system_sizes=[128]):
+def generate_config_very_high_fidelity(system_sizes=[128], simulator_type="chp", sample_structure_function=True):
     config = {}
     config["circuit_type"] = "random_clifford"
-    config["num_runs"] = 25
+    config["num_runs"] = 5
+    config["simulator_type"] = simulator_type
 
     config["gate_width"] = 2
 
-    config["periodic_bc"] = [True, False]
+    config["pbc"] = [True, False]
     
     # EntropySampler settings
     config["sample_entropy"] = False
@@ -36,7 +37,7 @@ def generate_config_very_high_fidelity(system_sizes=[128]):
     config["sample_rugosity"] = True
     config["sample_roughness"] = True
     config["sample_avalanche_sizes"] = False
-    config["sample_structure_function"] = True
+    config["sample_structure_function"] = sample_structure_function
 
 
     config["mzr_prob"] = [0.00, 0.02, 0.04, 0.06, 0.08, 0.10, 0.12, 0.14, 0.15, 0.16, 0.17, 0.18, 0.20, 0.22, 0.24, 0.26, 0.28, 0.30, 0.50, 1.00]
@@ -50,33 +51,28 @@ def generate_config_very_high_fidelity(system_sizes=[128]):
 
     return config_to_string(config)
 
-def generate_config_very_high_fidelity_temporal(system_sizes=[128]):
+def generate_config_very_high_fidelity_temporal(system_sizes=[128], simulator_type="chp"):
     config = {}
     config["circuit_type"] = "random_clifford"
-    config["num_runs"] = 2500
+    config["num_runs"] = 1
+    config["simulator_type"] = simulator_type
 
     config["gate_width"] = 2
 
-    config["periodic_bc"] = [True, False]
+    config["pbc"] = [True]
+    config["seed"] = 315
     
-    zparams = []
-    for system_size in system_sizes:
-        zparams.append({
-            'system_size': system_size,
-            'partition_size': system_size//2,
-            'sampling_timesteps': system_size*2
-        })
+    config["system_size"] = system_sizes
     
-    config["zparams"] = zparams
-    
-    config["sample_entropy"] = True
+    config["sample_entropy"] = False
 
-    config["mzr_prob"] = [0.16]
+    config["mzr_prob"] = [0.1]
 
     config["spatial_avg"] = False
     config["temporal_avg"] = False
     config["equilibration_timesteps"] = 0
     config["measurement_freq"] = 1
+    config["sampling_timesteps"] = 100
 
     config["spacing"] = 5
 
@@ -86,7 +82,12 @@ if __name__ == "__main__":
     #config = generate_config_very_high_fidelity_temporal(system_sizes=[128, 256])
     #submit_jobs(config, f"rc_t_256", ncores=64, memory="150gb", time="48:00:00", nodes=4)
 
-    system_sizes = [32]
+    system_sizes = [10, 20, 30, 40, 50, 60, 70, 80, 90, 100]
     L = max(system_sizes)
-    config = generate_config_very_high_fidelity(system_sizes=system_sizes)
-    submit_jobs(config, f"rc_{L}", ncores=12, nodes=1, memory="10gb", time="48:00:00", record_error=True)
+    config = generate_config_very_high_fidelity(system_sizes=system_sizes, simulator_type=["chp", "graph"], sample_structure_function=False)
+    #submit_jobs(config, f"rc_sim_scaling", ncores=48, nodes=4, memory="10gb", time="48:00:00", record_error=True)
+
+    
+    config = generate_config_very_high_fidelity_temporal(system_sizes=[10], simulator_type=["chp", "graph"])
+    submit_jobs(config, 'rc_test', ncores=2, run_local=True)
+    #submit_jobs(config, f"rc_{L}_3", ncores=4, nodes=1, memory="10gb", time="48:00:00", record_error=False, cleanup=False, run_local=True)

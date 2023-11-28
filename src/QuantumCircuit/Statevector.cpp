@@ -165,6 +165,15 @@ double Statevector::probabilities(uint32_t z, const std::vector<uint32_t>& qubit
 	return p;
 }
 
+std::vector<double> Statevector::probabilities() const {
+	uint32_t s = 1u << num_qubits;
+	std::vector<double> probs(s);
+	for (uint32_t i = 0; i < s; i++)
+		probs[i] = std::pow(std::abs(data(i)), 2);
+
+	return probs;
+}
+
 std::complex<double> Statevector::inner(const Statevector& other) const {
 	uint32_t s = 1u << num_qubits;
 

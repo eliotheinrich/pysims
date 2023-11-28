@@ -1,12 +1,15 @@
 #pragma once
 
-#include <DataFrame.hpp>
+#include <Frame.h>
 
 #include <iostream>
 #include <sstream>
 #include <algorithm>
 #include <numeric>
 #include <math.h>
+
+using namespace dataframe;
+using namespace dataframe::utils;
 
 class EntropyState {
     protected:
@@ -240,9 +243,9 @@ class EntropySampler {
 
                     std::string key = "I" + std::to_string(index) + "_" + std::to_string(get_bin_idx(eta));
                     if (samples.count(key))
-                        samples[key] = mutual_information_sample;
+                        samples.emplace(key, mutual_information_sample);
                     else
-                        samples[key] = samples[key].combine(mutual_information_sample);
+                        samples[key] = std::vector<Sample>{samples[key][0].combine(mutual_information_sample)}; // Messy; TODO fix
                 }
             }
         }

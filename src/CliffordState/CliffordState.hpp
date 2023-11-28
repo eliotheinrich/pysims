@@ -202,6 +202,22 @@ class CliffordState : public EntropyState {
             s_gate(a);
         }
 
+        virtual void sx_gate(uint32_t a) {
+            h_gate(a);
+            s_gate(a);
+            h_gate(a);
+        }
+        virtual void sy_gate(uint32_t a) {
+            h_gate(a);
+            s_gate(a);
+            sx_gate(a);
+            sd_gate(a);
+            h_gate(a);
+        }
+        virtual void sz_gate(uint32_t a) {
+            s_gate(a);
+        }
+
         virtual void cz_gate(uint32_t a, uint32_t b)=0;
         virtual void cx_gate(uint32_t a, uint32_t b) {
             h_gate(b);

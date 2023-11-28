@@ -31,7 +31,3 @@ Statevector UnitaryState::get_statevector() const {
 double UnitaryState::entropy(const std::vector<uint32_t> &sites, uint32_t index) const {
 	return get_statevector().entropy(sites, index);
 }
-
-double UnitaryState::probabilities(uint32_t z, const std::vector<uint32_t>& qubits) const {
-	return get_statevector().probabilities(z, qubits);
-}

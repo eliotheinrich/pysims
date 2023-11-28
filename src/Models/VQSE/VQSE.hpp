@@ -59,7 +59,7 @@ class VQSE {
 			DensityMatrix rho = VQSE::make_target(target);
 			rho.evolve(circuit);
 
-			return rho.probabilities();
+			return rho.probabilities_map();
 		}
 
 		std::map<uint32_t, double> get_outcomes_simulated(const QuantumCircuit& circuit, const target_t& target) {

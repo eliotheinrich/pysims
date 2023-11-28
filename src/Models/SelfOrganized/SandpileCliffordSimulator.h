@@ -2,15 +2,17 @@
 
 #include <Simulator.hpp>
 #include <InterfaceSampler.hpp>
-#include <QuantumCHPState.hpp>
+#include <CliffordState.hpp>
+#include <QuantumGraphState.h>
 
 class SandpileCliffordSimulator : public Simulator {
 	private:
-		std::shared_ptr<QuantumCHPState<Tableau>> state;
+		std::shared_ptr<CliffordState> state;
+		std::shared_ptr<QuantumGraphState> state2;
 		uint32_t system_size;
 
-		float unitary_prob;
-		float mzr_prob;
+		double unitary_prob;
+		double mzr_prob;
 
 		std::string boundary_condition;
 		uint32_t feedback_mode;
@@ -24,6 +26,11 @@ class SandpileCliffordSimulator : public Simulator {
 		bool start_sampling;
 		bool sample_avalanche_sizes;
 		
+		uint32_t initial_state;
+		uint32_t scrambling_steps;
+
+		std::string simulator_type;
+
 		InterfaceSampler interface_sampler;
 		EntropySampler entropy_sampler;
 
@@ -42,9 +49,7 @@ class SandpileCliffordSimulator : public Simulator {
 	public:
 		SandpileCliffordSimulator(Params &params);
 
-		virtual void init_state(uint32_t) override { 
-			state = std::make_shared<QuantumCHPState<Tableau>>(system_size);
-		}
+		virtual void init_state(uint32_t) override;
 
 		virtual void equilibration_timesteps(uint32_t num_steps) override {
 			start_sampling = false;
@@ -58,13 +63,6 @@ class SandpileCliffordSimulator : public Simulator {
 			auto substrings = split(s, "\n");
 			substrings.erase(substrings.begin());
 			return join(substrings, "\n");
-		}
-
-		virtual std::shared_ptr<Simulator> deserialize(Params &params, const std::string &data) override {
-			std::shared_ptr<SandpileCliffordSimulator> sim(new SandpileCliffordSimulator(params));
-			sim->state = std::make_shared<QuantumCHPState<Tableau>>(data);
-
-			return sim;
 		}
 
 		virtual data_t take_samples() override;

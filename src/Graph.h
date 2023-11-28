@@ -40,9 +40,9 @@ class Graph {
 			vals[v] = val;
 		}
 
-		uint32_t get_val(uint32_t v) { return vals[v]; }
+		uint32_t get_val(uint32_t v) const { return vals[v]; }
 
-		std::vector<uint32_t> neighbors(uint32_t a) {
+		std::vector<uint32_t> neighbors(uint32_t a) const {
 			std::vector<uint32_t> neighbors;
 			for (auto const &[e, _] : edges[a]) neighbors.push_back(e);
 			std::sort(neighbors.begin(), neighbors.end());

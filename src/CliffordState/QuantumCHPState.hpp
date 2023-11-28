@@ -9,7 +9,7 @@ class QuantumCHPState : public CliffordState {
         TableauType tableau;
 
         static uint32_t get_num_qubits(const std::string &s) {
-            auto substrings = split(s, "\n");
+            auto substrings = dataframe::utils::split(s, "\n");
             return substrings.size()/2;
         }
         
@@ -19,13 +19,13 @@ class QuantumCHPState : public CliffordState {
          : CliffordState(num_qubits, seed), tableau(TableauType(num_qubits)) {}
         
         QuantumCHPState(const std::string &s) : CliffordState(get_num_qubits(s)) {
-            auto substrings = split(s, "\n");
+            auto substrings = dataframe::utils::split(s, "\n");
 
             tableau = TableauType(system_size());
 
             for (uint32_t i = 0; i < substrings.size()-1; i++) {
                 substrings[i] = substrings[i].substr(1, substrings[i].size() - 3);
-                auto chars = split(substrings[i], " | ");
+                auto chars = dataframe::utils::split(substrings[i], " | ");
     
                 auto row = chars[0];
                 bool r = chars[1][0] == '1';

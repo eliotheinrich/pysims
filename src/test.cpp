@@ -6,7 +6,8 @@
 #include <unsupported/Eigen/MatrixFunctions>
 #include <vector>
 #include <map>
-#include <DataFrame.hpp>
+#include <Frame.h>
+#include <InterfaceSampler.hpp>
 
 std::string print_pair(std::pair<double, double> p) {
     return std::to_string(p.first) + ", " + std::to_string(p.second);
@@ -305,161 +306,38 @@ bool test_parametrized_circuit() {
 #include <CircuitUtils.h>
 #include <iomanip>
 
-using namespace itensor;
 
 int main() {
-    //auto i = Index(2,"i");
-    //auto j = Index(3,"j");
-    //auto k = Index(4,"k");
+    uint32_t system_size = 10;
+    int seed = 314;
+    QuantumCHPState<Tableau> state1(system_size, seed);
+    QuantumGraphState state2(system_size, seed);
 
-    //auto is = IndexSet(i,j,k);
+    std::random_device rng;
 
-    //auto T = randomTensor(i,j,k);
+    uint32_t num_iters = 100;
 
-    //for(auto it : iterInds(T))
-    //    {
-    //    print(it[0]);
-    //    print(it[1]);
-    //    print(it[2]);
-    //    print(T.real(it));
-    //    println();
-    //    }
+    for (uint32_t i = 0; i < num_iters; i++) {
+        uint32_t q1 = rng() % system_size;
+        uint32_t q2;
+        while (q2 == q1)
+            q2 = rng() % system_size;
 
-    //PrintData(T);
+        std::vector<uint32_t> qbits{q1, q2};
+        state1.random_clifford(qbits);
+        state2.random_clifford(qbits);
 
+        std::cout << "CHP state:   [ ";
+        for (uint32_t i = 0; i < system_size; i++) {
+            std::cout << state1.cum_entropy<int>(i) << " ";
+        } std::cout << "]\n";
 
-    
-    Eigen::Matrix2cd H; H << 1, 1, 1, -1;
-    H /= std::sqrt(2);
-    Eigen::Matrix4cd CX; CX << 1, 0, 0, 0,
-                               0, 1, 0, 0,
-                               0, 0, 0, 1,
-                               0, 0, 1, 0;
-
-    Eigen::Matrix4cd id; id << 1, 0, 0, 0,
-                               0, 1, 0, 0,
-                               0, 0, 1, 0,
-                               0, 0, 0, 1;
-
-    MatrixProductState state(2, 4);
-    std::random_device rd;
-    int s = rd();
-    state.seed(s);
-    state.evolve(H, 0);
-    state.evolve(CX, {0, 1});
-    //std::cout << "Outcome: " << state.measure(0) << std::endl;
-    //std::cout << state.to_string() << std::endl;
-    //state.evolve(id, {0, 1});
-    //std::cout << state.to_string() << std::endl;
-
-
-    std::mt19937 rng;
-    rng.seed(314);
-
-    //uint32_t nqb = 6;
-    //QuantumCircuit qc(nqb);
-    //qc.add_gate(haar_unitary(2, rng), {1,2});
-    //qc.add_gate(haar_unitary(2, rng), {3,4});
-    //qc.add_gate(haar_unitary(2, rng), {1,2});
-    //qc.add_gate(haar_unitary(2, rng), {3,4});
-    //qc.add_gate(haar_unitary(2, rng), {2,3});
-    //qc.add_gate(haar_unitary(2, rng), {4,5});
-
-    uint32_t nqb = 6;
-    QuantumCircuit qc = generate_haar_circuit(nqb, 12, false, 314);
-
-    //uint32_t nqb = 3;
-    //QuantumCircuit qc(nqb);
-    //qc.add_gate(haar_unitary(2, rng), {0,1});
-    //qc.add_gate(haar_unitary(2, rng), {1,2});
-
-    Statevector statev2(nqb);
-    statev2.seed(s);
-    statev2.QuantumState::evolve(qc);
-    for (auto i : std::vector<int>{0,1,2,3,4,5})
-        statev2.measure(i);
-    //statev2.measure(3);
-    //statev2.measure(nqb-1);
-    std::cout << "State (Vector): \n";
-    std::cout << statev2.to_string() << std::endl;
-    std::vector<uint32_t> qbits;
-    for (uint32_t i = 0; i <= nqb; i++) {
-        std::cout << statev2.entropy(qbits, 1) << " ";
-        qbits.push_back(i);
+        std::cout << "Graph state: [ ";
+        for (uint32_t i = 0; i < system_size; i++) {
+            std::cout << state2.cum_entropy<int>(i) << " ";
+        } std::cout << "]\n\n";
     }
 
-    std::cout << "\n";
 
 
-    std::vector<uint32_t> bond_dimensions{1u << nqb};
-    for (auto bond_dimension : bond_dimensions) {
-        MatrixProductState state(nqb, bond_dimension, 1e-8);
-        state.seed(s);
-
-        state.QuantumState::evolve(qc);
-        for (auto i : std::vector<int>{0,1,2,3,4,5})
-            state.measure(i);
-        //state.measure(3);
-        //state.measure(nqb-1);
-
-        Statevector statev1 = Statevector(state);
-
-        std::cout << "State (MPS): \n";
-        std::cout << statev1.to_string() << std::endl;
-        for (uint32_t i = 0; i <= nqb; i++) std::cout << state.entropy(i) << " ";
-        std::cout << "\n";
-        std::cout << std::abs(statev1.inner(statev2)) << std::endl;
-    }
-
-    //state.evolve(CX, {2, 1});
-
-    //coefficients = state.coefficients();
-
-    //statev = Statevector(coefficients);
-
-    //std::cout << "State: \n";
-    //std::cout << statev.to_string() << std::endl;
-
-
-    //std::string filename = "../tmp/vqse_noise_test_case/vqse_noise_test_0.json";
-
-    //std::ifstream file(filename);
-
-    //std::string fileContent;
-    //std::string line;
-    //while (std::getline(file, line)) {
-    //    fileContent += line + "\n";
-    //}
-
-    //file.close();
-
-    //std::cout << "Read: \n" << fileContent;
-    //DataFrame df(fileContent);
-
-    //std::cout << "DataFrame: \n" << df.to_string() << std::endl;
-
-    //test_parametrized_circuit();
-
-    //test_density_matrix();
-
-    //test_vqse();
-    
-    //test_vqse_energy();
-
-    //test_Statevector();
-
-    //test_GroverSimulation();
-
-    //std::string filename = "../data/__rc2_serialize.json";
-    //std::ifstream f(filename);
-    //std::stringstream buffer;
-    //buffer << f.rdbuf();
-    //std::string s = buffer.str();
-    
-
-    //nlohmann::json data = nlohmann::json::parse(s);
-    //auto pc = build_pc(data, 1, 1);
-    //pc.compute(true);
-    //pc.write_json(filename);
-    //pc.write_serialize_json("__after_serialize.json");
 }

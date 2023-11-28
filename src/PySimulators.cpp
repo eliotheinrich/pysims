@@ -1,12 +1,5 @@
 #include "utils.cpp"
-#include <PyDataFrame.cpp>
-
-
-#include <nanobind/nanobind.h>
-
-namespace nb = nanobind;
-using namespace nb::literals;
-
+#include <PyDataFrame.hpp>
 
 
 NB_MODULE(pysimulators, m) {

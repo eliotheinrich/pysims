@@ -3,6 +3,7 @@
 #include <vector>
 #include "Graph.h"
 #include "CliffordState.hpp"
+#include "QuantumCHPState.hpp"
 
 #define IDGATE     0
 #define XGATE      1
@@ -47,6 +48,8 @@ class QuantumGraphState : public CliffordState {
 
         QuantumGraphState(uint32_t num_qubits, int seed=-1);
         QuantumGraphState(Graph &graph, int seed=-1);
+
+		QuantumCHPState<Tableau> to_chp() const;
 
         virtual std::string to_string() const override;
 

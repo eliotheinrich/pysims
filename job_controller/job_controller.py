@@ -57,6 +57,7 @@ def submit_jobs(
     else:
         config = write_config(params)
     
+    
     config = "".join(config.split())
     
     # Setup
@@ -67,16 +68,15 @@ def submit_jobs(
     os.mkdir(case_dir)
     
     if run_local:
+        os.chdir(f'{case_dir}')
         for i in range(nodes):
             script = ["python", "../do_run.py", f"{job_name}_{i}", f"{json.dumps(metaparams)}", f"{json.dumps(config)}"]
 
-            os.chdir(f'{case_dir}')
             subprocess.run(script)
         
         
 
-            
-        combine_script = ["python", "../combine_data.py", job_name, record_error]
+        combine_script = ["python", "../combine_data.py", job_name, str(record_error)]
         subprocess.run(combine_script)
         subprocess.run(["mv", "-f", f"{job_name}.json", ".."])
         if cleanup:

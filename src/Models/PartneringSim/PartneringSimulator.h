@@ -1,12 +1,12 @@
 #pragma once
 
-#include <Simulator.hpp>
+#include <Frame.h>
 #include <Graph.h>
 
 #include <climits>
 
 
-class PartneringSimulator : public Simulator {
+class PartneringSimulator : public dataframe::Simulator {
 	private:
 		uint32_t num_nodes;
 		uint32_t affinity_type;
@@ -31,17 +31,17 @@ class PartneringSimulator : public Simulator {
 			return augmented_graph.edge_weight(i, j);
 		}
 
-		void add_affinity_samples(data_t& samples) const;
-		void add_global_properties_samples(data_t& samples) const;
-		void add_local_properties_samples(data_t& samples) const;
-		void add_counts_samples(data_t& samples) const;
+		void add_affinity_samples(dataframe::data_t& samples) const;
+		void add_global_properties_samples(dataframe::data_t& samples) const;
+		void add_local_properties_samples(dataframe::data_t& samples) const;
+		void add_counts_samples(dataframe::data_t& samples) const;
 
 	public:
 		Graph partner_graph;
 		Graph affinity_graph;
 		Graph augmented_graph;
 
-		PartneringSimulator(Params &params);
+		PartneringSimulator(dataframe::Params &params);
 
 		virtual void init_state(uint32_t) override;
 		virtual void timesteps(uint32_t num_steps) override;
@@ -51,7 +51,7 @@ class PartneringSimulator : public Simulator {
 			start_sampling = true;
 		}
 
-		virtual data_t take_samples() override;
+		virtual dataframe::data_t take_samples() override;
 
-		CLONE(Simulator, PartneringSimulator)
+		CLONE(dataframe::Simulator, PartneringSimulator)
 };

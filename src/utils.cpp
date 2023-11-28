@@ -13,6 +13,7 @@
 #include <GroverProjectionSimulator.h>
 #include <GroverSATSimulator.h>
 #include <BrickworkCircuitSimulator.h>
+#include <RandomCircuitSamplingSimulator.h>
 #include <VQSEConfig.hpp>
 
 // Misc
@@ -20,8 +21,10 @@
 #include <BlockSimulator.h>
 #include <RPMSimulator.h>
 
-#include <DataFrame.hpp>
 #include <nlohmann/json.hpp>
+
+using namespace dataframe;
+using namespace dataframe::utils;
 
 std::shared_ptr<Config> assemble_config(Params &param) {
     std::string circuit_type = get<std::string>(param, "circuit_type");
@@ -37,15 +40,18 @@ std::shared_ptr<Config> assemble_config(Params &param) {
     else if (circuit_type == "grover_projection") return prepare_timeconfig<GroverProjectionSimulator>(param);
     else if (circuit_type == "brickwork_circuit") return prepare_timeconfig<BrickworkCircuitSimulator>(param);
     else if (circuit_type == "vqse") return std::make_shared<VQSEConfig>(param);
-    else if (circuit_type == "partner") prepare_timeconfig<PartneringSimulator>(param);
+    else if (circuit_type == "partner") return prepare_timeconfig<PartneringSimulator>(param);
     else if (circuit_type == "groversat") return prepare_timeconfig<GroverSATSimulator>(param);
     else if (circuit_type == "phaseless") return prepare_timeconfig<PhaselessSimulator>(param);
     else if (circuit_type == "network_clifford") return prepare_timeconfig<NetworkCliffordSimulator>(param);
     else if (circuit_type == "env_sim") return prepare_timeconfig<EnvironmentSimulator>(param);
+    else if (circuit_type == "random_circuit_sampling") return prepare_timeconfig<RandomCircuitSamplingSimulator>(param);
     else {
         std::string error_message = "Invalid circuit type: " + circuit_type + ".";
         throw std::invalid_argument(error_message);
     }
+
+    return std::make_shared<VQSEConfig>(param); // To squash error message
 }
 
 ParallelCompute build_pc(Params& metaparams, std::vector<Params>& params) {

@@ -6,7 +6,7 @@
 
 #define DEFAULT_CLIFFORD_SIMULATOR "chp"
 
-#define DEFAULT_PERIODIC_BC true
+#define DEFAULT_PBC true
 
 #define DEFAULT_SAMPLE_SPARSITY false
 
@@ -21,21 +21,22 @@ RandomCliffordSimulator::RandomCliffordSimulator(Params &params) : Simulator(par
 	sample_avalanche_sizes = get<int>(params, "sample_avalanche_sizes", false);
 
 	initial_offset = false;
-	periodic_bc = get<int>(params, "periodic_bc", DEFAULT_PERIODIC_BC);
+	pbc = get<int>(params, "pbc", DEFAULT_PBC);
 
 	sample_sparsity = get<int>(params, "sample_sparsity", DEFAULT_SAMPLE_SPARSITY);	
 
+	seed = get<int>(params, "seed", -1);
 
 	start_sampling = false;
 }
 
 void RandomCliffordSimulator::init_state(uint32_t) {
 	if (simulator_type == "chp")
-		state = std::make_shared<QuantumCHPState<Tableau>>(system_size);
+		state = std::make_shared<QuantumCHPState<Tableau>>(system_size, seed);
 	else if (simulator_type == "chp_sparse")
-		state = std::make_shared<QuantumCHPState<SparseTableau>>(system_size);
+		state = std::make_shared<QuantumCHPState<SparseTableau>>(system_size, seed);
 	else if (simulator_type == "graph")
-		state = std::make_shared<QuantumGraphState>(system_size);
+		state = std::make_shared<QuantumGraphState>(system_size, seed);
 }
 
 std::shared_ptr<Simulator> RandomCliffordSimulator::deserialize(Params &params, const std::string &data) {
@@ -53,7 +54,7 @@ void RandomCliffordSimulator::timesteps(uint32_t num_steps) {
 	bool offset_layer = initial_offset;
 
 	for (uint32_t i = 0; i < num_steps; i++) {
-		rc_timestep(state, gate_width, offset_layer, periodic_bc);
+		rc_timestep(state, gate_width, offset_layer, pbc);
 
 		// Apply measurements
 		for (uint32_t j = 0; j < system_size; j++) {

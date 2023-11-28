@@ -1,0 +1,5 @@
+add_library(random_circuit_sampling
+    RandomCircuitSamplingSimulator.cpp
+)
+target_link_libraries(random_circuit_sampling quantum_circuit)
+target_include_directories(random_circuit_sampling PUBLIC ${QUANTUMCIRCUIT_DIR})

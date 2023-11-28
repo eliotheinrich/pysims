@@ -7,6 +7,8 @@
 
 #define DEFAULT_AFFINITY_TYPE POWER_LAW
 
+using namespace dataframe;
+using namespace dataframe::utils;
 
 PartneringSimulator::PartneringSimulator(Params &params) : Simulator(params) {
 	num_nodes = get<int>(params, "num_nodes");

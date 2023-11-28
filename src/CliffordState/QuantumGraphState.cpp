@@ -217,8 +217,40 @@ QuantumGraphState::QuantumGraphState(Graph &graph, int seed) : CliffordState(gra
 	this->graph = Graph(graph);
 }
 
+QuantumCHPState<Tableau> QuantumGraphState::to_chp() const {
+	uint32_t num_qubits = graph.num_vertices;
+
+	QuantumCHPState<Tableau> chp(num_qubits);
+
+	for (uint32_t i = 0; i < num_qubits; i++)
+		chp.h_gate(i);
+
+	for (uint32_t i = 0; i < num_qubits; i++) {
+		for (auto j : graph.neighbors(i)) {
+			if (i < j)
+				chp.cz_gate(i, j);
+		}
+	}
+
+	for (uint32_t i = 0; i < num_qubits; i++) {
+		uint32_t v = graph.get_val(i);
+		for (uint32_t j = 0; j < 5; j++) {
+			uint32_t vj = CLIFFORD_DECOMPS[v][j];
+			if (vj == SQRTXGATE)
+				chp.sx_gate(i);
+			else if (vj == SQRTYGATE)
+				chp.sy_gate(i);
+			else if (vj == SQRTZGATE)
+				chp.sz_gate(i);
+		}
+	}
+
+	return chp;
+}
+
 void QuantumGraphState::apply_gatel(uint32_t a, uint32_t gate_id) {
-	graph.set_val(a, CLIFFORD_PRODUCTS[gate_id][graph.get_val(a)]);
+	auto r = CLIFFORD_PRODUCTS[gate_id][graph.get_val(a)];
+	graph.set_val(a, r);
 }
 
 void QuantumGraphState::apply_gater(uint32_t a, uint32_t gate_id) {
@@ -342,27 +374,22 @@ std::string QuantumGraphState::to_string() const {
 }
 
 void QuantumGraphState::x_gate(uint32_t a) {
-	assert(a < num_qubits);
 	apply_gatel(a, XGATE);
 }
 
 void QuantumGraphState::y_gate(uint32_t a) {
-	assert(a < num_qubits);
 	apply_gatel(a, YGATE);
 }
 
 void QuantumGraphState::z_gate(uint32_t a) {
-	assert(a < num_qubits);
 	apply_gatel(a, ZGATE);
 }
 
 void QuantumGraphState::h_gate(uint32_t a) {
-	assert(a < num_qubits);
 	apply_gatel(a, HGATE);
 }
 
 void QuantumGraphState::s_gate(uint32_t a) {
-	assert(a < num_qubits);
 	apply_gatel(a, SGATE);
 }
 

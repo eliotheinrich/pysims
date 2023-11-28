@@ -135,6 +135,8 @@ class QuantumState : public EntropyState {
 				outcomes[q] = measure(q);
 			return outcomes;
 		}
+
+		virtual std::vector<double> probabilities() const=0;
 };
 
 class DensityMatrix;
@@ -168,7 +170,9 @@ class DensityMatrix : public QuantumState {
 		virtual std::vector<bool> measure_all() override;
 
 		Eigen::VectorXd diagonal() const;
-		std::map<uint32_t, double> probabilities() const;
+
+		virtual std::vector<double> probabilities() const override;
+		std::map<uint32_t, double> probabilities_map() const;
 };
 
 class Statevector : public QuantumState {
@@ -197,7 +201,10 @@ class Statevector : public QuantumState {
 
 		double norm() const;
 		void normalize();
+
 		double probabilities(uint32_t z, const std::vector<uint32_t>& qubits) const;
+		virtual std::vector<double> probabilities() const override;
+
 		std::complex<double> inner(const Statevector& other) const;
 
 		Eigen::VectorXd svd(const std::vector<uint32_t>& qubits) const;
@@ -215,7 +222,9 @@ class UnitaryState : public QuantumState {
 
 		virtual void evolve(const Eigen::MatrixXcd &gate, const std::vector<uint32_t> &qubits);
 		virtual void evolve(const Eigen::MatrixXcd &gate) override;
-		virtual void evolve(const QuantumCircuit& circuit) override { QuantumState::evolve(circuit); }
+		virtual void evolve(const QuantumCircuit& circuit) override { 
+			QuantumState::evolve(circuit); 
+		}
 
 		virtual bool measure(uint32_t q) {
 			throw std::invalid_argument("Cannot perform measurement on UnitaryState.");
@@ -225,7 +234,13 @@ class UnitaryState : public QuantumState {
 
 		Statevector get_statevector() const;
 
-		double probabilities(uint32_t z, const std::vector<uint32_t>& qubits) const;
+		double probabilities(uint32_t z, const std::vector<uint32_t>& qubits) const {
+			return get_statevector().probabilities(z, qubits);
+		}
+
+		virtual std::vector<double> probabilities() const override {
+			return get_statevector().probabilities();
+		}
 };
 
 
@@ -268,6 +283,10 @@ class MatrixProductState : public QuantumState {
 		virtual void evolve(const QuantumCircuit& circuit) override { QuantumState::evolve(circuit); }
 
 		double measure_probability(uint32_t q, bool outcome) const;
+		virtual std::vector<double> probabilities() const override {
+			Statevector statevector(*this);
+			return statevector.probabilities();
+		}
 		virtual bool measure(uint32_t q) override;
 		void measure_propagate(uint32_t q, const Eigen::Matrix2cd& proj);
 };
