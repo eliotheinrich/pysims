@@ -5,8 +5,6 @@
 
 class QuantumCHPState : public CliffordState {
     private:
-        Tableau tableau;
-
         static uint32_t get_num_qubits(const std::string &s) {
             auto substrings = dataframe::utils::split(s, "\n");
             return substrings.size()/2;
@@ -14,6 +12,8 @@ class QuantumCHPState : public CliffordState {
         
 
     public:
+        Tableau tableau;
+
         QuantumCHPState(uint32_t num_qubits, int seed=-1)
          : CliffordState(num_qubits, seed), tableau(Tableau(num_qubits)) {}
         
@@ -38,6 +38,14 @@ class QuantumCHPState : public CliffordState {
             }
         }
 
+        bool operator==(QuantumCHPState& other) {
+            return tableau == other.tableau;
+        }
+
+        bool operator!=(QuantumCHPState& other) {
+            return !(tableau == other.tableau);
+        }
+
         std::string to_string() const {
             std::string s = "";
             s += "Tableau: \n" + tableau.to_string();
@@ -48,6 +56,10 @@ class QuantumCHPState : public CliffordState {
             std::string s = "";
             s += "Tableau: \n" + tableau.to_string_ops();
             return s;
+        }
+
+        Statevector to_statevector() const {
+            return tableau.to_statevector();
         }
 
         virtual void h_gate(uint32_t a) override {
@@ -113,7 +125,7 @@ class QuantumCHPState : public CliffordState {
             }
 
             Tableau tmp(partition_size, rows);
-            int rank = tmp.rank();
+            int rank = tmp.rank(false);
 
             int s = rank - partition_size;
 

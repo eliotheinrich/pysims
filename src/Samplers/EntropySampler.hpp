@@ -36,7 +36,7 @@ class EntropyState {
         }
 
         template <typename T = double>
-        std::vector<T> get_entropy_surface(uint32_t index) const {
+        std::vector<T> get_entropy_surface(uint32_t index=2u) const {
             std::vector<T> entropy_surface(system_size);
 
             for (uint32_t i = 0; i < system_size; i++)

@@ -306,38 +306,468 @@ bool test_parametrized_circuit() {
 #include <CircuitUtils.h>
 #include <iomanip>
 
-
-int main() {
-    uint32_t system_size = 10;
+void small_chp_test() {
+    uint32_t system_size = 2;
     int seed = 314;
     QuantumCHPState state1(system_size, seed);
     QuantumGraphState state2(system_size, seed);
 
-    std::random_device rng;
+    std::vector<uint32_t> qbits{0, 1};
 
-    uint32_t num_iters = 100;
+    //auto state3 = state2.to_chp();
 
-    for (uint32_t i = 0; i < num_iters; i++) {
-        uint32_t q1 = rng() % system_size;
-        uint32_t q2;
-        while (q2 == q1)
-            q2 = rng() % system_size;
+    state1.random_clifford(qbits);
+    state2.random_clifford(qbits);
 
-        std::vector<uint32_t> qbits{q1, q2};
-        state1.random_clifford(qbits);
-        state2.random_clifford(qbits);
+    //state1.h_gate(1);
+    //state1.cx_gate(0, 1);
+    //state1.cx_gate(1, 0);
+    //state1.cx_gate(0, 1);
+    //state1.s_gate(0);
+    //state1.s_gate(0);
+    //state1.h_gate(0);
+    //state1.s_gate(0);
+    //state1.s_gate(0);
+    //state1.h_gate(0);
+    //state1.h_gate(1);
+    //state1.cx_gate(0, 1);
+    //state1.cx_gate(1, 0);
+    //state1.cx_gate(0, 1);
+    //state1.s_gate(0);
+    //state1.s_gate(0);
+    //state1.h_gate(0);
+    //state1.s_gate(0);
+    //state1.s_gate(0);
+    //state1.h_gate(0);
+    //state1.h_gate(0);
+    //state1.cx_gate(0, 1);
+    //state1.h_gate(0);
+    
+    //state1.h_gate(1);
+    //state1.s_gate(1);
+    //state1.y_gate(1);
 
-        std::cout << "CHP state:   [ ";
-        for (uint32_t i = 0; i < system_size; i++) {
-            std::cout << state1.cum_entropy<int>(i) << " ";
-        } std::cout << "]\n";
+    //state2.h_gate(1);
+    //state2.cx_gate(0, 1);
+    //state2.cx_gate(1, 0);
+    //state2.cx_gate(0, 1);
+    //state2.s_gate(0);
+    //state2.s_gate(0);
+    //state2.h_gate(0);
+    //state2.s_gate(0);
+    //state2.s_gate(0);
+    //state2.h_gate(0);
+    //state2.h_gate(1);
+    //state2.cx_gate(0, 1);
+    //state2.cx_gate(1, 0);
+    //state2.cx_gate(0, 1);
+    //state2.s_gate(0);
+    //state2.s_gate(0);
+    //state2.h_gate(0);
+    //state2.s_gate(0);
+    //state2.s_gate(0);
+    //state2.h_gate(0);
+    //state2.h_gate(0);
+    //state2.cx_gate(0, 1);
+    //state2.h_gate(0);
+    //state2.h_gate(1);
+    //state2.s_gate(1);
+    //state2.y_gate(1);
 
-        std::cout << "Graph state: [ ";
-        for (uint32_t i = 0; i < system_size; i++) {
-            std::cout << state2.cum_entropy<int>(i) << " ";
-        } std::cout << "]\n\n";
+
+
+    //state1.h_gate(0);
+    //state1.cx_gate(0, 1);
+
+    //state2.h_gate(0);
+    //state2.cx_gate(0, 1);
+
+
+    auto state3 = state2.to_chp();
+    std::cout << "state1 == state1: " << (state1 == state1) << std::endl;
+    std::cout << "state1 == state2.to_chp(): " << (state1 == state3) << std::endl;
+
+    if (state1 != state3) {
+        std::cout << "state1: \n" << state1.to_string_ops() << std::endl;
+        std::cout << "state3: \n" << state3.to_string_ops() << std::endl;
+        std::cout << "state2: \n" << state2.to_string() << std::endl;
+        throw std::invalid_argument("States do not match.");
+    }
+}
+
+struct sgate {
+    int q;
+};
+
+struct hgate {
+    int q;
+};
+
+struct cxgate {
+    int q1;
+    int q2;
+};
+
+using gate = std::variant<sgate, hgate, cxgate>;
+
+struct state_evolver {
+    std::shared_ptr<CliffordState> state;
+    
+    state_evolver(std::shared_ptr<CliffordState> state) : state(state) {}
+
+    void operator()(sgate g) {
+        state->s_gate(g.q);
+    }
+
+    void operator()(hgate g) {
+        state->h_gate(g.q);
+    }
+
+    void operator()(cxgate g) {
+        state->cx_gate(g.q1, g.q2);
+    }
+};
+
+struct sv_evolver {
+    std::shared_ptr<Statevector> state;
+    uint32_t num_qubits;
+    
+    sv_evolver(std::shared_ptr<Statevector> state) : state(state) {
+        num_qubits = state->num_qubits;
+    }
+
+    void operator()(sgate g) {
+        Eigen::Matrix2cd S; S << 1, 0, 0, 1j;
+        state->QuantumState::evolve(S, g.q);
+    }
+
+    void operator()(hgate g) {
+        Eigen::Matrix2cd H; H << 1, 1, 1, -1; H /= std::sqrt(2);
+        state->QuantumState::evolve(H, g.q);
+    }
+
+    void operator()(cxgate g) {
+        Eigen::Matrix4cd CX; CX << 1, 0, 0, 0, 
+                                   0, 1, 0, 0, 
+                                   0, 0, 0, 1, 
+                                   0, 0, 1, 0;
+        std::vector<uint32_t> qubits{g.q2, g.q1};
+        state->evolve(CX, qubits);
+    }
+};
+
+struct execution_printer {
+    std::string operator()(sgate g) {
+        return "S on " + std::to_string(g.q);
+    }
+
+    std::string operator()(hgate g) {
+        return "H on " + std::to_string(g.q);
+    }
+
+    std::string operator()(cxgate g) {
+        return "CX on " + std::to_string(g.q1) + " " + std::to_string(g.q2);
+    }
+};
+
+void circuit_test() {
+    uint32_t system_size = 2;
+
+    std::vector<gate> circuit;
+    circuit.push_back(sgate{0}); // 0
+    circuit.push_back(cxgate{0,1}); // 1
+    circuit.push_back(sgate{1}); // 4
+    circuit.push_back(cxgate{1,0}); // 1
+    circuit.push_back(hgate{1}); // 5
+    circuit.push_back(cxgate{1,0}); // 1
+
+    circuit.push_back(sgate{1}); // 7
+    circuit.push_back(sgate{1}); // 8
+    circuit.push_back(hgate{1}); // 9
+    
+    circuit.push_back(sgate{1}); // 7
+    circuit.push_back(sgate{1}); // 8
+    circuit.push_back(hgate{1}); // 9
+    circuit.push_back(hgate{1}); // 10
+
+
+    circuit.push_back(cxgate{0,1}); // 11
+    circuit.push_back(cxgate{1,0}); // 12
+    circuit.push_back(cxgate{0,1}); // 13
+    circuit.push_back(sgate{0}); // 14
+    circuit.push_back(sgate{0}); // 15
+    circuit.push_back(hgate{0}); // 16
+    circuit.push_back(sgate{0}); // 17
+    circuit.push_back(sgate{0}); // 18
+    circuit.push_back(cxgate{0,1});
+    circuit.push_back(hgate{0});
+    circuit.push_back(hgate{1});
+    circuit.push_back(sgate{1});
+    circuit.push_back(sgate{1});
+    circuit.push_back(sgate{1});
+    circuit.push_back(hgate{1});
+    circuit.push_back(sgate{1});
+    circuit.push_back(sgate{1});
+    circuit.push_back(hgate{1});
+
+    circuit.push_back(hgate{1});
+    circuit.push_back(cxgate{0,1});
+    circuit.push_back(hgate{0});
+    circuit.push_back(cxgate{1,0});
+    circuit.push_back(hgate{1});
+    circuit.push_back(sgate{1});
+    circuit.push_back(sgate{1});
+    circuit.push_back(sgate{1});
+    circuit.push_back(hgate{1});
+    circuit.push_back(sgate{1});
+    circuit.push_back(sgate{1});
+
+    circuit.push_back(hgate{0});
+    circuit.push_back(sgate{0});
+    circuit.push_back(sgate{0});
+
+    std::shared_ptr<QuantumCHPState> state1 = std::make_shared<QuantumCHPState>(system_size);
+    std::shared_ptr<QuantumGraphState> state2 = std::make_shared<QuantumGraphState>(system_size);
+    state2->graph.set_val(0, 4);
+    state2->graph.set_val(1, 2);
+    std::shared_ptr<Statevector> state3 = std::make_shared<Statevector>(system_size);
+    state_evolver se1(state1);
+    state_evolver se2(state2);
+    sv_evolver se3(state3);
+
+    uint32_t i = 0;
+    for (auto const g : circuit) {
+        std::cout << "\n\n\n" << std::visit(execution_printer(), g) << std::endl;
+        auto state2_chp = state2->to_chp();
+
+        std::cout << "Before: \n";
+        std::cout << "state1: " << state1->to_string_ops() << std::endl;
+        std::cout << "state2_chp: " << state2_chp.to_string_ops() << std::endl;
+        std::cout << "state2: " << state2->to_string() << std::endl;
+
+        auto sv1 = state1->to_statevector();
+        auto sv2 = state2->to_statevector();
+        std::cout << "state1_sv: " << sv1.to_string() << std::endl;
+        std::cout << "state2_sv: " << sv2.to_string() << std::endl;
+        std::cout << "state3   : " << state3->to_string() << std::endl;
+
+        std::visit(se1, g);
+        std::visit(se2, g);
+        std::visit(se3, g);
+
+        
+        state2_chp = state2->to_chp();
+
+        std::cout << "\nAfter: \n";
+        std::cout << "state1: " << state1->to_string_ops() << std::endl;
+        std::cout << "state2_chp: " << state2_chp.to_string_ops() << std::endl;
+        std::cout << "state2: " << state2->to_string() << std::endl;
+
+        sv1 = state1->to_statevector();
+        sv2 = state2->to_statevector();
+        std::cout << "state1_sv: " << sv1.to_string() << std::endl;
+        std::cout << "state2_sv: " << sv2.to_string() << std::endl;
+        std::cout << "state3   : " << state3->to_string() << std::endl;
+
+        state1->tableau.rref();
+        state2_chp.tableau.rref();
+        if (*state1 != state2_chp) {
+            std::cout << "On step " << i << std::endl;
+            throw std::invalid_argument("States not equal.");
+        }
+        i++;
     }
 
 
 
+
+}
+
+
+
+void large_chp_test_multiqubit() {
+    uint32_t system_size = 12;
+    int seed = 314;
+    QuantumCHPState state1(system_size, seed);
+    QuantumGraphState state2(system_size, seed);
+
+    std::mt19937 rng(seed);
+
+    uint32_t num_iters = 1000;
+
+    for (uint32_t i = 0; i < num_iters; i++) {
+        uint32_t q1 = rng() % system_size;
+        uint32_t q2 = rng() % system_size;
+        while (q2 == q1)
+            q2 = rng() % system_size;
+
+        std::vector<uint32_t> qbits{q1, q2};
+        //std::cout << "Random clifford on " << q1 << " " << q2 << std::endl;
+        state1.random_clifford(qbits);
+        state2.random_clifford(qbits);
+
+        uint32_t q3 = rng() % system_size;
+
+        //Statevector sv3 = state3.to_statevector();
+        //std::cout << "mzr on " << q3 << std::endl;
+        //std::cout << "Before mzr: \n";
+        //std::cout << "sv1 (chp)          : " << sv1.to_string() << std::endl;
+        //std::cout << "sv2 (graphsim)     : " << sv2.to_string() << std::endl;
+        //std::cout << "sv3 (graphsim->chp): " << sv3.to_string() << std::endl;
+        //std::cout << "state1 (chp)          : \n" << state1.to_string_ops() << std::endl;
+        //std::cout << "state3 (graphsim)     : \n" << state3.to_string_ops() << std::endl;
+        //std::cout << "state2 (graphsim)     : \n" << state2.to_string() << std::endl;
+        state1.mzr(q3);
+        state2.mzr(q3);
+        auto state3 = state2.to_chp();
+
+        //sv1 = state1.to_statevector();
+        //sv2 = state2.to_statevector();
+        //state3 = state2.to_chp();
+        //sv3 = state3.to_statevector();
+        //state1.tableau.rref();
+        //state3.tableau.rref();
+        //std::cout << "After mzr: \n";
+        //std::cout << "sv1 (chp)          : " << sv1.to_string() << std::endl;
+        //std::cout << "sv2 (graphsim)     : " << sv2.to_string() << std::endl;
+        //std::cout << "sv3 (graphsim->chp): " << sv3.to_string() << std::endl;
+        //std::cout << "state1 (chp)          : \n" << state1.to_string_ops() << std::endl;
+        //std::cout << "state3 (graphsim)     : \n" << state3.to_string_ops() << std::endl;
+        //std::cout << "state2 (graphsim)     : \n" << state2.to_string() << std::endl;
+
+
+        if (state1 != state3) {
+            Statevector sv1 = state1.to_statevector();
+            Statevector sv2 = state2.to_statevector();
+            std::cout << "state1: \n" << state1.to_string() << std::endl;
+            std::cout << "state2: \n" << state2.to_string() << std::endl;
+        //    std::cout << "state3: \n" << state3.to_string() << std::endl;
+
+        //    throw std::invalid_argument("States do not match.");
+        }
+
+
+        std::cout << "CHP state:   [ ";
+        std::vector<int> s1 = state1.get_entropy_surface<int>();
+        for (uint32_t j = 0; j < system_size; j++) {
+            std::cout << s1[j] << " ";
+        } std::cout << "]\n";
+
+        std::cout << "Graph state: [ ";
+        std::vector<int> s2 = state2.get_entropy_surface<int>();
+        for (uint32_t j = 0; j < system_size; j++) {
+            std::cout << s2[j] << " ";
+        } std::cout << "]\n\n";
+
+
+        for (uint32_t j = 0; j < system_size; j++) {
+            if (s1[j] != s2[j]) {
+                std::vector<uint32_t> qubits(j+1);
+                std::iota(qubits.begin(), qubits.end(), 0);
+
+                std::cout << state2.entropy(qubits, 0) << std::endl;
+
+                std::string error_message = "Surfaces do not agree at step " + std::to_string(i) + ".";
+                throw std::invalid_argument(error_message);
+            }
+        }
+    }
+}
+
+void large_chp_test_singlequbit() {
+    uint32_t system_size = 4;
+    int seed = 314;
+    QuantumCHPState state1(system_size, seed);
+    QuantumGraphState state2(system_size, seed);
+
+    std::mt19937 rng(seed);
+
+    uint32_t num_iters = 1000;
+
+    for (uint32_t i = 0; i < num_iters; i++) {
+        uint32_t q1 = rng() % system_size;
+
+        std::vector<uint32_t> qbits{q1};
+        std::cout << "Random clifford on " << q1 << std::endl;
+        state1.random_clifford(qbits);
+        state2.random_clifford(qbits);
+
+        auto state3 = state2.to_chp();
+        state1.tableau.rref();
+        state3.tableau.rref();
+
+        state3 = state2.to_chp();
+
+        std::cout << "state1 == state1: " << (state1 == state1) << std::endl;
+        std::cout << "state1 == state2.to_chp(): " << (state1 == state3) << std::endl;
+
+        if (state1 != state3) {
+            std::cout << "state1: \n" << state1.to_string() << std::endl;
+            std::cout << "state3: \n" << state3.to_string() << std::endl;
+            std::cout << "state2: \n" << state2.to_string() << std::endl;
+            Statevector sv1 = state1.to_statevector();
+            Statevector sv2 = state2.to_statevector();
+            Statevector sv3 = state3.to_statevector();
+            //Statevector sv4(system_size);
+            //Eigen::Matrix2cd H; H << 1, 1, 1, -1; H /= std::sqrt(2);
+            //Eigen::Matrix2cd S; S << 1, 0, 0, 1j;
+            //Eigen::Matrix2cd Y; Y << 0, -1j, 1j, 0;
+            //sv4.QuantumState::evolve(H, 0u);
+            //sv4.QuantumState::evolve(Y, 0u);
+            //sv4.QuantumState::evolve(S, 0u);
+            //sv4.QuantumState::evolve(Y, 0u);
+            //sv4.QuantumState::evolve(S, 0u);
+            //sv4.QuantumState::evolve(H, 0u);
+            //sv4.QuantumState::evolve(S, 0u);
+            std::cout << "sv1 (chp)          : " << sv1.to_string() << std::endl;
+            std::cout << "sv2 (graphsim)     : " << sv2.to_string() << std::endl;
+            std::cout << "sv3 (graphsim->chp): " << sv3.to_string() << std::endl;
+            //std::cout << "sv4 (statevector)  : " << sv4.to_string() << std::endl;
+            throw std::invalid_argument("States do not match.");
+        }
+
+
+        std::cout << "CHP state:   [ ";
+        std::vector<int> s1 = state1.get_entropy_surface<int>();
+        for (uint32_t j = 0; j < system_size; j++) {
+            std::cout << s1[j] << " ";
+        } std::cout << "]\n";
+
+        std::cout << "Graph state: [ ";
+        std::vector<int> s2 = state2.get_entropy_surface<int>();
+        for (uint32_t j = 0; j < system_size; j++) {
+            std::cout << s2[j] << " ";
+        } std::cout << "]\n\n";
+
+
+        for (uint32_t j = 0; j < system_size; j++) {
+            if (s1[j] != s2[j]) {
+                std::vector<uint32_t> qubits(j+1);
+                std::iota(qubits.begin(), qubits.end(), 0);
+
+                std::cout << state2.entropy(qubits, 0) << std::endl;
+
+                std::string error_message = "Surfaces do not agree at step " + std::to_string(i) + ".";
+                throw std::invalid_argument(error_message);
+            }
+        }
+    }
+}
+
+int main() {
+    //circuit_test();
+    //large_chp_test_singlequbit();
+    large_chp_test_multiqubit();
+    //QuantumCHPState state(2);
+    //Statevector sv = state.to_statevector();
+
+    //std::cout << state.to_string_ops() << std::endl;
+    //std::cout << sv.to_string() << std::endl;
+
+    //state.h_gate(0);
+    //state.cx_gate(0, 1);
+    //sv = state.to_statevector();
+
+    //std::cout << state.to_string_ops() << std::endl;
+    //std::cout << sv.to_string() << std::endl;
 }

@@ -5,3 +5,4 @@ bin
 jobs
 data
 slurm-*
+*.json

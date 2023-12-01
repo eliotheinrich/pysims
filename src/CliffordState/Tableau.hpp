@@ -9,6 +9,11 @@
 
 #include <iostream>
 
+#include "QuantumState.h"
+
+#include <unsupported/Eigen/KroneckerProduct>
+#include <Eigen/Dense>
+
 namespace tableau_utils {
 
     struct sgate { uint32_t q; };
@@ -43,10 +48,18 @@ template <class T>
 static void apply_circuit(const tableau_utils::Circuit &circuit, T &state) {
     for (auto const &gate : circuit) {
         std::visit(tableau_utils::overloaded{
-                [&state](tableau_utils::sgate s) {  state.s_gate(s.q); },
-                [&state](tableau_utils::sdgate s) { state.sd_gate(s.q); },
-                [&state](tableau_utils::hgate s) {  state.h_gate(s.q); },
-                [&state](tableau_utils::cxgate s) { state.cx_gate(s.q1, s.q2); }
+                [&state](tableau_utils::sgate s) {  
+                    state.s_gate(s.q); 
+                },
+                [&state](tableau_utils::sdgate s) { 
+                    state.sd_gate(s.q);
+                },
+                [&state](tableau_utils::hgate s) {  
+                    state.h_gate(s.q); 
+                },
+                [&state](tableau_utils::cxgate s) { 
+                    state.cx_gate(s.q1, s.q2); 
+                }
         }, gate);
     }
 }
@@ -128,6 +141,38 @@ class PauliString {
 
         std::vector<bool>::iterator end() {
             return bit_string.end();
+        }
+
+        Eigen::Matrix2cd to_matrix(uint32_t i) const {
+            std::string s = to_op(i);
+
+            Eigen::Matrix2cd g;
+            if (s == "I") {
+                g << 1, 0, 0, 1;
+            } else if (s == "X") {
+                g << 0, 1, 1, 0;
+            } else if (s == "Y") {
+                g << 0, -1j, 1j, 0;
+            } else {
+                g << 1, 0, 0, -1;
+            }
+
+            return g;
+        }
+
+        Eigen::MatrixXcd to_matrix() const {
+            Eigen::MatrixXcd g = to_matrix(0);
+
+            for (uint32_t i = 1; i < num_qubits; i++) {
+                Eigen::MatrixXcd gi = to_matrix(i);
+                Eigen::MatrixXcd g0 = g;
+                g = Eigen::kroneckerProduct(gi, g0);
+            }
+            
+            if (phase)
+                g = -g;
+        
+            return g;
         }
 
         std::string to_op(uint32_t i) const {
@@ -277,15 +322,59 @@ class Tableau {
             }
         }
 
+        Statevector to_statevector() const {
+            Eigen::MatrixXcd dm = Eigen::MatrixXcd::Identity(1u << num_qubits, 1u << num_qubits);
+            Eigen::MatrixXcd I = Eigen::MatrixXcd::Identity(1u << num_qubits, 1u << num_qubits);
+            
+            for (uint32_t i = num_qubits; i < 2*num_qubits; i++) {
+                PauliString p = rows[i];
+                Eigen::MatrixXcd g = p.to_matrix();
+                dm = dm*((I + g)/2.0);
+            }
+
+            uint32_t N = 1u << num_qubits;
+            Eigen::SelfAdjointEigenSolver<Eigen::MatrixXcd> solver(dm);
+            Eigen::VectorXcd vec = solver.eigenvectors().block(0,N-1,N,1).rowwise().reverse();
+            
+            return Statevector(vec);
+
+        }
+
+        bool operator==(Tableau& other) {
+            if (num_qubits != other.num_qubits)
+                return false;
+
+            rref();
+            other.rref();
+
+            uint32_t r1 = track_destabilizers ? num_qubits : 0;
+            for (uint32_t i = r1; i < num_rows(); i++) {
+                if (r(i) != other.r(i))
+                    return false;
+
+                for (uint32_t j = 0; j < num_qubits; j++) {
+                    if (z(i, j) != other.z(i, j))
+                        return false;
+                    if (x(i, j) != other.x(i, j))
+                        return false;
+                }
+            }
+
+            return true;
+        }
+
         // Put tableau into reduced row echelon form
-        void rref() {
+        void rref(bool track_phase=true) {
+            uint32_t r1 = track_destabilizers ? num_qubits : 0;
+            uint32_t r2 = num_rows();
+
             uint32_t pivot_row = 0;
-            uint32_t row = 0;
-            uint32_t leading = 0;
+            uint32_t row = r1;
+
 
             for (uint32_t c = 0; c < 2*num_qubits; c++) {
                 bool found_pivot = false;
-                for (uint32_t i = row; i < num_rows(); i++) {
+                for (uint32_t i = row; i < r2; i++) {
                     if (rows[i][c]) {
                         pivot_row = i;
                         found_pivot = true;
@@ -295,35 +384,31 @@ class Tableau {
 
                 if (found_pivot) {
                     //std::cout << "Pivoting on " << pivot_row << std::endl;
+                    //std::cout << "Swapping " << row << " with " << pivot_row << ".\n";
                     std::swap(rows[row], rows[pivot_row]);
 
-                    for (uint32_t i = row + 1; i < num_rows(); i++) {
-                        if (rows[i][c]) {
-                            for (uint32_t j = 0; j < 2*num_qubits; j++) {
-                                bool v1 = rows[row][j];
-                                bool v2 = rows[i][j];
-                                rows[i].set(j, v1 ^ v2);
-                            }
-                        }
+                    for (uint32_t i = r1; i < r2; i++) {
+                        if (i == row)
+                            continue;
+
+                        if (rows[i][c])
+                            rowsum(i, row, track_phase);
                     }
 
-                    leading += 1;
                     row += 1;
                 } else {
-                    leading += 2;
                     continue;
                 }
             }
         }
 
-        uint32_t rank() {
-            rref();
+        uint32_t rank(bool track_phase=true) {
+            rref(track_phase);
 
             uint32_t r = 0;
             for (uint32_t i = 0; i < num_rows(); i++) {
-                if (std::accumulate(rows[i].begin(), rows[i].end(), 0)) {
+                if (std::accumulate(rows[i].begin(), rows[i].end(), 0))
                     r++;
-                }
             }
 
             return r;
@@ -349,17 +434,18 @@ class Tableau {
 
         std::string to_string_ops() const {
             std::string s = "";
-            for (uint32_t i = 0; i < num_rows(); i++) {
-                if (i == 0) { s += "["; } else { s += " "; }
+            uint32_t r1 = track_destabilizers ? num_qubits : 0;
+            for (uint32_t i = r1; i < num_rows(); i++) {
+                s += "[";
                 s += rows[i].to_string_ops();
-                if (i == 2*rows.size() - 1) { s += "]"; } else { s += "\n"; }
+                if (i == 2*rows.size() - 1) { s += "]"; } else { s += "]\n"; }
             }
             return s;
         }
 
         int g(bool x1, bool z1, bool x2, bool z2) {
             if (!x1 && !z1) { return 0; }
-            else if (x1 && z2) {
+            else if (x1 && z1) {
                 if (z2) { if (x2) { return 0; } else { return 1; }}
                 else { if (x2) { return -1; } else { return 0; }}
             } else if (x1 && !z1) {
@@ -371,26 +457,29 @@ class Tableau {
             }
         }
 
-        void rowsum(uint32_t h, uint32_t i) {
-            if (!track_destabilizers)
-                throw std::invalid_argument("Cannot perform rowsum without track_destabilizers.");
+        void rowsum(uint32_t h, uint32_t i, bool track_phase=true) {
+            //if (!track_destabilizers)
+            //    throw std::invalid_argument("Cannot perform rowsum without track_destabilizers.");
 
-            int s = 0;
-            if (r(i)) { s += 2; }
-            if (r(h)) { s += 2; }
+            if (track_phase) {
+                int s = 0;
+                if (r(i)) { s += 2; }
+                if (r(h)) { s += 2; }
 
-            for (uint32_t j = 0; j < num_qubits; j++)
-                s += Tableau::g(x(i,j), z(i,j), x(h,j), z(h,j));
+                for (uint32_t j = 0; j < num_qubits; j++)
+                    s += Tableau::g(x(i,j), z(i,j), x(h,j), z(h,j));
 
-            if (s % 4 == 0) {
-                set_r(h, false);
-            } else if (std::abs(s % 4) == 2) {
-                set_r(h, true);
+                if (s % 4 == 0) {
+                    set_r(h, false);
+                } else if (std::abs(s % 4) == 2) {
+                    set_r(h, true);
+                }
             }
 
-            for (uint32_t j = 0; j < num_qubits; j++) {
-                set_x(h, j, x(i,j) != x(h,j));
-                set_z(h, j, z(i,j) != z(h,j));
+            for (uint32_t j = 0; j < 2*num_qubits; j++) {
+                bool v1 = rows[h][j];
+                bool v2 = rows[i][j];
+                rows[h].set(j, v1 ^ v2);
             }
         }
 
@@ -439,9 +528,8 @@ class Tableau {
             if (!deterministic) {
                 bool outcome = rng() % 2;
                 for (uint32_t i = 0; i < 2*num_qubits; i++) {
-                    if (i != p && x(i, a)) {
+                    if (i != p && x(i, a))
                         rowsum(i, p);
-                    }
                 }
 
                 // TODO check that copy is happening, not passing reference

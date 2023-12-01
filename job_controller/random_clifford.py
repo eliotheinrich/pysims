@@ -43,8 +43,8 @@ def generate_config_very_high_fidelity(system_sizes=[128], simulator_type="chp",
     config["mzr_prob"] = [0.00, 0.02, 0.04, 0.06, 0.08, 0.10, 0.12, 0.14, 0.15, 0.16, 0.17, 0.18, 0.20, 0.22, 0.24, 0.26, 0.28, 0.30, 0.50, 1.00]
 
     config["temporal_avg"] = True
-    config["sampling_timesteps"] = 1000
-    config["equilibration_timesteps"] = 500
+    config["sampling_timesteps"] = 100
+    config["equilibration_timesteps"] = 50
     config["measurement_freq"] = 10
 
     config["spacing"] = 5
@@ -84,7 +84,7 @@ if __name__ == "__main__":
     #config = generate_config_very_high_fidelity_temporal(system_sizes=[128, 256])
     #submit_jobs(config, f"rc_t_256", ncores=64, memory="150gb", time="48:00:00", nodes=4)
 
-    system_sizes = [10, 20, 30, 40, 50, 60, 70, 80, 90, 100]
+    system_sizes = [10, 20, 30, 40, 50, 60, 70]
     L = max(system_sizes)
     config = generate_config_very_high_fidelity(system_sizes=system_sizes, simulator_type=["chp", "graph"], sample_structure_function=False)
     #submit_jobs(config, f"rc_sim_scaling", ncores=48, nodes=4, memory="10gb", time="48:00:00", record_error=True)
@@ -94,5 +94,7 @@ if __name__ == "__main__":
     #submit_jobs(config, 'rc_test', ncores=2, run_local=True)
     #submit_jobs(config, f"rc_test", ncores=4, nodes=1, memory="10gb", time="48:00:00", record_error=False, run_local=True)
     
-    config = generate_config_very_high_fidelity(system_sizes=[64], simulator_type=["chp"], sample_structure_function=False)
-    submit_jobs(config, f"rc_test", ncores=4, nodes=1, memory="10gb", time="48:00:00", record_error=False, run_local=True)
+    config = generate_config_very_high_fidelity(system_sizes=[16], simulator_type=["graph"], sample_structure_function=False)
+    print(config)
+    save_config(config, "../configs/rc_test.json")
+    #submit_jobs(config, f"rc_test_", ncores=4, nodes=1, memory="10gb", time="48:00:00", record_error=False, run_local=True)

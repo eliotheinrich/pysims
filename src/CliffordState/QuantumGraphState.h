@@ -5,19 +5,35 @@
 #include "CliffordState.hpp"
 #include "QuantumCHPState.hpp"
 
+#include "QuantumState.h"
+
+//#define IDGATE     0
+//#define XGATE      1
+//#define YGATE      2
+//#define ZGATE      3
+//#define HGATE      12
+//#define SGATE      20
+//#define SDGATE     23
+//#define SQRTXGATE  17
+//#define SQRTXDGATE 16
+//#define SQRTYGATE  15
+//#define SQRTYDGATE 13
+//#define SQRTZGATE  20
+//#define SQRTZDGATE 23
+
 #define IDGATE     0
 #define XGATE      1
 #define YGATE      2
 #define ZGATE      3
-#define HGATE      12
-#define SGATE      20
-#define SDGATE     23
-#define SQRTXGATE  17
-#define SQRTXDGATE 16
-#define SQRTYGATE  15
-#define SQRTYDGATE 13
-#define SQRTZGATE  20
-#define SQRTZDGATE 23
+#define HGATE      4
+#define SGATE      8
+#define SDGATE     11
+#define SQRTXGATE  20
+#define SQRTXDGATE 21
+#define SQRTYGATE  7
+#define SQRTYDGATE 5
+#define SQRTZGATE  8
+#define SQRTZDGATE 11
 
 
 // A simulator for quantum clifford states represented with graphs, as outlined in
@@ -50,11 +66,13 @@ class QuantumGraphState : public CliffordState {
         QuantumGraphState(Graph &graph, int seed=-1);
 
 		QuantumCHPState to_chp() const;
+		Statevector to_statevector() const;
 
         virtual std::string to_string() const override;
 
         virtual void h_gate(uint32_t a) override;
         virtual void s_gate(uint32_t a) override;
+        virtual void sd_gate(uint32_t a) override;
 
 		virtual void x_gate(uint32_t a) override;
 		virtual void y_gate(uint32_t a) override;

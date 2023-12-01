@@ -122,7 +122,7 @@ void DensityMatrix::evolve(const Eigen::MatrixXcd& gate, const std::vector<uint3
 	evolve(full_circuit_unitary(gate, qbits, num_qubits));
 }
 
-void DensityMatrix::evolve(const Eigen::VectorXcd& gate, const std::vector<uint32_t>& qbits) {
+void DensityMatrix::evolve_diagonal(const Eigen::VectorXcd& gate, const std::vector<uint32_t>& qbits) {
 	uint32_t s = 1u << num_qubits;
 	uint32_t h = 1u << qbits.size();
 
@@ -139,7 +139,7 @@ void DensityMatrix::evolve(const Eigen::VectorXcd& gate, const std::vector<uint3
 	}
 }
 
-void DensityMatrix::evolve(const Eigen::VectorXcd& gate) {
+void DensityMatrix::evolve_diagonal(const Eigen::VectorXcd& gate) {
 	uint32_t s = 1u << num_qubits;
 
 	if (gate.size() != s)

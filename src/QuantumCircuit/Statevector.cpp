@@ -25,19 +25,22 @@ Statevector::Statevector(const Eigen::VectorXcd& vec) : Statevector(std::log2(ve
 Statevector::Statevector(const MatrixProductState& state) : Statevector(state.coefficients()) {}
 
 std::string Statevector::to_string() const {
-	uint32_t s = 1u << num_qubits;
+	Statevector tmp(*this);
+	tmp.fix_gauge();
+
+	uint32_t s = 1u << tmp.num_qubits;
 
 	bool first = true;
 	std::string st = "";
 	for (uint32_t i = 0; i < s; i++) {
-		if (std::abs(data(i)) > QS_ATOL) {
+		if (std::abs(tmp.data(i)) > QS_ATOL) {
 			std::string amplitude;
-			if (std::abs(data(i).imag()) < QS_ATOL)
-				amplitude = std::to_string(data(i).real());
+			if (std::abs(tmp.data(i).imag()) < QS_ATOL)
+				amplitude = std::to_string(tmp.data(i).real());
 			else
-				amplitude = "(" + std::to_string(data(i).real()) + ", " + std::to_string(data(i).imag()) + ")";
+				amplitude = "(" + std::to_string(tmp.data(i).real()) + ", " + std::to_string(tmp.data(i).imag()) + ")";
 			
-			std::string bin = quantumstate_utils::print_binary(i, num_qubits);
+			std::string bin = quantumstate_utils::print_binary(i, tmp.num_qubits);
 
 			if (!first)
 				st += " + ";
@@ -117,7 +120,7 @@ void Statevector::evolve(const Eigen::MatrixXcd &gate) {
 }
 
 // Vector representing diagonal gate
-void Statevector::evolve(const Eigen::VectorXcd &gate, const std::vector<uint32_t> &qubits) {
+void Statevector::evolve_diagonal(const Eigen::VectorXcd &gate, const std::vector<uint32_t> &qubits) {
 	uint32_t s = 1u << num_qubits;
 	uint32_t h = 1u << qubits.size();
 
@@ -131,7 +134,7 @@ void Statevector::evolve(const Eigen::VectorXcd &gate, const std::vector<uint32_
 	}
 }
 
-void Statevector::evolve(const Eigen::VectorXcd &gate) {
+void Statevector::evolve_diagonal(const Eigen::VectorXcd &gate) {
 	uint32_t s = 1u << num_qubits;
 
 	if (gate.size() != s)
@@ -151,6 +154,21 @@ double Statevector::norm() const {
 
 void Statevector::normalize() {
 	data = data/norm();
+}
+
+void Statevector::fix_gauge() {
+	uint32_t j;
+	uint32_t s = 1u << num_qubits;
+	for (uint32_t i = 0; i < s; i++) {
+		if (std::abs(data(i)) > QS_ATOL) {
+			j = i;
+			break;
+		}
+	}
+
+	std::complex<double> a = data(j)/std::abs(data(j));
+
+	data = data/a;
 }
 
 double Statevector::probabilities(uint32_t z, const std::vector<uint32_t>& qubits) const {

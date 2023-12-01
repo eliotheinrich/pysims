@@ -5,9 +5,9 @@ import os
 parser = argparse.ArgumentParser()
 parser.add_argument("config")
 parser.add_argument("--ncores", nargs=1, default=[1])
-parser.add_argument("--output", nargs=1, default=["output.png"])
+parser.add_argument("--output", nargs=1, default=["output.svg"])
 parser.add_argument("--compile", nargs=1, default=["True"])
-parser.add_argument("--executable", nargs=1, default=["bin/main"])
+parser.add_argument("--executable", nargs=1, default=["maind"])
 args = parser.parse_args()
 
 def parse_bool(p: str) -> bool:
@@ -28,14 +28,16 @@ executable = args.executable[0]
 
 compile_script = [
     f"cd buildp",
-	f"cmake -DCMAKE_CXX_FLAGS=\"-pg\" ..",
- 	f"make {executable.split('/')[1]}",
+	f"cmake -DCMAKE_CXX_FLAGS=\"-pg\" -DCMAKE_BUILD_TYPE=Debug ..",
+ 	f"make main -j{ncores}",
 	f"cd ..",	
 ]
 
+extension = output_file.split('.')[1]
+
 script = [
-	f"./{executable} {config_path} {ncores}",
-	f"gprof bin/main | python gprof2dot.py | dot -Tpng -o {output_file}",
+	f"./bin/{executable} {config_path} {ncores} 1",
+	f"gprof bin/{executable} | python gprof2dot.py | dot -T{extension} -o {output_file}",
 	"rm gmon.out",
 ]
 
