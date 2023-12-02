@@ -349,7 +349,7 @@ class Tableau {
     public:
         std::vector<PauliString> rows;
 
-        Tableau() = default;
+        Tableau()=default;
 
         Tableau(uint32_t num_qubits)
          : num_qubits(num_qubits), track_destabilizers(true) {
@@ -360,7 +360,7 @@ class Tableau {
             }
         }
 
-        Tableau(uint32_t num_qubits, std::vector<PauliString> rows)
+        Tableau(uint32_t num_qubits, const std::vector<PauliString>& rows)
          : num_qubits(num_qubits), track_destabilizers(false), rows(rows) {}
 
         uint32_t num_rows() const { 

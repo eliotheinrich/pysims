@@ -35,8 +35,6 @@ SandpileCliffordSimulator::SandpileCliffordSimulator(Params &params) : Simulator
 	initial_state = get<int>(params, "initial_state", SUBSTRATE);
 	scrambling_steps = get<int>(params, "scrambling_steps", system_size);
 
-	simulator_type = get<std::string>(params, "simulator_type", "chp");
-
 	// ------------------ TETRONIMOS -------------------
 	// |  (1)  |  (2)  |  (3)  |  (4)  |  (5)  |  (6)  |
 	// |       |       |       |       |       |     o |
