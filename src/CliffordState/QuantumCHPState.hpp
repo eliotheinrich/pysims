@@ -99,6 +99,21 @@ class QuantumCHPState : public CliffordState {
             return tableau.sparsity();
         }
 
+        Tableau truncated_tableau(const std::vector<uint32_t>& qubits) const {
+            uint32_t system_size = this->system_size();
+            uint32_t partition_size = qubits.size();
+
+            std::vector<PauliString> rows(system_size, PauliString(partition_size));
+            for (uint32_t i = 0; i < system_size; i++) {
+                for (uint32_t j = 0; j < partition_size; j++) {
+                    rows[i].set(j,                  tableau.x(i + system_size, qubits[j]));
+                    rows[i].set(j + partition_size, tableau.z(i + system_size, qubits[j]));
+                }
+            }
+
+            return Tableau(partition_size, rows);
+        }
+
         virtual double entropy(const std::vector<uint32_t> &qubits, uint32_t index) const override {
             uint32_t system_size = this->system_size();
             uint32_t partition_size = qubits.size();
@@ -116,19 +131,8 @@ class QuantumCHPState : public CliffordState {
                 return entropy(qubits_complement, index);
             }
 
-            std::vector<PauliString> rows(system_size);
-            for (uint32_t i = 0; i < system_size; i++) {
-                PauliString p(partition_size);
-                for (uint32_t j = 0; j < partition_size; j++) {
-                    p.set(j,                  tableau.x(i + system_size, qubits[j]));
-                    p.set(j + partition_size, tableau.z(i + system_size, qubits[j]));
-                }
-
-                rows[i] = p;
-            }
-
-            Tableau tmp(partition_size, rows);
-            int rank = tmp.rank(false);
+            Tableau ttableau = truncated_tableau(qubits);
+            int rank = ttableau.rank(false);
 
             int s = rank - partition_size;
 

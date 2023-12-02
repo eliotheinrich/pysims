@@ -135,11 +135,11 @@ class PauliString {
             return p;
         }
 
-        bool operator[](size_t i) {
+        inline bool operator[](size_t i) {
             return bit_string[i];
         }
 
-        void set(size_t i, bool b) {
+        inline void set(size_t i, bool b) {
             bit_string[i] = b;
         }
 
@@ -310,27 +310,27 @@ class PauliString {
             return !(this->operator==(rhs)); 
         }
 
-        bool x(uint32_t i) const { 
+        inline bool x(uint32_t i) const { 
             return bit_string[i]; 
         }
 
-        bool z(uint32_t i) const { 
+        inline bool z(uint32_t i) const { 
             return bit_string[i + num_qubits]; 
         }
 
-        bool r() const { 
+        inline bool r() const { 
             return phase; 
         }
 
-        void set_x(uint32_t i, bool v) { 
+        inline void set_x(uint32_t i, bool v) { 
             bit_string[i] = v; 
         }
 
-        void set_z(uint32_t i, bool v) { 
+        inline void set_z(uint32_t i, bool v) { 
             bit_string[i + num_qubits] = v; 
         }
 
-        void set_r(bool v) { 
+        inline void set_r(bool v) { 
             phase = v; 
         }
 
@@ -442,11 +442,7 @@ class Tableau {
                     std::swap(rows[row], rows[pivot_row]);
 
                     for (uint32_t i = r1; i < r2; i++) {
-                        if (i == row) {
-                            continue;
-                        }
-
-                        if (rows[i][c]) {
+                        if (i != row && rows[i][c]) {
                             rowsum(i, row, track_phase);
                         }
                     }
@@ -642,23 +638,27 @@ class Tableau {
         }
 
 
-        bool x(uint32_t i, uint32_t j) const { 
+        inline bool x(uint32_t i, uint32_t j) const { 
             return rows[i].x(j); 
         }
-        bool z(uint32_t i, uint32_t j) const { 
+
+        inline bool z(uint32_t i, uint32_t j) const { 
             return rows[i].z(j); 
         }
-        bool r(uint32_t i) const { 
+
+        inline bool r(uint32_t i) const { 
             return rows[i].r(); 
         }
 
-        void set_x(uint32_t i, uint32_t j, bool v) { 
+        inline void set_x(uint32_t i, uint32_t j, bool v) { 
             rows[i].set_x(j, v); 
         }
-        void set_z(uint32_t i, uint32_t j, bool v) { 
+
+        inline void set_z(uint32_t i, uint32_t j, bool v) { 
             rows[i].set_z(j, v); 
         }
-        void set_r(uint32_t i, bool v) { 
+
+        inline void set_r(uint32_t i, bool v) { 
             rows[i].set_r(v); 
         }
 
@@ -673,10 +673,12 @@ class Tableau {
             z_gate(a);
             h_gate(a);
         }
+
         void y_gate(uint32_t a) {
             x_gate(a);
             z_gate(a);
         }
+
         void z_gate(uint32_t a) {
             s_gate(a);
             s_gate(a);
