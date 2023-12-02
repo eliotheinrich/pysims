@@ -84,10 +84,11 @@ class QuantumCHPState : public CliffordState {
 
         virtual double mzr_expectation(uint32_t a) override {
             auto [deterministic, _] = tableau.mzr_deterministic(a);
-            if (deterministic)
+            if (deterministic) {
                 return 2*int(mzr(a)) - 1.0;
-            else
+            } else {
                 return 0.0;
+            }
         }
 
         virtual bool mzr(uint32_t a) override {

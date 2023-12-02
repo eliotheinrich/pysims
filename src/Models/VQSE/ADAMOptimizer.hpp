@@ -112,8 +112,9 @@ class ADAMOptimizer {
 			}
 
 			if (noisy_gradients) {
-				for (uint32_t i = 0; i < num_params; i++)
+				for (uint32_t i = 0; i < num_params; i++) {
 					gradients[i] += noise_distribution(generator);
+				}
 			}
 
 			return gradients;

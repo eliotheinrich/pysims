@@ -3,8 +3,9 @@
 using namespace itensor;
 
 ITensor tensor_slice(const ITensor& tensor, const Index& index, int i) {
-	if (!hasIndex(tensor, index))
+	if (!hasIndex(tensor, index)) {
 		throw std::invalid_argument("Provided tensor cannot be sliced by provided index.");
+	}
 
 	auto v = ITensor(index);
 	v.set(i, 1.0);
@@ -55,15 +56,18 @@ ITensor matrix_to_tensor(
 
 // This function is quite gross; cleanup?
 Index pad(ITensor& tensor, const Index& idx, uint32_t new_dim) {
-	if (!hasIndex(tensor, idx))
+	if (!hasIndex(tensor, idx)) {
 		throw std::invalid_argument("Provided tensor does not have provided index.");
+	}
 
 	uint32_t old_dim = dim(idx);
-	if (old_dim > new_dim)
+	if (old_dim > new_dim) {
 		throw std::invalid_argument("Provided dimension is smaller than existing dimension.");
+	}
 
-	if (old_dim == new_dim)
+	if (old_dim == new_dim) {
 		return idx;
+	}
 
 	Index new_idx(new_dim, idx.tags());
 
@@ -71,8 +75,9 @@ Index pad(ITensor& tensor, const Index& idx, uint32_t new_dim) {
 	uint32_t j = -1;
 	auto old_inds = inds(tensor);
 	for (uint32_t i = 0; i < old_inds.size(); i++) {
-		if (old_inds[i] == idx)
+		if (old_inds[i] == idx) {
 			j = i;
+		}
 
 		new_inds.push_back(old_inds[i]);
 	}
@@ -83,8 +88,9 @@ Index pad(ITensor& tensor, const Index& idx, uint32_t new_dim) {
 	for (const auto& it : iterInds(new_tensor)) {
 		if (it[j].val <= old_dim) {
 			std::vector<uint32_t> idx_vals(it.size());
-			for (uint32_t j = 0; j < it.size(); j++)
+			for (uint32_t j = 0; j < it.size(); j++) {
 				idx_vals[j] = it[j].val;
+			}
 
 			new_tensor.set(it, eltC(tensor, idx_vals));
 		}
@@ -97,22 +103,25 @@ Index pad(ITensor& tensor, const Index& idx, uint32_t new_dim) {
 
 MatrixProductState::MatrixProductState(uint32_t num_qubits, uint32_t bond_dimension, double sv_threshold)
  : QuantumState(num_qubits), sv_threshold(sv_threshold), bond_dimension(bond_dimension) {
-	if (bond_dimension > 1u << num_qubits)
+	if (bond_dimension > 1u << num_qubits) {
 		throw std::invalid_argument("Bond dimension must be smaller than 2^num_qubits.");
+	}
 
 	for (uint32_t i = 0; i < num_qubits - 1; i++) {
 		internal_indices.push_back(Index(1, "Internal,Left,a" + std::to_string(i)));
 		internal_indices.push_back(Index(1, "Internal,Right,a" + std::to_string(i)));
 	}
 
-	for (uint32_t i = 0; i < num_qubits; i++)
+	for (uint32_t i = 0; i < num_qubits; i++) {
 		external_indices.push_back(Index(2, "External,i" + std::to_string(i)));
+	}
 
 	ITensor tensor;
 	
 	tensor = ITensor(internal_indices[0], external_indices[0]);
-	for (auto j : range1(internal_indices[0]))
+	for (auto j : range1(internal_indices[0])) {
 		tensor.set(j, 1, 1.0);
+	}
 	tensors.push_back(tensor);
 
 	for (uint32_t i = 0; i < num_qubits-1; i++) {
@@ -122,8 +131,9 @@ MatrixProductState::MatrixProductState(uint32_t num_qubits, uint32_t bond_dimens
 
 		if (i == num_qubits - 2) {
 			tensor = ITensor(internal_indices[2*i + 1], external_indices[i+1]);
-			for (auto j : range1(internal_indices[2*i + 1]))
+			for (auto j : range1(internal_indices[2*i + 1])) {
 				tensor.set(j, 1, 1.0);
+			}
 		} else {
 			tensor = ITensor(internal_indices[2*i + 1], internal_indices[2*i + 2], external_indices[i+1]);
 			for (auto j1 : range1(internal_indices[2*i + 1])) {
@@ -141,11 +151,13 @@ std::string MatrixProductState::to_string() const {
 }
 
 double MatrixProductState::entropy(uint32_t q) const {
-	if (q < 0 || q > num_qubits)
+	if (q < 0 || q > num_qubits) {
 		throw std::invalid_argument("Invalid qubit passed to MatrixProductState.entropy; must have 0 <= q <= num_qubits.");
+	}
 
-	if (q == 0 || q == num_qubits)
+	if (q == 0 || q == num_qubits) {
 		return 0.0;
+	}
 
 	auto sv = singular_values[q-1];
 	int d = dim(inds(sv)[0]);
@@ -153,29 +165,34 @@ double MatrixProductState::entropy(uint32_t q) const {
 	double s = 0.0;
 	for (int i = 1; i <= d; i++) {
 		double v = std::pow(elt(sv, i, i), 2);
-		if (v >= 1e-6)
+		if (v >= 1e-6) {
 			s -= v * std::log(v);
+		}
 	}
 
 	return s;
 }
 
 double MatrixProductState::entropy(const std::vector<uint32_t>& qubits, uint32_t index) const {
-	if (index != 1)
+	if (index != 1) {
 		throw std::invalid_argument("Can only compute von Neumann (index = 1) entropy for MPS states.");
+	}
 
-	if (qubits.size() == 0)
+	if (qubits.size() == 0) {
 		return 0.0;
+	}
 
 	std::vector<uint32_t> sorted_qubits(qubits);
 	std::sort(sorted_qubits.begin(), sorted_qubits.end());
 
-	if (sorted_qubits[0] != 0)
+	if (sorted_qubits[0] != 0) {
 		throw std::invalid_argument("Invalid qubits passed to MatrixProductState.entropy; must be a continuous interval with left side qubit = 0.");
+	}
 
 	for (uint32_t i = 0; i < qubits.size() - 1; i++) {
-		if (std::abs(int(sorted_qubits[i]) - int(sorted_qubits[i+1])) > 1)
+		if (std::abs(int(sorted_qubits[i]) - int(sorted_qubits[i+1])) > 1) {
 			throw std::invalid_argument("Invalid qubits passed to MatrixProductState.entropy; must be a continuous interval with left side qubit = 0.");
+		}
 	}
 
 	uint32_t q = sorted_qubits.back();
@@ -194,8 +211,9 @@ void MatrixProductState::print_mps() const {
 ITensor MatrixProductState::coefficient_tensor() const {
 	ITensor C = tensors[0];
 
-	for (uint32_t i = 0; i < num_qubits-1; i++)
+	for (uint32_t i = 0; i < num_qubits-1; i++) {
 		C *= singular_values[i]*tensors[i+1];
+	}
 
 	return C;
 }
@@ -204,8 +222,9 @@ std::complex<double> MatrixProductState::coefficients(uint32_t z) const {
 	auto C = coefficient_tensor();
 
 	std::vector<int> assignments(num_qubits);
-	for (uint32_t j = 0; j < num_qubits; j++)
+	for (uint32_t j = 0; j < num_qubits; j++) {
 		assignments[j] = ((z >> j) & 1u) + 1;
+	}
 
 	return eltC(C, assignments);
 }
@@ -217,8 +236,9 @@ Eigen::VectorXcd MatrixProductState::coefficients(const std::vector<uint32_t>& i
 	for (uint32_t i = 0; i < indices.size(); i++) {
 		uint32_t z = indices[i];
 		std::vector<int> assignments(num_qubits);
-		for (uint32_t j = 0; j < num_qubits; j++)
+		for (uint32_t j = 0; j < num_qubits; j++) {
 			assignments[j] = ((z >> j) & 1u) + 1;
+		}
 
 		vals[i] = eltC(C, assignments);
 	}
@@ -247,14 +267,16 @@ void MatrixProductState::evolve(const Eigen::MatrixXcd& gate, const std::vector<
 		return;
 	}
 
-	if (qubits.size() != 2)
+	if (qubits.size() != 2) {
 		throw std::invalid_argument("Can only evolve two-qubit gates in MPS simulation.");
+	}
 
 	uint32_t q1 = std::min(qubits[0], qubits[1]);
 	uint32_t q2 = std::max(qubits[0], qubits[1]);
 
-	if (q1 == q2)
+	if (q1 == q2) {
 		throw std::invalid_argument("Can only evolve gates on adjacent qubits (for now).");
+	}
 
 	auto i1 = external_indices[qubits[0]];
 	auto i2 = external_indices[qubits[1]];
@@ -289,10 +311,12 @@ void MatrixProductState::evolve(const Eigen::MatrixXcd& gate, const std::vector<
 	internal_indices[2*q2 - 1] = commonIndex(V, D);
 
 	auto inv = [](Real r) { return 1.0/r; };
-	if (q1 != 0)
+	if (q1 != 0) {
 		U *= apply(singular_values[q1-1], inv);
-	if (q2 != num_qubits - 1)
+	}
+	if (q2 != num_qubits - 1) {
 		V *= apply(singular_values[q2], inv);
+	}
 
 	tensors[q1] = U;
 	tensors[q2] = V;
@@ -316,10 +340,12 @@ double MatrixProductState::measure_probability(uint32_t q, bool outcome) const {
 	auto idx = external_indices[q];
 	auto qtensor = tensor_slice(tensors[q], idx, i);
 
-	if (q > 0)
+	if (q > 0) {
 		qtensor *= singular_values[q-1];
-	if (q < num_qubits - 1)
+	}
+	if (q < num_qubits - 1) {
 		qtensor *= singular_values[q];
+	}
 
 	return real(sumelsC(qtensor * dag(qtensor)));
 }
@@ -338,16 +364,18 @@ bool MatrixProductState::measure(uint32_t q) {
 
 	// Propagate right
 	for (uint32_t i = q; i < num_qubits - 1; i++) {
-		if (dim(inds(singular_values[i])[0]) == 1)
+		if (dim(inds(singular_values[i])[0]) == 1) {
 			break;
+		}
 
 		evolve(id, {i, i+1});
 	}
 
 	// Propagate left
 	for (uint32_t i = q; i > 1; i--) {
-		if (dim(inds(singular_values[i-1])[0]) == 1)
+		if (dim(inds(singular_values[i-1])[0]) == 1) {
 			break;
+		}
 
 		evolve(id, {i-1, i});
 	}
@@ -359,10 +387,12 @@ void MatrixProductState::measure_propagate(uint32_t q, const Eigen::Matrix2cd& p
 	evolve(proj, q);
 
 	// Propagate right
-	if ((q < num_qubits - 1) && (dim(inds(singular_values[q])[0]) > 1))
+	if ((q < num_qubits - 1) && (dim(inds(singular_values[q])[0]) > 1)) {
 		measure_propagate(q+1, proj);
+	}
 	
 	// Propagate left
-	if ((q > 0) && (dim(inds(singular_values[q-1])[0]) > 1))
+	if ((q > 0) && (dim(inds(singular_values[q-1])[0]) > 1)) {
 		measure_propagate(q-1, proj);
+	}
 }

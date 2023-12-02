@@ -29,8 +29,9 @@ class Gate {
 		virtual std::string label() const=0;
 		virtual Eigen::MatrixXcd define(const std::vector<double>& params) const=0;
 		Eigen::MatrixXcd define() const {
-			if (num_params() > 0)
+			if (num_params() > 0) {
 				throw std::invalid_argument("Unbound parameters; cannot define gate.");
+			}
 		
 			return define(std::vector<double>());
 		}
@@ -38,8 +39,9 @@ class Gate {
 			return define(params).adjoint();
 		}
 		Eigen::MatrixXcd adjoint() const {
-			if (num_params() > 0)
+			if (num_params() > 0) {
 				throw std::invalid_argument("Unbound parameters; cannot define gate.");
+			}
 
 			return adjoint(std::vector<double>());
 		}
@@ -67,8 +69,9 @@ class MatrixGate : public Gate {
 		}
 
 		Eigen::MatrixXcd define(const std::vector<double>& params) const override {
-			if (params.size() != 0)
+			if (params.size() != 0) {
 				throw std::invalid_argument("Cannot pass parameters to MatrixGate.");
+			}
 			return data;
 		}
 

@@ -18,12 +18,15 @@ namespace quantumstate_utils {
 	static inline bool print_congruence(uint32_t z1, uint32_t z2, const std::vector<uint32_t>& pos, bool outcome) {
 		std::bitset<8> b1(z1);
 		std::bitset<8> b2(z2);
-		if (outcome)
+		if (outcome) {
 			std::cout << b1 << " and " << b2 << " are congruent at positions ";
-		else
+		} else {
 			std::cout << b1 << " and " << b2 << " are not congruent at positions ";
+		}
 
-		for (auto p : pos) std::cout << p << " ";
+		for (auto p : pos) {
+			std::cout << p << " ";
+		}
 		std::cout << "\n";
 
 		return outcome;
@@ -31,8 +34,9 @@ namespace quantumstate_utils {
 
 	static inline bool bits_congruent(uint32_t z1, uint32_t z2, const std::vector<uint32_t>& pos) {
 		for (uint32_t j = 0; j < pos.size(); j++) {
-			if (((z2 >> j) & 1) != ((z1 >> pos[j]) & 1))
+			if (((z2 >> j) & 1) != ((z1 >> pos[j]) & 1)) {
 				return false;
+			}
 		}
 
 		return true;
@@ -60,8 +64,10 @@ namespace quantumstate_utils {
 
 	static inline std::string print_binary(uint32_t a, uint32_t width=5) {
 		std::string s = "";
-		for (uint32_t i = 0; i < width; i++)
+		for (uint32_t i = 0; i < width; i++) {
 			s = std::to_string((a >> i) & 1u) + s;
+		}
+
 		return s;
 	}
 }
@@ -71,8 +77,13 @@ class QuantumState : public EntropyState {
 	protected:
         std::minstd_rand rng;
 
-        uint32_t rand() { return this->rng(); }
-        double randf() { return double(rand())/double(RAND_MAX); }
+        uint32_t rand() { 
+			return this->rng(); 
+		}
+
+        double randf() { 
+			return double(rand())/double(RAND_MAX); 
+		}
 
 	public:
 		uint32_t num_qubits;
@@ -81,10 +92,11 @@ class QuantumState : public EntropyState {
 		virtual ~QuantumState() = default;
 		QuantumState() = default;
 		QuantumState(uint32_t num_qubits, int s=-1) : EntropyState(num_qubits), num_qubits(num_qubits), basis(1u << num_qubits) {
-			if (s == -1)
+			if (s == -1) {
 				seed(std::rand());
-			else
+			} else {
 				seed(s);
+			}
 		}
 
 		void seed(int s) {
@@ -114,34 +126,41 @@ class QuantumState : public EntropyState {
 		}
 
 		virtual void evolve(const Measurement& measurement) {
-			for (auto q : measurement.qbits)
+			for (auto q : measurement.qbits) {
 				measure(q);
+			}
 		}
 
 		virtual void evolve(const Instruction& inst) {
 			std::visit(quantumcircuit_utils::overloaded{
-				[this](std::shared_ptr<Gate> gate) { evolve(gate->define(), gate->qbits); },
+				[this](std::shared_ptr<Gate> gate) { 
+					evolve(gate->define(), gate->qbits); 
+				},
 				[this](Measurement m) { 
-					for (auto const &q : m.qbits)
+					for (auto const &q : m.qbits) {
 						measure(q);
+					}
 				},
 			}, inst);
 		}
 
 		virtual void evolve(const QuantumCircuit& circuit) {
-			if (circuit.num_params() > 0)
+			if (circuit.num_params() > 0) {
 				throw std::invalid_argument("Unbound QuantumCircuit parameters; cannot evolve StateVector.");
+			}
 
-			for (auto const &inst : circuit.instructions)
+			for (auto const &inst : circuit.instructions) {
 				evolve(inst);
+			}
 		}
 
 		virtual bool measure(uint32_t q)=0;
 		
 		virtual std::vector<bool> measure_all() {
 			std::vector<bool> outcomes(num_qubits);
-			for (uint32_t q = 0; q < num_qubits; q++)
+			for (uint32_t q = 0; q < num_qubits; q++) {
 				outcomes[q] = measure(q);
+			}
 			return outcomes;
 		}
 
@@ -294,7 +313,9 @@ class MatrixProductState : public QuantumState {
 
 		virtual void evolve(const Eigen::Matrix2cd& gate, uint32_t qubit) override;
 		virtual void evolve(const Eigen::MatrixXcd& gate, const std::vector<uint32_t>& qubits) override;
-		virtual void evolve(const QuantumCircuit& circuit) override { QuantumState::evolve(circuit); }
+		virtual void evolve(const QuantumCircuit& circuit) override { 
+			QuantumState::evolve(circuit); 
+		}
 
 		double measure_probability(uint32_t q, bool outcome) const;
 		virtual std::vector<double> probabilities() const override {

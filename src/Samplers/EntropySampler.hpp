@@ -39,8 +39,9 @@ class EntropyState {
         std::vector<T> get_entropy_surface(uint32_t index=2u) const {
             std::vector<T> entropy_surface(system_size);
 
-            for (uint32_t i = 0; i < system_size; i++)
+            for (uint32_t i = 0; i < system_size; i++) {
                 entropy_surface[i] = cum_entropy<T>(i, index);
+            }
 
             return entropy_surface;
         }
@@ -58,8 +59,7 @@ class EntropySampler {
                 try {
                     uint32_t number = std::stoi(strip(token));
                     indices.push_back(number);
-                } catch (const std::exception &e) {
-                }
+                } catch (const std::exception &e) {}
             }
 
             return indices;
@@ -98,8 +98,9 @@ class EntropySampler {
         }
 
         std::vector<uint32_t> to_interval(uint32_t x1, uint32_t x2) const {
-            if (!(x1 < system_size && x2 <= system_size))
+            if (!(x1 < system_size && x2 <= system_size)) {
                 throw std::invalid_argument("Invalid x1 or x2 passed to EntropyState.to_interval().");
+            }
             
             if (x2 == system_size) x2 = 0;
             std::vector<uint32_t> interval;
@@ -231,7 +232,9 @@ class EntropySampler {
                     uint32_t x4 = (x3 + partition_size) % system_size;
 
                     double eta = get_eta(x1, x2, x3, x4);
-                    if (!(eta > min_eta) || !(eta < max_eta)) continue;
+                    if (!(eta > min_eta) || !(eta < max_eta)) {
+                        continue;
+                    }
 
                     std::vector<uint32_t> combined_sites = to_combined_interval(x1, x2, x3, x4);
 
@@ -242,10 +245,11 @@ class EntropySampler {
                     double mutual_information_sample = entropy1 + entropy2 - entropy3;
 
                     std::string key = "I" + std::to_string(index) + "_" + std::to_string(get_bin_idx(eta));
-                    if (samples.count(key))
+                    if (samples.count(key)) {
                         samples.emplace(key, mutual_information_sample);
-                    else
+                    } else {
                         samples[key] = std::vector<Sample>{samples[key][0].combine(mutual_information_sample)}; // Messy; TODO fix
+                    }
                 }
             }
         }
@@ -268,17 +272,21 @@ class EntropySampler {
 
         void add_samples(data_t &samples, std::shared_ptr<EntropyState> state) {
             for (auto const &i : renyi_indices) {
-                if (sample_entropy)
+                if (sample_entropy) {
                     add_entropy_samples(samples, i, state);
+                }
                 
-                if (sample_all_partition_sizes)
+                if (sample_all_partition_sizes) {
                     add_entropy_all_partition_sizes(samples, i, state);
+                }
 
-                if (sample_mutual_information)
+                if (sample_mutual_information) {
                     add_mutual_information_samples(samples, i, state);
+                }
 
-                if (sample_fixed_mutual_information)
+                if (sample_fixed_mutual_information) {
                     add_fixed_mutual_information_samples(samples, i, state);
+                }
             }
         }
 

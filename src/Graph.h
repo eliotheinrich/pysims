@@ -17,7 +17,11 @@ class Graph {
 		uint32_t num_vertices;
 
 		Graph() : num_vertices(0) {}
-		Graph(uint32_t num_vertices) : num_vertices(0) { for (uint32_t i = 0; i < num_vertices; i++) add_vertex(DEFAULT_VAL); }
+		Graph(uint32_t num_vertices) : num_vertices(0) { 
+			for (uint32_t i = 0; i < num_vertices; i++) {
+				add_vertex(DEFAULT_VAL);
+			}
+		}
 		Graph(const Graph &g);
 
 		static Graph erdos_renyi_graph(uint32_t num_vertices, float p);
@@ -25,7 +29,9 @@ class Graph {
 
 		std::string to_string() const;
 
-		void add_vertex() { add_vertex(DEFAULT_VAL); }
+		void add_vertex() { 
+			add_vertex(DEFAULT_VAL); 
+		}
 
 		void add_vertex(uint32_t v) {
 			num_vertices++;
@@ -40,11 +46,15 @@ class Graph {
 			vals[v] = val;
 		}
 
-		uint32_t get_val(uint32_t v) const { return vals[v]; }
+		uint32_t get_val(uint32_t v) const { 
+			return vals[v]; 
+		}
 
 		std::vector<uint32_t> neighbors(uint32_t a) const {
 			std::vector<uint32_t> neighbors;
-			for (auto const &[e, _] : edges[a]) neighbors.push_back(e);
+			for (auto const &[e, _] : edges[a]) {
+				neighbors.push_back(e);
+			}
 			std::sort(neighbors.begin(), neighbors.end());
 			return neighbors;
 		}

@@ -192,7 +192,7 @@ if __name__ == "__main__":
         
         system_sizes = [512]
         config = generate_config_very_high_fidelity(mode, us, system_sizes=system_sizes, nruns=10, sample_avalanches=False, equilibration_timesteps=eq_timesteps)
-        submit_jobs(config, f"qrpm_{mode}_s0", ncores=64, memory="150gb", time="144:00:00", nodes=4, record_error=True, cleanup=False)
+        #submit_jobs(config, f"qrpm_{mode}_s0", ncores=64, memory="150gb", time="96:00:00", nodes=4, record_error=True, cleanup=False)
 
         system_sizes = [32, 64, 128, 256]
         config = generate_config_very_high_fidelity_temporal(mode, us, num_runs=1250, system_sizes=system_sizes, sampling_timesteps=100)
@@ -271,3 +271,8 @@ system_sizes1 = []
 system_sizes = [128]
 config = generate_config_very_high_fidelity_temporal(20, us, system_sizes=system_sizes, num_runs=20, sampling_timesteps=5000000, sampling_freq=1000)
 #submit_jobs(config, f"qrpm_20_eq_small", ncores=48, memory="150gb", time="72:00:00", nodes=4, record_error=True)
+
+system_sizes = [16]
+us = np.linspace(0.1, 1.5, 20)
+config = generate_config_very_high_fidelity(10, us=us, system_sizes=system_sizes, equilibration_timesteps=50, sampling_timesteps=100)
+save_config(config, '../configs/qrpm_profile.json')

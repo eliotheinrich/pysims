@@ -25,8 +25,9 @@ tableau_utils::Circuit PauliString::reduce(bool z = true) const {
     // Step two
     std::vector<uint32_t> nonzero_idx;
     for (uint32_t i = 0; i < num_qubits; i++) {
-        if (tableau.x(0, i))
+        if (tableau.x(0, i)) {
             nonzero_idx.push_back(i);
+        }
     }
     while (nonzero_idx.size() > 1) {
         for (uint32_t j = 0; j < nonzero_idx.size()/2; j++) {

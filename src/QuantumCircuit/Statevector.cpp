@@ -16,8 +16,9 @@ Statevector::Statevector(const Statevector& other) : Statevector(other.data) {}
 
 Statevector::Statevector(const Eigen::VectorXcd& vec) : Statevector(std::log2(vec.size())) {
 	uint32_t s = vec.size();
-	if ((s & (s - 1)) != 0)
+	if ((s & (s - 1)) != 0) {
 		throw std::invalid_argument("Provided data to Statevector does not have a dimension which is a power of 2.");
+	}
 
 	data = vec;
 }
@@ -35,15 +36,17 @@ std::string Statevector::to_string() const {
 	for (uint32_t i = 0; i < s; i++) {
 		if (std::abs(tmp.data(i)) > QS_ATOL) {
 			std::string amplitude;
-			if (std::abs(tmp.data(i).imag()) < QS_ATOL)
+			if (std::abs(tmp.data(i).imag()) < QS_ATOL) {
 				amplitude = std::to_string(tmp.data(i).real());
-			else
+			} else {
 				amplitude = "(" + std::to_string(tmp.data(i).real()) + ", " + std::to_string(tmp.data(i).imag()) + ")";
+			}
 			
 			std::string bin = quantumstate_utils::print_binary(i, tmp.num_qubits);
 
-			if (!first)
+			if (!first) {
 				st += " + ";
+			}
 			first = false;
 			st += amplitude + "|" + bin + ">";
 		}
@@ -62,14 +65,16 @@ double Statevector::measure_probability(uint32_t q, bool outcome) const {
 
 	double prob_zero = 0.0;
 	for (uint32_t i = 0; i < s; i++) {
-		if (((i >> q) & 1u) == 0)
+		if (((i >> q) & 1u) == 0) {
 			prob_zero += std::pow(std::abs(data(i)), 2);
+		}
 	}
 
-	if (outcome)
+	if (outcome) {
 		return 1.0 - prob_zero;
-	else
+	} else {
 		return prob_zero;
+	}
 }
 
 bool Statevector::measure(uint32_t q) {
@@ -80,8 +85,9 @@ bool Statevector::measure(uint32_t q) {
 	uint32_t outcome = randf() < prob_zero;
 
 	for (uint32_t i = 0; i < s; i++) {
-		if (((i >> q) & 1u) != outcome)
+		if (((i >> q) & 1u) != outcome) {
 			data(i) = 0.;
+		}
 	}
 
 	normalize();
@@ -92,8 +98,9 @@ bool Statevector::measure(uint32_t q) {
 void Statevector::evolve(const Eigen::MatrixXcd &gate, const std::vector<uint32_t> &qubits) {
 	uint32_t s = 1u << num_qubits;
 	uint32_t h = 1u << qubits.size();
-	if ((gate.rows() != h) || gate.cols() != h)
+	if ((gate.rows() != h) || gate.cols() != h) {
 		throw std::invalid_argument("Invalid gate dimensions for provided qubits.");
+	}
 
 	Eigen::VectorXcd ndata = Eigen::VectorXcd::Zero(s);
 
@@ -102,8 +109,9 @@ void Statevector::evolve(const Eigen::MatrixXcd &gate, const std::vector<uint32_
 
 		for (uint32_t b2 = 0; b2 < h; b2++) {
 			uint32_t a2 = a1;
-			for (uint32_t j = 0; j < qubits.size(); j++)
+			for (uint32_t j = 0; j < qubits.size(); j++) {
 				a2 = quantumstate_utils::set_bit(a2, qubits[j], b2, j);
+			}
 
 			ndata(a1) += gate(b1, b2)*data(a2);
 		}
@@ -113,8 +121,9 @@ void Statevector::evolve(const Eigen::MatrixXcd &gate, const std::vector<uint32_
 }
 
 void Statevector::evolve(const Eigen::MatrixXcd &gate) {
-	if (!(gate.rows() == data.size() && gate.cols() == data.size()))
+	if (!(gate.rows() == data.size() && gate.cols() == data.size())) {
 		throw std::invalid_argument("Invalid gate dimensions for provided qubits.");
+	}
 
 	data = gate*data;
 }
@@ -124,8 +133,9 @@ void Statevector::evolve_diagonal(const Eigen::VectorXcd &gate, const std::vecto
 	uint32_t s = 1u << num_qubits;
 	uint32_t h = 1u << qubits.size();
 
-	if (gate.size() != h)
+	if (gate.size() != h) {
 		throw std::invalid_argument("Invalid gate dimensions for provided qubits.");
+	}
 
 	for (uint32_t a = 0; a < s; a++) {
 		uint32_t b = quantumstate_utils::reduce_bits(a, qubits);
@@ -137,17 +147,20 @@ void Statevector::evolve_diagonal(const Eigen::VectorXcd &gate, const std::vecto
 void Statevector::evolve_diagonal(const Eigen::VectorXcd &gate) {
 	uint32_t s = 1u << num_qubits;
 
-	if (gate.size() != s)
+	if (gate.size() != s) {
 		throw std::invalid_argument("Invalid gate dimensions for provided qubits.");
+	}
 
-	for (uint32_t a = 0; a < s; a++)
+	for (uint32_t a = 0; a < s; a++) {
 		data(a) *= gate(a);
+	}
 }
 
 double Statevector::norm() const {
 	double n = 0.;
-	for (uint32_t i = 0; i < data.size(); i++)
+	for (uint32_t i = 0; i < data.size(); i++) {
 		n += std::pow(std::abs(data(i)), 2);
+	}
 	
 	return std::sqrt(n);
 }
@@ -176,8 +189,9 @@ double Statevector::probabilities(uint32_t z, const std::vector<uint32_t>& qubit
 	double p = 0.;
 	for (uint32_t i = 0; i < s; i++) {
 
-		if (quantumstate_utils::bits_congruent(i, z, qubits))
+		if (quantumstate_utils::bits_congruent(i, z, qubits)) {
 			p += std::pow(std::abs(data(i)), 2);
+		}
 	}
 
 	return p;
@@ -186,8 +200,9 @@ double Statevector::probabilities(uint32_t z, const std::vector<uint32_t>& qubit
 std::vector<double> Statevector::probabilities() const {
 	uint32_t s = 1u << num_qubits;
 	std::vector<double> probs(s);
-	for (uint32_t i = 0; i < s; i++)
+	for (uint32_t i = 0; i < s; i++) {
 		probs[i] = std::pow(std::abs(data(i)), 2);
+	}
 
 	return probs;
 }
@@ -196,8 +211,9 @@ std::complex<double> Statevector::inner(const Statevector& other) const {
 	uint32_t s = 1u << num_qubits;
 
 	std::complex<double> c = 0.;
-	for (uint32_t i = 0; i < s; i++)
+	for (uint32_t i = 0; i < s; i++) {
 		c += other.data(i)*std::conj(data(i));
+	}
 	
 	return c;
 }

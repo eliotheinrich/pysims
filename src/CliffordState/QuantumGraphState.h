@@ -7,20 +7,6 @@
 
 #include "QuantumState.h"
 
-//#define IDGATE     0
-//#define XGATE      1
-//#define YGATE      2
-//#define ZGATE      3
-//#define HGATE      12
-//#define SGATE      20
-//#define SDGATE     23
-//#define SQRTXGATE  17
-//#define SQRTXDGATE 16
-//#define SQRTYGATE  15
-//#define SQRTYDGATE 13
-//#define SQRTZGATE  20
-//#define SQRTZDGATE 23
-
 #define IDGATE     0
 #define XGATE      1
 #define YGATE      2

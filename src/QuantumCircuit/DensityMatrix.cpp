@@ -29,8 +29,9 @@ DensityMatrix DensityMatrix::partial_trace(const std::vector<uint32_t>& traced_q
 
 	std::vector<uint32_t> remaining_qubits;
 	for (uint32_t q = 0; q < num_qubits; q++) {
-		if (!std::count(traced_qubits.begin(), traced_qubits.end(), q))
+		if (!std::count(traced_qubits.begin(), traced_qubits.end(), q)) {
 			remaining_qubits.push_back(q);
+		}
 	}
 
 	uint32_t num_traced_qubits = traced_qubits.size();
@@ -76,8 +77,9 @@ double DensityMatrix::entropy(const std::vector<uint32_t> &qubits, uint32_t inde
 	if (qubits.size() > num_qubits) {
 		std::vector<uint32_t> qubits_complement;
 		for (uint32_t q = 0; q < num_qubits; q++) {
-			if (!std::count(qubits.begin(), qubits.end(), q))
+			if (!std::count(qubits.begin(), qubits.end(), q)) {
 				qubits_complement.push_back(q);
+			}
 		}
 
 		return entropy(qubits_complement, index);
@@ -87,8 +89,9 @@ double DensityMatrix::entropy(const std::vector<uint32_t> &qubits, uint32_t inde
 
 	std::vector<uint32_t> traced_qubits;
 	for (uint32_t q = 0; q < num_qubits; q++) {
-		if (!std::count(qubits.begin(), qubits.end(), q))
+		if (!std::count(qubits.begin(), qubits.end(), q)) {
 			traced_qubits.push_back(q);
+		}
 	}
 
 
@@ -98,15 +101,18 @@ double DensityMatrix::entropy(const std::vector<uint32_t> &qubits, uint32_t inde
 		uint32_t rank = 0;
 		// TODO cleanup
 		for (auto const &e : rho_a.data.eigenvalues()) {
-			if (std::abs(e) > QS_ATOL) rank++;
+			if (std::abs(e) > QS_ATOL) {
+				rank++;
+			}
 		}
 		return std::log2(rank);
 	} else if (index == 1) {
 		double s = 0.;
 		for (auto const &e : rho_a.data.eigenvalues()) {
 			double eigenvalue = std::abs(e);
-			if (eigenvalue > QS_ATOL)
+			if (eigenvalue > QS_ATOL) {
 				s -= std::abs(e)*std::log(std::abs(e));
+			}
 		}
 		return s;
 	} else {
@@ -126,8 +132,9 @@ void DensityMatrix::evolve_diagonal(const Eigen::VectorXcd& gate, const std::vec
 	uint32_t s = 1u << num_qubits;
 	uint32_t h = 1u << qbits.size();
 
-	if (gate.size() != h)
+	if (gate.size() != h) {
 		throw std::invalid_argument("Invalid gate dimensions for provided qubits.");
+	}
 
 	for (uint32_t a1 = 0; a1 < s; a1++) {
 		for (uint32_t a2 = 0; a2 < s; a2++) {
@@ -142,8 +149,9 @@ void DensityMatrix::evolve_diagonal(const Eigen::VectorXcd& gate, const std::vec
 void DensityMatrix::evolve_diagonal(const Eigen::VectorXcd& gate) {
 	uint32_t s = 1u << num_qubits;
 
-	if (gate.size() != s)
+	if (gate.size() != s) {
 		throw std::invalid_argument("Invalid gate dimensions for provided qubits.");
+	}
 
 	for (uint32_t a1 = 0; a1 < s; a1++) {
 		for (uint32_t a2 = 0; a2 < s; a2++) {
@@ -158,8 +166,9 @@ bool DensityMatrix::measure(uint32_t q) {
 			uint32_t q1 = (i >> q) & 1u;
 			uint32_t q2 = (j >> q) & 1u;
 
-			if (q1 != q2)
+			if (q1 != q2) {
 				data(i, j) = 0;
+			}
 		}
 	}
 
@@ -169,8 +178,9 @@ bool DensityMatrix::measure(uint32_t q) {
 std::vector<bool> DensityMatrix::measure_all() {
 	for (uint32_t i = 0; i < basis; i++) {
 		for (uint32_t j = 0; j < basis; j++) {
-			if (i != j)
+			if (i != j) {
 				data(i, j) = 0;
+			}
 		}
 	}
 
@@ -185,16 +195,18 @@ Eigen::VectorXd DensityMatrix::diagonal() const {
 std::map<uint32_t, double> DensityMatrix::probabilities_map() const {
 	std::map<uint32_t, double> outcomes;
 
-	for (uint32_t i = 0; i < basis; i++)
+	for (uint32_t i = 0; i < basis; i++) {
 		outcomes[i] = data(i, i).real();
+	}
 
 	return outcomes;
 }
 
 std::vector<double> DensityMatrix::probabilities() const {
 	std::vector<double> probs(basis);
-	for (uint32_t i = 0; i < basis; i++)
+	for (uint32_t i = 0; i < basis; i++) {
 		probs[i] = data(i, i).real();
+	}
 
 	return probs;
 }

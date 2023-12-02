@@ -99,18 +99,21 @@ class VQSEConfig : public Config {
 			if (target_type == HAAR_RANDOM) {
 				QuantumCircuit qc = generate_haar_circuit(num_qubits, target_depth);
 
-				for (auto const& q : measured)
+				for (auto const& q : measured) {
 					qc.add_measurement(q);
+				}
 				
 				qc.append(generate_haar_circuit(num_qubits, post_measurement_layers));
 
-				if (density_matrix_target)
+				if (density_matrix_target) {
 					return DensityMatrix(qc);
-				else
+				} else {
 					return qc;
+				}
 			} else if (target_type == REAL_DENSITY) { // According to https://arxiv.org/pdf/2004.01372.pdf
-				if (!density_matrix_target)
+				if (!density_matrix_target) {
 					throw std::invalid_argument("If target is REAL_DENSITY, density_matrix_target must be True.");
+				}
 
 				uint32_t num_ancilla = 4;
 				QuantumCircuit qc(num_qubits + num_ancilla);
@@ -140,8 +143,9 @@ class VQSEConfig : public Config {
 			const std::vector<std::string>& rotation_gates,
 			const std::string& entangling_gate
 		) {
-			if (ansatz_type == HARDWARE_EFFICIENT_ANSATZ)
+			if (ansatz_type == HARDWARE_EFFICIENT_ANSATZ) {
 				return hardware_efficient_ansatz(num_qubits, ansatz_depth, rotation_gates, entangling_gate);
+			}
 
 			return prepare_ansatz(num_qubits, ansatz_depth, DEFAULT_ANSATZ, rotation_gates, entangling_gate);
 		}
@@ -202,26 +206,30 @@ class VQSEConfig : public Config {
 			record_energy_levels = get<int>(params, "record_energy_levels", DEFAULT_RECORD_ENERGY_LEVELS);
 			num_energy_levels = get<int>(params, "num_energy_levels", DEFAULT_NUM_ENERGY_LEVELS);
 
-			if (num_energy_levels > (1u << num_qubits))
+			if (num_energy_levels > (1u << num_qubits)) {
 				throw std::invalid_argument("Not enough qubits to compute requested energy levels.");
+			}
 		}
 
 		void add_est_eigenvalues(DataSlide& slide) {	
 			slide.add_data("est_eigenvalues");
-			for (auto const &e : vqse.eigenvalue_estimates)
+			for (auto const &e : vqse.eigenvalue_estimates) {
 				slide.push_data("est_eigenvalues", e);
+			}
 			
 			slide.add_data("bitstrings");
-			for (auto const &b : vqse.bitstring_estimates)
+			for (auto const &b : vqse.bitstring_estimates) {
 				slide.push_data("bitstrings", b);
+			}
 		}
 
 		void add_true_eigensystem(DataSlide &slide) {
 			auto [eigenvalues, eigenvectors] = vqse.true_eigensystem(target);
 			
 			slide.add_data("true_eigenvalues");
-			for (auto const &e : eigenvalues)
+			for (auto const &e : eigenvalues) {
 				slide.push_data("true_eigenvalues", e);
+			}
 
 			for (uint32_t i = 0; i < m ; i++) {
 				std::string state_real = "state_" + std::to_string(i) + "r";
@@ -271,8 +279,9 @@ class VQSEConfig : public Config {
 			}
 
 			if (record_fidelity) {
-				for (uint32_t i = 0; i < m; i++)
+				for (uint32_t i = 0; i < m; i++) {
 					slide.add_data("fidelity" + std::to_string(i));
+				}
 			}
 
 			if (record_energy_levels) {
@@ -293,8 +302,9 @@ class VQSEConfig : public Config {
 
 				if (record_fidelity) {
 					auto fidelity = vqse.fidelity(target, params);
-					for (uint32_t i = 0; i < m; i++)
+					for (uint32_t i = 0; i < m; i++) {
 						slide.push_data("fidelity" + std::to_string(i), fidelity[i]);
+					}
 				}
 
 				if (record_energy_levels) {
@@ -316,8 +326,9 @@ class VQSEConfig : public Config {
 
 			// Optimization done; add results
 			slide.add_data("final_parameters");
-			for (auto const &p : vqse.params)
+			for (auto const &p : vqse.params) {
 				slide.push_data("final_parameters", p);
+			}
 			
 			add_true_eigensystem(slide);
 			add_est_eigenvalues(slide);

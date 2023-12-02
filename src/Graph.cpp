@@ -3,10 +3,14 @@
 #include <climits>
 
 Graph::Graph(const Graph &g) : Graph() {
-	for (uint32_t i = 0; i < g.num_vertices; i++) add_vertex(DEFAULT_VAL);
+	for (uint32_t i = 0; i < g.num_vertices; i++) {
+		add_vertex(DEFAULT_VAL);
+	}
 
 	for (uint32_t i = 0; i < g.num_vertices; i++) {
-		for (auto const &[j, w] : g.edges[i]) add_directed_edge(i, j, w);
+		for (auto const &[j, w] : g.edges[i]) {
+			add_directed_edge(i, j, w);
+		}
 	}
 }
 
@@ -17,7 +21,9 @@ std::string Graph::to_string() const {
 		for (auto const&[v, w] : edges[i]) {
 			s += "(" + std::to_string(v) + ": "  + std::to_string(w) + ") ";
 		}
-		if (i != num_vertices - 1) s += "\n";
+		if (i != num_vertices - 1) {
+			s += "\n";
+		}
 	}
 	return s;
 }
@@ -28,8 +34,9 @@ Graph Graph::erdos_renyi_graph(uint32_t num_vertices, float p) {
 	thread_local std::minstd_rand r(rd());
 	for (uint32_t i = 0; i < num_vertices-1; i++) {
 		for (uint32_t j = i+1; j < num_vertices; j++) {
-			if (float(r())/float(RAND_MAX) < p)
+			if (float(r())/float(RAND_MAX) < p) {
 				g.toggle_edge(i, j);
+			}
 		}
 	}
 
@@ -63,16 +70,18 @@ Graph Graph::scale_free_graph(uint32_t num_vertices, float alpha) {
 		uint32_t j = i+1;
 		uint32_t residual_vertices = degrees[i] - g.degree(i);
 		while (random_vertices.size() < residual_vertices && j < num_vertices) {
-			if (g.degree(j) < degrees[j])
+			if (g.degree(j) < degrees[j]) {
 				random_vertices.push_back(j);
+			}
 
 			j++;
 		}
 
 		std::shuffle(random_vertices.begin(), random_vertices.end(), gen);
 
-		for (uint32_t j = 0; j < random_vertices.size(); j++)
+		for (uint32_t j = 0; j < random_vertices.size(); j++) {
 			g.add_edge(i, random_vertices[j]);
+		}
 	}
 
 	return g;
@@ -82,13 +91,18 @@ void Graph::remove_vertex(uint32_t v) {
 	num_vertices--;
 	edges.erase(edges.begin() + v);
 	vals.erase(vals.begin() + v);
-	for (uint32_t i = 0; i < num_vertices; i++) edges[i].erase(v);
+	for (uint32_t i = 0; i < num_vertices; i++) {
+		edges[i].erase(v);
+	}
 
 	for (uint32_t i = 0; i < num_vertices; i++) {
 		std::map<uint32_t, int> new_edges;
 		for (auto const &[j, w] : edges[i]) {
-			if (j > v) new_edges.emplace(j-1, w);
-			else new_edges.emplace(j, w);
+			if (j > v) {
+				new_edges.emplace(j-1, w);
+			} else {
+				new_edges.emplace(j, w);
+			}
 		}
 		edges[i] = new_edges;
 	}
@@ -115,12 +129,16 @@ void Graph::add_edge(uint32_t v1, uint32_t v2) {
 }
 
 void Graph::add_directed_edge(uint32_t v1, uint32_t v2, int w) {
-	if (!contains_edge(v1, v2)) edges[v1].emplace(v2, w);
+	if (!contains_edge(v1, v2)) {
+		edges[v1].emplace(v2, w);
+	}
 }
 
 void Graph::add_weighted_edge(uint32_t v1, uint32_t v2, int w) {
 	add_directed_edge(v1, v2, w);
-	if (v1 != v2) add_directed_edge(v2, v1, w);
+	if (v1 != v2) {
+		add_directed_edge(v2, v1, w);
+	}
 }
 
 void Graph::remove_directed_edge(uint32_t v1, uint32_t v2) {
@@ -129,22 +147,32 @@ void Graph::remove_directed_edge(uint32_t v1, uint32_t v2) {
 
 void Graph::remove_edge(uint32_t v1, uint32_t v2) {
 	remove_directed_edge(v1, v2);
-	if (v1 != v2) remove_directed_edge(v2, v1);
+	if (v1 != v2) {
+		remove_directed_edge(v2, v1);
+	}
 }
 
 void Graph::toggle_directed_edge(uint32_t v1, uint32_t v2) {
-	if (contains_directed_edge(v1, v2)) remove_directed_edge(v1, v2);
-	else add_directed_edge(v1, v2, 1);
+	if (contains_directed_edge(v1, v2)) {
+		remove_directed_edge(v1, v2);
+	} else {
+		add_directed_edge(v1, v2, 1);
+	}
 }
 
 void Graph::toggle_edge(uint32_t v1, uint32_t v2) {
 	toggle_directed_edge(v1, v2);
-	if (v1 != v2) toggle_directed_edge(v2, v1);
+	if (v1 != v2) {
+		toggle_directed_edge(v2, v1);
+	}
 }
 
 int Graph::adjacency_matrix(uint32_t v1, uint32_t v2) const {
-	if (contains_directed_edge(v1, v2)) return edges[v1].at(v2);
-	else return 0;
+	if (contains_directed_edge(v1, v2)) {
+		return edges[v1].at(v2);
+	} else {
+		return 0;
+	}
 }
 
 uint32_t Graph::degree(uint32_t v) const {
@@ -154,7 +182,9 @@ uint32_t Graph::degree(uint32_t v) const {
 void Graph::local_complement(uint32_t v) {
 	for (auto const &[v1, _] : edges[v]) {
 		for (auto const &[v2, _] : edges[v]) {
-			if (v1 < v2) toggle_edge(v1, v2);
+			if (v1 < v2) {
+				toggle_edge(v1, v2);
+			}
 		}
 	}
 }
@@ -167,12 +197,16 @@ Graph Graph::partition(const std::vector<uint32_t> &nodes) const {
 	std::map<uint32_t, uint32_t> new_vertices;
 
 	for (const uint32_t a : nodess) {
-		if (!degree(a)) continue;
+		if (!degree(a)) {
+			continue;
+		}
 
 		new_vertices.emplace(a, new_vertices.size());
 		new_graph.add_vertex(1);
 		for (auto const &[b, _] : edges[a]) {
-			if (nodess.count(b)) continue;
+			if (nodess.count(b)) {
+				continue;
+			}
 
 			if (!new_vertices.count(b)) {
 				new_vertices.emplace(b, new_vertices.size());
@@ -214,7 +248,9 @@ std::pair<bool, std::vector<uint32_t>> Graph::path(uint32_t s, uint32_t t) const
 		visited.insert(v);
 		for (auto const &[w, _] : edges[v]) {
 			if (edge_weight(v, w) > 0) {
-				if (!visited.count(w)) parent.emplace(w, v);
+				if (!visited.count(w)) {
+					parent.emplace(w, v);
+				}
 				if (w == t) {
 					// Done; re-use stack
 					stack.clear();
@@ -243,8 +279,12 @@ int Graph::max_flow(std::vector<uint32_t> &sources, std::vector<uint32_t> &sinks
 	g.add_vertex(DEFAULT_VAL);
 	uint32_t t = g.num_vertices - 1;
 
-	for (auto i : sources) g.add_directed_edge(s, i, INT_MAX);
-	for (auto i : sinks) g.add_directed_edge(i, t, INT_MAX);
+	for (auto i : sources) {
+		g.add_directed_edge(s, i, INT_MAX);
+	}
+	for (auto i : sinks) {
+		g.add_directed_edge(i, t, INT_MAX);
+	}
 
 	int flow = g.max_flow(s, t);
 
@@ -268,7 +308,9 @@ int Graph::max_flow(uint32_t s, uint32_t t) const {
 		int min_weight = INT_MAX;
 		for (uint32_t j = 0; j < path_nodes.size() - 1; j++) {
 			int weight = residual_graph.edge_weight(path_nodes[j], path_nodes[j+1]);
-			if (weight < min_weight) min_weight = weight;
+			if (weight < min_weight) {
+				min_weight = weight;
+			}
 		}
 
 		for (uint32_t j = 0; j < path_nodes.size() - 1; j++) {
@@ -293,7 +335,9 @@ int Graph::max_flow(uint32_t s, uint32_t t) const {
 
 std::vector<uint32_t> Graph::compute_degree_counts() const {
 	std::vector<uint32_t> counts(num_vertices, 0);
-	for (uint32_t i = 0; i < num_vertices; i++) counts[degree(i)]++;
+	for (uint32_t i = 0; i < num_vertices; i++) {
+		counts[degree(i)]++;
+	}
 	return counts;
 }
 
@@ -320,7 +364,9 @@ std::set<uint32_t> Graph::component(uint32_t i) const {
 		stack.pop_back();
 		if (!visited.count(v)) {
 			visited.insert(v);
-			for (auto const &[w, _] : edges[v]) stack.push_back(w);
+			for (auto const &[w, _] : edges[v]) {
+				stack.push_back(w);
+			}
 		}
 	}
 
@@ -329,7 +375,9 @@ std::set<uint32_t> Graph::component(uint32_t i) const {
 
 double Graph::average_component_size() const {
 	std::set<uint32_t> to_check;
-	for (uint32_t i = 0; i < num_vertices; i++) to_check.insert(i);
+	for (uint32_t i = 0; i < num_vertices; i++) {
+		to_check.insert(i);
+	}
 	double avg = 0.;
 
 	while (!to_check.empty()) {
@@ -339,7 +387,9 @@ double Graph::average_component_size() const {
 		auto connected_component = component(i);
 		uint32_t component_size = connected_component.size();
 		for (auto v : connected_component) {
-			if (to_check.count(v)) to_check.erase(v);
+			if (to_check.count(v)) {
+				to_check.erase(v);
+			}
 		}
 
 		avg += component_size*component_size;
@@ -350,7 +400,9 @@ double Graph::average_component_size() const {
 
 uint32_t Graph::max_component_size() const {
 	std::set<uint32_t> to_check;
-	for (uint32_t i = 0; i < num_vertices; i++) to_check.insert(i);
+	for (uint32_t i = 0; i < num_vertices; i++) {
+		to_check.insert(i);
+	}
 
 	uint32_t max_cluster_size = 0;
 
@@ -360,9 +412,14 @@ uint32_t Graph::max_component_size() const {
 
 		auto connected_component = component(i);
 		uint32_t component_size = connected_component.size();
-		if (component_size > max_cluster_size) max_cluster_size = component_size;
+		if (component_size > max_cluster_size) {
+			max_cluster_size = component_size;
+		}
+
 		for (auto v : connected_component) {
-			if (to_check.count(v)) to_check.erase(v);
+			if (to_check.count(v)) {
+				to_check.erase(v);
+			}
 		}
 	}
 
@@ -371,7 +428,9 @@ uint32_t Graph::max_component_size() const {
 
 double Graph::local_clustering_coefficient(uint32_t i) const {
 	uint32_t ki = degree(i);
-	if (ki == 0 || ki == 1) return 0.;
+	if (ki == 0 || ki == 1) {
+		return 0.;
+	}
 
 	uint32_t c = 0;
 	for (uint32_t j = 0; j < num_vertices; j++) {
@@ -385,13 +444,17 @@ double Graph::local_clustering_coefficient(uint32_t i) const {
 
 double Graph::global_clustering_coefficient() const {
 	double c = 0.;
-	for (uint32_t i = 0; i < num_vertices; i++) c += local_clustering_coefficient(i);
+	for (uint32_t i = 0; i < num_vertices; i++) {
+		c += local_clustering_coefficient(i);
+	}
 	return c/num_vertices;
 }
 
 double Graph::percolation_probability() const {
 	std::set<uint32_t> to_check;
-	for (uint32_t i = 0; i < num_vertices; i++) to_check.insert(i);
+	for (uint32_t i = 0; i < num_vertices; i++) {
+		to_check.insert(i);
+	}
 
 	uint32_t max_cluster_size = 0;
 
@@ -401,9 +464,14 @@ double Graph::percolation_probability() const {
 
 		auto connected_component = component(i);
 		uint32_t component_size = connected_component.size();
-		if (component_size > max_cluster_size) max_cluster_size = component_size;
+		if (component_size > max_cluster_size) {
+			max_cluster_size = component_size;
+		}
+		
 		for (auto v : connected_component) {
-			if (to_check.count(v)) to_check.erase(v);
+			if (to_check.count(v)) {
+				to_check.erase(v);
+			}
 		}
 	}
 

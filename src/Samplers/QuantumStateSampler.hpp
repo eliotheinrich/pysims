@@ -38,8 +38,9 @@ class QuantumStateSampler {
 			max_prob = get<double>(params, "max_prob", 1.0);
 			sample_probabilities = get<int>(params, "sample_probabilities", true);
 
-			if (max_prob <= min_prob)
+			if (max_prob <= min_prob) {
 				throw std::invalid_argument("max_prob must be greater than min_prob.");
+			}
 
 			sample_bitstring_distribution = get<int>(params, "sample_bitstring_distribution", true);
 		}
@@ -60,8 +61,9 @@ class QuantumStateSampler {
 			}
 
 			std::vector<double> probability_probs(num_bins);
-			for (uint32_t i = 0; i < num_bins; i++)
+			for (uint32_t i = 0; i < num_bins; i++) {
 				probability_probs[i] = static_cast<double>(probability_counts[i])/num_counts;
+			}
 
 
 			samples.emplace("probabilities", probability_probs);
@@ -73,10 +75,12 @@ class QuantumStateSampler {
 		}
 
 		void add_samples(data_t &samples, const std::shared_ptr<QuantumState>& state) {
-			if (sample_probabilities)
+			if (sample_probabilities) {
 				add_probability_samples(samples, state);
+			}
 
-			if (sample_bitstring_distribution)
+			if (sample_bitstring_distribution) {
 				add_bitstring_distribution(samples, state);
+			}
 		}
 };

@@ -73,6 +73,9 @@ static void remove_even_indices(std::vector<T> &v) {
     }
 }
 
+inline static uint32_t get_width(uint32_t N, uint32_t w) {
+    return N / w + static_cast<bool>(N % w);
+}
 
 class PauliString {
     public:
@@ -86,12 +89,17 @@ class PauliString {
         static PauliString rand(uint32_t num_qubits, std::minstd_rand *r) {
             PauliString p(num_qubits);
 
-            std::transform(p.bit_string.begin(), p.bit_string.end(), p.bit_string.begin(), [&r](bool) { return (*r)() % 2; });
+            std::transform(p.bit_string.begin(), p.bit_string.end(), p.bit_string.begin(), [&r](bool) { 
+                return (*r)() % 2; 
+            });
+
             p.set_r((*r)() % 2);
 
             // Need to check that at least one bit is nonzero so that p is not the identity
             for (uint32_t j = 0; j < 2*num_qubits; j++) {
-                if (p.bit_string[j]) return p;
+                if (p.bit_string[j]) {
+                    return p;
+                }
             }
 
             return PauliString::rand(num_qubits, r);
@@ -169,8 +177,9 @@ class PauliString {
                 g = Eigen::kroneckerProduct(gi, g0);
             }
             
-            if (phase)
+            if (phase) {
                 g = -g;
+            }
         
             return g;
         }
@@ -179,27 +188,31 @@ class PauliString {
             bool xi = x(i); 
             bool zi = z(i);
 
-            if (xi && zi) return "Y";
-            else if (!xi && zi) return "Z";
-            else if (xi && !zi) return "X";
-            else return "I";
+            if (xi && zi) {
+                return "Y";
+            } else if (!xi && zi) {
+                return "Z";
+            } else if (xi && !zi) {
+                return "X";
+            } else {
+                return "I";
+            }
         }
 
         std::string to_string() const {
             std::string s = "[ ";
             for (uint32_t i = 0; i < 2*num_qubits; i++) {
-                if (bit_string[i]) { s += "1"; } else { s += "0"; }
+                s += bit_string[i] ? "1" : "0";
             }
             s += " | ";
 
-            if (phase) { s += "1 ]"; } else { s += "0 ]"; }
+            s += phase ? "1 ]" : "0 ]";
 
             return s;
         }
 
         std::string to_string_ops() const {
-            std::string s = "";
-            if (phase) { s += "-"; } else { s += "+"; }
+            std::string s = phase ? "-" : "+";
             for (uint32_t i = 0; i < num_qubits; i++) {
                 s += to_op(i);
             }
@@ -238,19 +251,27 @@ class PauliString {
         }
 
         bool commutes_at(PauliString &p, uint32_t i) const {
-            if ((x(i) == p.x(i)) && (z(i) == p.z(i))) return true; // operators are identical
-            else if (!x(i) && !z(i)) return true; // this is identity
-            else if (!p.x(i) && !p.z(i)) return true; // other is identity
-            else return false; 
+            if ((x(i) == p.x(i)) && (z(i) == p.z(i))) { // operators are identical
+                return true;
+            } else if (!x(i) && !z(i)) { // this is identity
+                return true;
+            } else if (!p.x(i) && !p.z(i)) { // other is identity
+                return true;
+            } else {
+                return false; 
+            }
         }
 
         bool commutes(PauliString &p) const {
-            if (num_qubits != p.num_qubits)
+            if (num_qubits != p.num_qubits) {
                 throw std::invalid_argument("number of p does not have the same number of qubits.");
+            }
 
             uint32_t anticommuting_indices = 0u;
             for (uint32_t i = 0; i < num_qubits; i++) {
-                if (!commutes_at(p, i)) anticommuting_indices++;
+                if (!commutes_at(p, i)) {
+                    anticommuting_indices++;
+                }
             }
 
             return anticommuting_indices % 2 == 0;
@@ -264,26 +285,54 @@ class PauliString {
 
 
         bool operator==(const PauliString &rhs) const {
-            if (num_qubits != rhs.num_qubits) return false;
-            if (r() != rhs.r()) return false;
+            if (num_qubits != rhs.num_qubits) {
+                return false;
+            }
+            
+            if (r() != rhs.r()) {
+                return false;
+            }
             
             for (uint32_t i = 0; i < num_qubits; i++) {
-                if (x(i) != rhs.x(i)) return false;
-                if (z(i) != rhs.z(i)) return false;
+                if (x(i) != rhs.x(i)) {
+                    return false;
+                }
+
+                if (z(i) != rhs.z(i)) {
+                    return false;
+                }
             }
 
             return true;
         }
 
-		bool operator!=(const PauliString &rhs) const { return !(this->operator==(rhs)); }
+		bool operator!=(const PauliString &rhs) const { 
+            return !(this->operator==(rhs)); 
+        }
 
-        bool x(uint32_t i) const { return bit_string[i]; }
-        bool z(uint32_t i) const { return bit_string[i + num_qubits]; }
-        bool r() const { return phase; }
+        bool x(uint32_t i) const { 
+            return bit_string[i]; 
+        }
 
-        void set_x(uint32_t i, bool v) { bit_string[i] = v; }
-        void set_z(uint32_t i, bool v) { bit_string[i + num_qubits] = v; }
-        void set_r(bool v) { phase = v; }
+        bool z(uint32_t i) const { 
+            return bit_string[i + num_qubits]; 
+        }
+
+        bool r() const { 
+            return phase; 
+        }
+
+        void set_x(uint32_t i, bool v) { 
+            bit_string[i] = v; 
+        }
+
+        void set_z(uint32_t i, bool v) { 
+            bit_string[i + num_qubits] = v; 
+        }
+
+        void set_r(bool v) { 
+            phase = v; 
+        }
 
         void sd_gate(uint32_t a) {
             s_gate(a);
@@ -341,22 +390,27 @@ class Tableau {
         }
 
         bool operator==(Tableau& other) {
-            if (num_qubits != other.num_qubits)
+            if (num_qubits != other.num_qubits) {
                 return false;
+            }
 
             rref();
             other.rref();
 
             uint32_t r1 = track_destabilizers ? num_qubits : 0;
             for (uint32_t i = r1; i < num_rows(); i++) {
-                if (r(i) != other.r(i))
+                if (r(i) != other.r(i)) {
                     return false;
+                }
 
                 for (uint32_t j = 0; j < num_qubits; j++) {
-                    if (z(i, j) != other.z(i, j))
+                    if (z(i, j) != other.z(i, j)) {
                         return false;
-                    if (x(i, j) != other.x(i, j))
+                    }
+
+                    if (x(i, j) != other.x(i, j)) {
                         return false;
+                    }
                 }
             }
 
@@ -388,11 +442,13 @@ class Tableau {
                     std::swap(rows[row], rows[pivot_row]);
 
                     for (uint32_t i = r1; i < r2; i++) {
-                        if (i == row)
+                        if (i == row) {
                             continue;
+                        }
 
-                        if (rows[i][c])
+                        if (rows[i][c]) {
                             rowsum(i, row, track_phase);
+                        }
                     }
 
                     row += 1;
@@ -407,8 +463,9 @@ class Tableau {
 
             uint32_t r = 0;
             for (uint32_t i = 0; i < num_rows(); i++) {
-                if (std::accumulate(rows[i].begin(), rows[i].end(), 0))
+                if (std::accumulate(rows[i].begin(), rows[i].end(), 0)) {
                     r++;
+                }
             }
 
             return r;
@@ -425,9 +482,9 @@ class Tableau {
         std::string to_string() const {
             std::string s = "";
             for (uint32_t i = 0; i < num_rows(); i++) {
-                if (i == 0) { s += "["; } else { s += " "; }
+                s += (i == 0) ? "[" : " ";
                 s += rows[i].to_string();
-                if (i == 2*rows.size() - 1) { s += "]"; } else { s += "\n"; }
+                s += (i == 2*rows.size() - 1) ? "]" : "\n";
             }
             return s;
         }
@@ -438,22 +495,32 @@ class Tableau {
             for (uint32_t i = r1; i < num_rows(); i++) {
                 s += "[";
                 s += rows[i].to_string_ops();
-                if (i == 2*rows.size() - 1) { s += "]"; } else { s += "]\n"; }
+                s += (i == 2*rows.size() - 1) ? "]" : "]\n";
             }
             return s;
         }
 
         int g(bool x1, bool z1, bool x2, bool z2) {
-            if (!x1 && !z1) { return 0; }
-            else if (x1 && z1) {
-                if (z2) { if (x2) { return 0; } else { return 1; }}
-                else { if (x2) { return -1; } else { return 0; }}
+            if (!x1 && !z1) { 
+                return 0; 
+            } else if (x1 && z1) {
+                if (z2) { 
+                    return x2 ? 0 : 1;
+                } else { 
+                    return x2 ? -1 : 0;
+                }
             } else if (x1 && !z1) {
-                if (z2) { if (x2) { return 1; } else { return -1; }}
-                else { return 0; }
+                if (z2) { 
+                    return x2 ? 1 : -1;
+                } else { 
+                    return 0; 
+                }
             } else {
-                if (x2) { if (z2) { return -1; } else { return 1; }}
-                else { return 0; }
+                if (x2) { 
+                    return z2 ? -1 : 1;
+                } else { 
+                    return 0; 
+                }
             }
         }
 
@@ -463,8 +530,12 @@ class Tableau {
 
             if (track_phase) {
                 int s = 0;
-                if (r(i)) { s += 2; }
-                if (r(h)) { s += 2; }
+                if (r(i)) { 
+                    s += 2; 
+                }
+                if (r(h)) { 
+                    s += 2; 
+                }
 
                 for (uint32_t j = 0; j < num_qubits; j++)
                     s += Tableau::g(x(i,j), z(i,j), x(h,j), z(h,j));
@@ -485,32 +556,38 @@ class Tableau {
 
         void h_gate(uint32_t a) {
             validate_qubit(a);
-            for (uint32_t i = 0; i < num_rows(); i++)
+            for (uint32_t i = 0; i < num_rows(); i++) {
                 rows[i].h_gate(a);
+            }
         }
 
         void s_gate(uint32_t a) {
             validate_qubit(a);
-            for (uint32_t i = 0; i < num_rows(); i++)
+            for (uint32_t i = 0; i < num_rows(); i++) {
                 rows[i].s_gate(a);
+            }
         }
 
         void cx_gate(uint32_t a, uint32_t b) {
             validate_qubit(a);
             validate_qubit(b);
-            for (uint32_t i = 0; i < num_rows(); i++)
+            for (uint32_t i = 0; i < num_rows(); i++) {
                 rows[i].cx_gate(a, b);
+            }
         }
 
         // Returns a pair containing (1) wether the outcome of a measurement on qubit a is deterministic
         // and (2) the index on which the CHP algorithm performs rowsum if the mzr is random
         std::pair<bool, uint32_t> mzr_deterministic(uint32_t a) {
-            if (!track_destabilizers)
+            if (!track_destabilizers) {
                 throw std::invalid_argument("Cannot check mzr_deterministic without track_destabilizers.");
+            }
 
             for (uint32_t p = num_qubits; p < 2*num_qubits; p++) {
                 // Suitable p identified; outcome is random
-                if (x(p, a)) { return std::pair(false, p); }
+                if (x(p, a)) { 
+                    return std::pair(false, p);
+                }
             }
 
             // No p found; outcome is deterministic
@@ -519,8 +596,9 @@ class Tableau {
 
         bool mzr(uint32_t a, std::minstd_rand& rng) {
             validate_qubit(a);
-            if (!track_destabilizers)
+            if (!track_destabilizers) {
                 throw std::invalid_argument("Cannot mzr without track_destabilizers.");
+            }
 
 
             auto [deterministic, p] = mzr_deterministic(a);
@@ -528,8 +606,9 @@ class Tableau {
             if (!deterministic) {
                 bool outcome = rng() % 2;
                 for (uint32_t i = 0; i < 2*num_qubits; i++) {
-                    if (i != p && x(i, a))
+                    if (i != p && x(i, a)) {
                         rowsum(i, p);
+                    }
                 }
 
                 // TODO check that copy is happening, not passing reference

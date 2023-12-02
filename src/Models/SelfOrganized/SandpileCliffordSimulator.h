@@ -7,9 +7,7 @@
 
 class SandpileCliffordSimulator : public Simulator {
 	private:
-		QuantumCHPState chp_state;
-		QuantumGraphState graph_state;
-		std::shared_ptr<CliffordState> state;
+		std::shared_ptr<QuantumCHPState> state;
 		uint32_t system_size;
 
 		double unitary_prob;
@@ -30,7 +28,7 @@ class SandpileCliffordSimulator : public Simulator {
 		uint32_t initial_state;
 		uint32_t scrambling_steps;
 
-		std::string simulator_type;
+		std::vector<int> entropy_surface;
 
 		InterfaceSampler interface_sampler;
 		EntropySampler entropy_sampler;

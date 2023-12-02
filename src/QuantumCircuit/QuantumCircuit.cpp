@@ -6,15 +6,17 @@ std::string QuantumCircuit::to_string() const {
 		s += std::visit(quantumcircuit_utils::overloaded{
 			[](std::shared_ptr<Gate> gate) -> std::string {
 				std::string gate_str = gate->label() + " ";
-				for (auto const &q : gate->qbits)
+				for (auto const &q : gate->qbits) {
 					gate_str += std::to_string(q) + " ";
+				}
 
 				return gate_str;
 			},
 			[](Measurement m) -> std::string {
 				std::string meas_str = "mzr ";
-				for (auto const &q : m.qbits)
+				for (auto const &q : m.qbits) {
 					meas_str += std::to_string(q) + " ";
+				}
 
 				return meas_str;
 			}
@@ -59,20 +61,23 @@ void QuantumCircuit::add_gate(const std::shared_ptr<Gate> &gate) {
 }
 
 void QuantumCircuit::add_gate(const Eigen::MatrixXcd& gate, const std::vector<uint32_t>& qbits) {
-	if (!(gate.rows() == (1u << qbits.size()) && gate.cols() == (1u << qbits.size())))
+	if (!(gate.rows() == (1u << qbits.size()) && gate.cols() == (1u << qbits.size()))) {
 		throw std::invalid_argument("Provided matrix does not have proper dimensions for number of qubits in circuit.");
+	}
 
 	add_gate(std::make_shared<MatrixGate>(gate, qbits));
 }
 
 void QuantumCircuit::append(const QuantumCircuit& other) {
-	for (auto const &inst : other.instructions)
+	for (auto const &inst : other.instructions) {
 		add_instruction(inst);
+	}
 }
 
 QuantumCircuit QuantumCircuit::bind_params(const std::vector<double>& params) const {
-	if (params.size() != num_params())
+	if (params.size() != num_params()) {
 		throw std::invalid_argument("Invalid number of parameters passed to bind_params.");
+	}
 
 	QuantumCircuit qc(num_qubits);
 
@@ -82,8 +87,9 @@ QuantumCircuit QuantumCircuit::bind_params(const std::vector<double>& params) co
 			[&qc, &n, &params](std::shared_ptr<Gate> gate) {
 				std::vector<double> gate_params(gate->num_params());
 
-				for (uint32_t i = 0; i < gate->num_params(); i++)
+				for (uint32_t i = 0; i < gate->num_params(); i++) {
 					gate_params[i] = params[i + n];
+				}
 			
 				n += gate->num_params();
 				qc.add_gate(gate->define(gate_params), gate->qbits);
@@ -100,8 +106,9 @@ QuantumCircuit QuantumCircuit::adjoint(const std::optional<std::vector<double>>&
 
 	if (params_passed) { // Params passed; check that they are valid and then perform adjoint.
 		auto params = params_opt.value();
-		if (params.size() != num_params())
+		if (params.size() != num_params()) {
 			throw std::invalid_argument("Unbound parameters; adjoint cannot be defined.");
+		}
 
 		QuantumCircuit qc = bind_params(params);
 		return qc.adjoint();
@@ -126,8 +133,9 @@ Eigen::MatrixXcd QuantumCircuit::to_matrix(const std::optional<std::vector<doubl
 
 	if (params_passed) { // Params passed; check that they are valid and then perform adjoint.
 		auto params = params_opt.value();
-		if (params.size() != num_params())
+		if (params.size() != num_params()) {
 			throw std::invalid_argument("Unbound parameters; cannot convert circuit to matrix.");
+		}
 
 		QuantumCircuit qc = bind_params(params);
 		return qc.to_matrix();
@@ -156,10 +164,11 @@ Eigen::MatrixXcd QuantumCircuit::to_matrix(const std::optional<std::vector<doubl
 QuantumCircuit generate_haar_circuit(uint32_t num_qubits, uint32_t depth, bool pbc, std::optional<int> seed) {
 	thread_local std::random_device rd;
 	std::mt19937 rng;
-	if (seed.has_value())
+	if (seed.has_value()) {
 		rng.seed(seed.value());
-	else
+	} else {
 		rng.seed(rd());
+	}
 
 	QuantumCircuit circuit(num_qubits);
 
@@ -167,8 +176,9 @@ QuantumCircuit generate_haar_circuit(uint32_t num_qubits, uint32_t depth, bool p
 		for (uint32_t q = 0; q < num_qubits/2; q++) {
 			auto [q1, q2] = get_targets(i, q, num_qubits);
 			if (!pbc) {
-				if (std::abs(int(q1) - int(q2)) > 1)
+				if (std::abs(int(q1) - int(q2)) > 1) {
 					continue;
+				}
 			}
 
 			circuit.add_gate(haar_unitary(2, rng), {q1, q2});
@@ -224,8 +234,9 @@ QuantumCircuit rotation_layer(uint32_t num_qubits, const std::optional<std::vect
 
 	QuantumCircuit circuit(num_qubits);
 	
-	for (auto const& q : qargs)
+	for (auto const& q : qargs) {
 		circuit.add_gate(std::make_shared<RxRotationGate>(std::vector<uint32_t>{q}));
+	}
 	
 	return circuit;
 }

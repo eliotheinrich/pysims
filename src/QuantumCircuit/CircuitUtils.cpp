@@ -8,8 +8,9 @@
 bool qargs_unique(const std::vector<uint32_t>& qargs) {
 	std::unordered_set<uint32_t> unique;
 	for (auto const &q : qargs) {
-		if (unique.count(q) > 0)
+		if (unique.count(q) > 0) {
 			return false;
+		}
 		unique.insert(q);
 	}
 
@@ -20,8 +21,9 @@ std::vector<uint32_t> parse_qargs_opt(const std::optional<std::vector<uint32_t>>
 	std::vector<uint32_t> qargs;
 	if (qargs_opt.has_value()) {
 		qargs = qargs_opt.value();
-		for (uint32_t i = 0; i < qargs.size(); i++)
+		for (uint32_t i = 0; i < qargs.size(); i++) {
 			assert(qargs[i] >= 0 && qargs[i] < num_qubits);
+		}
 	} else {
 		qargs = std::vector<uint32_t>(num_qubits);
 		std::iota(qargs.begin(), qargs.end(), 0);
@@ -48,8 +50,9 @@ Eigen::MatrixXcd haar_unitary(uint32_t num_qubits, std::mt19937 &rng) {
 	std::normal_distribution<double> distribution(0.0, 1.0);
 
 	for (uint32_t r = 0; r < z.rows(); r++) {
-		for (uint32_t c = 0; c < z.cols(); c++)
+		for (uint32_t c = 0; c < z.cols(); c++) {
 			z(r, c) = std::complex<double>(distribution(rng), distribution(rng));
+		}
 	}
 
 	Eigen::MatrixXcd q, r;
@@ -95,11 +98,13 @@ Eigen::MatrixXcd random_real_unitary() {
 }
 
 Eigen::MatrixXcd full_circuit_unitary(const Eigen::MatrixXcd &gate, const std::vector<uint32_t> &qubits, uint32_t total_qubits) {
-	if (total_qubits < qubits.size())
+	if (total_qubits < qubits.size()) {
 		throw std::invalid_argument("Too many qubits provided for gate.");
+	}
 
-	if (!((1u << qubits.size()) == gate.rows() && (1u << qubits.size()) == gate.cols()))
+	if (!((1u << qubits.size()) == gate.rows() && (1u << qubits.size()) == gate.cols())) {
 		throw std::invalid_argument("Gate has invalid dimensions for provided qubits.");
+	}
 
 	uint32_t s = 1u << total_qubits;
 	uint32_t h = 1u << qubits.size();

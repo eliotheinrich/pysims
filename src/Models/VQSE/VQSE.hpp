@@ -19,8 +19,9 @@ typedef std::variant<QuantumCircuit, DensityMatrix> target_t;
 static inline uint32_t to_uint(const std::vector<bool>& vals) {
 	uint32_t i = 0;
 	for (uint32_t j = 0; j < vals.size(); j++) {
-		if (vals[j])
+		if (vals[j]) {
 			i += 1u << j;
+		}
 	}
 
 	return i;
@@ -48,10 +49,11 @@ class VQSE {
 
 
 		static DensityMatrix make_target(const target_t& target) {
-			if (target.index() == 0) // QuantumCircuit
+			if (target.index() == 0) { // QuantumCircuit
 				return DensityMatrix(std::get<QuantumCircuit>(target));
-			else
+			} else {
 				return std::get<DensityMatrix>(target);
+			}
 		}
 
 
@@ -69,10 +71,11 @@ class VQSE {
 					Statevector state(std::get<QuantumCircuit>(target));
 					state.evolve(circuit);
 					uint32_t outcome = to_uint(state.measure_all());
-					if (outcome_hist.count(outcome))
+					if (outcome_hist.count(outcome)) {
 						outcome_hist[outcome]++;
-					else
+					} else {
 						outcome_hist.emplace(outcome, 1);
+					}
 				}
 			} else if (target.index() == 1) { // DensityMatrix
 				DensityMatrix rho = std::get<DensityMatrix>(target);
@@ -82,24 +85,27 @@ class VQSE {
 				std::discrete_distribution<uint32_t> dist(probabilities.begin(), probabilities.end());
 				for (uint32_t i = 0; i < num_shots; i++) {
 					uint32_t outcome = dist(rng);
-					if (outcome_hist.count(outcome))
+					if (outcome_hist.count(outcome)) {
 						outcome_hist[outcome]++;
-					else
+					} else {
 						outcome_hist.emplace(outcome, 1);
+					}
 				}
 			}
 
 			std::map<uint32_t, double> outcomes;
-			for (auto const &[b, c] : outcome_hist)
+			for (auto const &[b, c] : outcome_hist) {
 				outcomes.emplace(b, float(c)/num_shots);
+			}
 
 			return outcomes;
 		}
 
 		void update_eigenvalue_estimates(const std::map<uint32_t, double>& outcomes) {
 			std::vector<std::pair<uint32_t, double>> pairs;
-			for (const auto& pair : outcomes)
+			for (const auto& pair : outcomes) {
 				pairs.push_back(pair);
+			}
 			
 			std::sort(pairs.begin(), pairs.end(), 
 				[](const auto& a, const auto& b){ return a.second > b.second; });
@@ -123,8 +129,9 @@ class VQSE {
 				outcomes = get_outcomes_exact(circuit, target);
 			}
 
-			if (epoch % update_frequency == 0)
+			if (epoch % update_frequency == 0) {
 				update_eigenvalue_estimates(outcomes);
+			}
 
 			return compute_energy_estimate(outcomes);
 		}
@@ -133,8 +140,9 @@ class VQSE {
 			double energy = 1.;
 			for (uint32_t i = 0; i < m; i++) {
 				uint32_t z = bitstring_estimates[i];
-				if (outcomes.count(z))
+				if (outcomes.count(z)) {
 					energy -= q[i]*outcomes.at(z);
+				}
 			}
 
 			return energy;
@@ -144,8 +152,9 @@ class VQSE {
 			double energy = 1.;
 
 			for (auto const &[b, p] : outcomes) {
-				for (uint32_t j = 0; j < ansatz.num_qubits; j++)
+				for (uint32_t j = 0; j < ansatz.num_qubits; j++) {
 					energy += r[j]*(2*int((b >> j) & 1) - 1)*p;
+				}
 			}
 
 			return energy;
@@ -154,12 +163,13 @@ class VQSE {
 		double compute_energy_estimate(const std::map<uint32_t, double>& outcomes) const {
 			double t = optimizer.t/double(num_iterations);
 
-			if (hamiltonian_type == ADAPTIVE_HAMILTONIAN)
+			if (hamiltonian_type == ADAPTIVE_HAMILTONIAN) {
 				return (1 - t)*local_energy(outcomes) + t*global_energy(outcomes);
-			else if (hamiltonian_type == LOCAL_HAMILTONIAN)
+			} else if (hamiltonian_type == LOCAL_HAMILTONIAN) {
 				return local_energy(outcomes);
-			else if (hamiltonian_type == GLOBAL_HAMILTONIAN)
+			} else if (hamiltonian_type == GLOBAL_HAMILTONIAN) {
 				return global_energy(outcomes);
+			}
 			
 			return -1;
 		}
@@ -179,8 +189,9 @@ class VQSE {
 
 			std::sort(local_energy_levels.begin(), local_energy_levels.end());
 			std::vector<double> lowest_energy_levels;
-			for (uint32_t i = 0; i < num_energy_levels; i++)
+			for (uint32_t i = 0; i < num_energy_levels; i++) {
 				lowest_energy_levels.push_back(local_energy_levels[i]);
+			}
 			return lowest_energy_levels;
 		}
 
@@ -198,8 +209,9 @@ class VQSE {
 
 			std::sort(global_energy_levels.begin(), global_energy_levels.end());
 			std::vector<double> lowest_energy_levels;
-			for (uint32_t i = 0; i < num_energy_levels; i++)
+			for (uint32_t i = 0; i < num_energy_levels; i++) {
 				lowest_energy_levels.push_back(global_energy_levels[i]);
+			}
 			return lowest_energy_levels;
 		}
 
@@ -217,8 +229,9 @@ class VQSE {
 
 			std::sort(total_energy_levels.begin(), total_energy_levels.end());
 			std::vector<double> lowest_energy_levels;
-			for (uint32_t i = 0; i < num_energy_levels; i++)
+			for (uint32_t i = 0; i < num_energy_levels; i++) {
 				lowest_energy_levels.push_back(total_energy_levels[i]);
+			}
 			return lowest_energy_levels;
 		}
 
@@ -234,8 +247,9 @@ class VQSE {
 
 		inline double local_energy_by_bitstring(uint32_t z) const {
 			double energy = 1.;
-			for (uint32_t j = 0; j < ansatz.num_qubits; j++)
+			for (uint32_t j = 0; j < ansatz.num_qubits; j++) {
 				energy += r[j]*(2*int((z >> j) & 1) - 1);
+			}
 			
 			return energy;
 		}
@@ -287,8 +301,9 @@ class VQSE {
 
 			double d = 1./(2.*m);
 			r = std::vector<double>(ansatz.num_qubits);
-			for (uint32_t i = 0; i < ansatz.num_qubits; i++)
+			for (uint32_t i = 0; i < ansatz.num_qubits; i++) {
 				r[i] = 1. + double(i)*d;
+			}
 
 			q = std::vector<double>(m);
 
@@ -297,8 +312,9 @@ class VQSE {
 
 			// Choose q so that local and global Hamiltonians have same energy levels
 			q[0] = 1. - E1;
-			for (uint32_t i = 1; i < m; i++)
+			for (uint32_t i = 1; i < m; i++) {
 				q[i] = -1. - E1 - 2*d*(i - 1);
+			}
 		}
 
 		Eigen::VectorXd true_eigenvalues(const target_t& target) const {

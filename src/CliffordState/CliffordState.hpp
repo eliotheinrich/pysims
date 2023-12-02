@@ -8,9 +8,11 @@
 enum CliffordType { CHP, GraphSim };
 
 static inline CliffordType parse_clifford_type(std::string s) {
-    if (s == "chp") return CliffordType::CHP;
-    else if (s == "graph") return CliffordType::GraphSim;
-    else {
+    if (s == "chp") {
+        return CliffordType::CHP;
+    } else if (s == "graph") {
+        return CliffordType::GraphSim;
+    } else {
         throw std::invalid_argument("Cannot parse clifford state type.");
     }
 }
@@ -38,7 +40,9 @@ class CliffordState : public EntropyState {
 
         virtual ~CliffordState() {}
 
-        uint32_t system_size() const { return EntropyState::system_size; }
+        uint32_t system_size() const { 
+            return EntropyState::system_size; 
+        }
 
 
         virtual void h_gate(uint32_t a)=0;
@@ -118,8 +122,9 @@ class CliffordState : public EntropyState {
         virtual double mzr_expectation() {
             double e = 0.0;
 
-            for (uint32_t i = 0; i < system_size(); i++)
+            for (uint32_t i = 0; i < system_size(); i++) {
                 e += mzr_expectation(i);
+            }
             
             return e/system_size();
         }
@@ -133,8 +138,9 @@ class CliffordState : public EntropyState {
         virtual double mxr_expectation() {
             double e = 0.0;
 
-            for (uint32_t i = 0; i < system_size(); i++)
+            for (uint32_t i = 0; i < system_size(); i++) {
                 e += mxr_expectation(i);
+            }
             
             return e/system_size();
         }
@@ -150,8 +156,9 @@ class CliffordState : public EntropyState {
         virtual double myr_expectation() {
             double e = 0.0;
 
-            for (uint32_t i = 0; i < system_size(); i++)
+            for (uint32_t i = 0; i < system_size(); i++) {
                 e += myr_expectation(i);
+            }
             
             return e/system_size();
         }
@@ -294,8 +301,9 @@ class CliffordState : public EntropyState {
 
             PauliString p1 = PauliString::rand(num_qubits, &rng);
             PauliString p2 = PauliString::rand(num_qubits, &rng);
-            while (p1.commutes(p2))
+            while (p1.commutes(p2)) {
                 p2 = PauliString::rand(num_qubits, &rng);
+            }
 
             tableau_utils::Circuit c1 = p1.reduce(false);
 
@@ -308,8 +316,9 @@ class CliffordState : public EntropyState {
                 [&qubits](tableau_utils::cxgate s) -> tableau_utils::Gate { return tableau_utils::cxgate{qubits[s.q1], qubits[s.q2]}; }
             };
 
-            for (auto &gate : c1)
+            for (auto &gate : c1) {
                 gate = std::visit(qubit_map_visitor, gate);
+            }
 
             apply_circuit(c1, *this);
 
@@ -319,8 +328,9 @@ class CliffordState : public EntropyState {
             if (p2 != z1p && p2 != z1m) {
                 tableau_utils::Circuit c2 = p2.reduce(true);
 
-                for (auto &gate : c2)
+                for (auto &gate : c2) {
                     gate = std::visit(qubit_map_visitor, gate);
+                }
 
                 apply_circuit(c2, *this);
             }
