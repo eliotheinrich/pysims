@@ -16,147 +16,9 @@ static inline CliffordType parse_clifford_type(std::string s) {
 }
 
 class CliffordState : public EntropyState {
-    private:
-        // Returns the circuit which maps a PauliString to Z1 if z, otherwise to X1
-        void single_qubit_random_clifford(uint32_t a, uint32_t r) {
-            // r == 0 is identity, so do nothing in thise case
-            if (r == 1) {
-                x_gate(a);
-            } else if (r == 2) {
-                y_gate(a);
-            } else if (r == 3) {
-                z_gate(a);
-            } else if (r == 4) {
-                h_gate(a);
-                s_gate(a);
-                h_gate(a);
-                s_gate(a);
-            } else if (r == 5) {
-                h_gate(a);
-                s_gate(a);
-                h_gate(a);
-                s_gate(a);
-                x_gate(a);
-            } else if (r == 6) {
-                h_gate(a);
-                s_gate(a);
-                h_gate(a);
-                s_gate(a);
-                y_gate(a);
-            } else if (r == 7) {
-                h_gate(a);
-                s_gate(a);
-                h_gate(a);
-                s_gate(a);
-                z_gate(a);
-            } else if (r == 8) {
-                h_gate(a);
-                s_gate(a);
-            } else if (r == 9) {
-                h_gate(a);
-                s_gate(a);
-                x_gate(a);
-            } else if (r == 10) {
-                h_gate(a);
-                s_gate(a);
-                y_gate(a);
-            } else if (r == 11) {
-                h_gate(a);
-                s_gate(a);
-                z_gate(a);
-            } else if (r == 12) {
-                h_gate(a);
-            } else if (r == 13) {
-                h_gate(a);
-                x_gate(a);
-            } else if (r == 14) {
-                h_gate(a);
-                y_gate(a);
-            } else if (r == 15) {
-                h_gate(a);
-                z_gate(a);
-            } else if (r == 16) {
-                s_gate(a);
-                h_gate(a);
-                s_gate(a);
-            } else if (r == 17) {
-                s_gate(a);
-                h_gate(a);
-                s_gate(a);
-                x_gate(a);
-            } else if (r == 18) {
-                s_gate(a);
-                h_gate(a);
-                s_gate(a);
-                y_gate(a);
-            } else if (r == 19) {
-                s_gate(a);
-                h_gate(a);
-                s_gate(a);
-                z_gate(a);
-            } else if (r == 20) {
-                s_gate(a);
-            } else if (r == 21) {
-                s_gate(a);
-                x_gate(a);
-            } else if (r == 22) {
-                s_gate(a);
-                y_gate(a);
-            } else if (r == 23) {
-                s_gate(a);
-                z_gate(a);
-            }
-        }
-
-        // Performs an iteration of the random clifford algorithm outlined in https://arxiv.org/pdf/2008.06011.pdf
-        void random_clifford_iteration(std::deque<uint32_t> &qubits) {
-            uint32_t num_qubits = qubits.size();
-
-            // If only acting on one qubit, can easily lookup from a table
-            if (num_qubits == 1) {
-                single_qubit_random_clifford(qubits[0], rand() % 24);
-                return;
-			}
-
-            PauliString p1 = PauliString::rand(num_qubits, &rng);
-            PauliString p2 = PauliString::rand(num_qubits, &rng);
-            while (p1.commutes(p2))
-                p2 = PauliString::rand(num_qubits, &rng);
-
-            tableau_utils::Circuit c1 = p1.reduce(false);
-
-            apply_circuit(c1, p2);
-
-            auto qubit_map_visitor = tableau_utils::overloaded{
-                [&qubits](tableau_utils::sgate s) ->  tableau_utils::Gate { return tableau_utils::sgate{qubits[s.q]}; },
-                [&qubits](tableau_utils::sdgate s) -> tableau_utils::Gate { return tableau_utils::sdgate{qubits[s.q]}; },
-                [&qubits](tableau_utils::hgate s) ->  tableau_utils::Gate { return tableau_utils::hgate{qubits[s.q]}; },
-                [&qubits](tableau_utils::cxgate s) -> tableau_utils::Gate { return tableau_utils::cxgate{qubits[s.q1], qubits[s.q2]}; }
-            };
-
-            for (auto &gate : c1)
-                gate = std::visit(qubit_map_visitor, gate);
-
-            apply_circuit(c1, *this);
-
-            PauliString z1p = PauliString::basis(num_qubits, "Z", 0, false);
-            PauliString z1m = PauliString::basis(num_qubits, "Z", 0, true);
-
-            if (p2 != z1p && p2 != z1m) {
-                tableau_utils::Circuit c2 = p2.reduce(true);
-
-                for (auto &gate : c2)
-                    gate = std::visit(qubit_map_visitor, gate);
-
-                apply_circuit(c2, *this);
-            }
-        }
-    
-    protected:
-        std::minstd_rand rng;
-
-
     public:
+        CliffordState()=default;
+        
         CliffordState(uint32_t num_qubits, int seed=-1) : EntropyState(num_qubits) {
             if (seed == -1) {
                 thread_local std::random_device rd;
@@ -324,4 +186,143 @@ class CliffordState : public EntropyState {
         virtual std::string to_string() const { return ""; };
 
         virtual double sparsity() const=0;
+    
+    protected:
+        std::minstd_rand rng;
+
+    private:
+        // Returns the circuit which maps a PauliString to Z1 if z, otherwise to X1
+        void single_qubit_random_clifford(uint32_t a, uint32_t r) {
+            // r == 0 is identity, so do nothing in thise case
+            if (r == 1) {
+                x_gate(a);
+            } else if (r == 2) {
+                y_gate(a);
+            } else if (r == 3) {
+                z_gate(a);
+            } else if (r == 4) {
+                h_gate(a);
+                s_gate(a);
+                h_gate(a);
+                s_gate(a);
+            } else if (r == 5) {
+                h_gate(a);
+                s_gate(a);
+                h_gate(a);
+                s_gate(a);
+                x_gate(a);
+            } else if (r == 6) {
+                h_gate(a);
+                s_gate(a);
+                h_gate(a);
+                s_gate(a);
+                y_gate(a);
+            } else if (r == 7) {
+                h_gate(a);
+                s_gate(a);
+                h_gate(a);
+                s_gate(a);
+                z_gate(a);
+            } else if (r == 8) {
+                h_gate(a);
+                s_gate(a);
+            } else if (r == 9) {
+                h_gate(a);
+                s_gate(a);
+                x_gate(a);
+            } else if (r == 10) {
+                h_gate(a);
+                s_gate(a);
+                y_gate(a);
+            } else if (r == 11) {
+                h_gate(a);
+                s_gate(a);
+                z_gate(a);
+            } else if (r == 12) {
+                h_gate(a);
+            } else if (r == 13) {
+                h_gate(a);
+                x_gate(a);
+            } else if (r == 14) {
+                h_gate(a);
+                y_gate(a);
+            } else if (r == 15) {
+                h_gate(a);
+                z_gate(a);
+            } else if (r == 16) {
+                s_gate(a);
+                h_gate(a);
+                s_gate(a);
+            } else if (r == 17) {
+                s_gate(a);
+                h_gate(a);
+                s_gate(a);
+                x_gate(a);
+            } else if (r == 18) {
+                s_gate(a);
+                h_gate(a);
+                s_gate(a);
+                y_gate(a);
+            } else if (r == 19) {
+                s_gate(a);
+                h_gate(a);
+                s_gate(a);
+                z_gate(a);
+            } else if (r == 20) {
+                s_gate(a);
+            } else if (r == 21) {
+                s_gate(a);
+                x_gate(a);
+            } else if (r == 22) {
+                s_gate(a);
+                y_gate(a);
+            } else if (r == 23) {
+                s_gate(a);
+                z_gate(a);
+            }
+        }
+
+        // Performs an iteration of the random clifford algorithm outlined in https://arxiv.org/pdf/2008.06011.pdf
+        void random_clifford_iteration(std::deque<uint32_t> &qubits) {
+            uint32_t num_qubits = qubits.size();
+
+            // If only acting on one qubit, can easily lookup from a table
+            if (num_qubits == 1) {
+                single_qubit_random_clifford(qubits[0], rand() % 24);
+                return;
+			}
+
+            PauliString p1 = PauliString::rand(num_qubits, &rng);
+            PauliString p2 = PauliString::rand(num_qubits, &rng);
+            while (p1.commutes(p2))
+                p2 = PauliString::rand(num_qubits, &rng);
+
+            tableau_utils::Circuit c1 = p1.reduce(false);
+
+            apply_circuit(c1, p2);
+
+            auto qubit_map_visitor = tableau_utils::overloaded{
+                [&qubits](tableau_utils::sgate s) ->  tableau_utils::Gate { return tableau_utils::sgate{qubits[s.q]}; },
+                [&qubits](tableau_utils::sdgate s) -> tableau_utils::Gate { return tableau_utils::sdgate{qubits[s.q]}; },
+                [&qubits](tableau_utils::hgate s) ->  tableau_utils::Gate { return tableau_utils::hgate{qubits[s.q]}; },
+                [&qubits](tableau_utils::cxgate s) -> tableau_utils::Gate { return tableau_utils::cxgate{qubits[s.q1], qubits[s.q2]}; }
+            };
+
+            for (auto &gate : c1)
+                gate = std::visit(qubit_map_visitor, gate);
+
+            apply_circuit(c1, *this);
+
+            PauliString z1p = PauliString::basis(num_qubits, "Z", 0, false);
+            PauliString z1m = PauliString::basis(num_qubits, "Z", 0, true);
+
+            if (p2 != z1p && p2 != z1m) {
+                tableau_utils::Circuit c2 = p2.reduce(true);
+
+                for (auto &gate : c2)
+                    gate = std::visit(qubit_map_visitor, gate);
+
+                apply_circuit(c2, *this);
+            }
+        }
 };

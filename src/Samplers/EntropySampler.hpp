@@ -16,7 +16,7 @@ class EntropyState {
         uint32_t system_size;
 
     public:
-        EntropyState() {}
+        EntropyState()=default;
 
         EntropyState(uint32_t system_size) : system_size(system_size) {}
 

@@ -62,6 +62,7 @@ class QuantumGraphState : public CliffordState {
 	public:
 		Graph graph;
 
+		QuantumGraphState()=default;
         QuantumGraphState(uint32_t num_qubits, int seed=-1);
         QuantumGraphState(Graph &graph, int seed=-1);
 

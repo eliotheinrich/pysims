@@ -93,21 +93,26 @@ class QuantumState : public EntropyState {
 		virtual std::string to_string() const=0;
 
 		virtual void evolve(const Eigen::MatrixXcd& gate, const std::vector<uint32_t>& qbits)=0;
+
 		virtual void evolve(const Eigen::MatrixXcd& gate) {
 			std::vector<uint32_t> qbits(num_qubits);
 			std::iota(qbits.begin(), qbits.end(), 0);
 			evolve(gate, qbits);
 		}
+
 		virtual void evolve(const Eigen::Matrix2cd& gate, uint32_t q) {
 			std::vector<uint32_t> qbit{q};
 			evolve(gate, qbit); 
 		}
+
 		virtual void evolve_diagonal(const Eigen::VectorXcd& gate, const std::vector<uint32_t>& qbits) { 
 			evolve(Eigen::MatrixXcd(gate.asDiagonal()), qbits); 
 		}
+
 		virtual void evolve_diagonal(const Eigen::VectorXcd& gate) { 
 			evolve(Eigen::MatrixXcd(gate.asDiagonal())); 
 		}
+
 		virtual void evolve(const Measurement& measurement) {
 			for (auto q : measurement.qbits)
 				measure(q);
@@ -132,6 +137,7 @@ class QuantumState : public EntropyState {
 		}
 
 		virtual bool measure(uint32_t q)=0;
+		
 		virtual std::vector<bool> measure_all() {
 			std::vector<bool> outcomes(num_qubits);
 			for (uint32_t q = 0; q < num_qubits; q++)
@@ -167,7 +173,9 @@ class DensityMatrix : public QuantumState {
 		virtual void evolve(const Eigen::MatrixXcd& gate, const std::vector<uint32_t>& qbits) override;
 		virtual void evolve_diagonal(const Eigen::VectorXcd& gate, const std::vector<uint32_t>& qbits) override;
 		virtual void evolve_diagonal(const Eigen::VectorXcd& gate) override;
-		virtual void evolve(const QuantumCircuit& circuit) override { QuantumState::evolve(circuit); }
+		virtual void evolve(const QuantumCircuit& circuit) override { 
+			QuantumState::evolve(circuit); 
+		}
 
 		virtual bool measure(uint32_t q) override;
 		virtual std::vector<bool> measure_all() override;
@@ -197,7 +205,9 @@ class Statevector : public QuantumState {
 		virtual void evolve(const Eigen::MatrixXcd &gate) override;
 		virtual void evolve_diagonal(const Eigen::VectorXcd &gate, const std::vector<uint32_t> &qubits) override;
 		virtual void evolve_diagonal(const Eigen::VectorXcd &gate) override;
-		virtual void evolve(const QuantumCircuit& circuit) override { QuantumState::evolve(circuit); }
+		virtual void evolve(const QuantumCircuit& circuit) override { 
+			QuantumState::evolve(circuit); 
+		}
 
 		double measure_probability(uint32_t q, bool outcome) const;
 		virtual bool measure(uint32_t q) override;

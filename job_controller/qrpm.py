@@ -190,9 +190,9 @@ if __name__ == "__main__":
     for mode, (umin, umax, eq_timesteps) in modes_critical.items():
         us = list(np.linspace(umin, umax, 30))
         
-        system_sizes = [32, 64, 128, 256]
+        system_sizes = [512]
         config = generate_config_very_high_fidelity(mode, us, system_sizes=system_sizes, nruns=10, sample_avalanches=False, equilibration_timesteps=eq_timesteps)
-        #submit_jobs(config, f"qrpm_{mode}_s0", ncores=64, memory="150gb", time="72:00:00", nodes=4, record_error=True, cleanup=False)
+        submit_jobs(config, f"qrpm_{mode}_s0", ncores=64, memory="150gb", time="144:00:00", nodes=4, record_error=True, cleanup=False)
 
         system_sizes = [32, 64, 128, 256]
         config = generate_config_very_high_fidelity_temporal(mode, us, num_runs=1250, system_sizes=system_sizes, sampling_timesteps=100)
@@ -208,8 +208,8 @@ if __name__ == "__main__":
 
     modes_broad = {
         10: (0.5, 2.5, 2000),
-        20: (0.2, 2.0, 2000),
-        22: (0.1, 1.5, 2000),
+        #20: (0.2, 2.0, 2000),
+        #22: (0.1, 1.5, 2000),
         #6: (3.2, 3.6),
         #7: (1.6, 2.0),
         #11: (1.6, 1.9),
@@ -230,8 +230,8 @@ if __name__ == "__main__":
         #submit_jobs(config, f"qrpm_{mode}_s2", ncores=64, memory="150gb", time="72:00:00", nodes=4, record_error=True)
 
         system_sizes = [32, 64, 128]
-        config = generate_config_very_high_fidelity(mode, us, system_sizes=system_sizes, sample_avalanches=True, equilibration_timesteps=eq_timesteps)
-        #submit_jobs(config, f"qrpm_{mode}_av", ncores=64, memory="150gb", time="72:00:00", nodes=4, record_error=True)
+        config = generate_config_very_high_fidelity(mode, us, simulator_type="chp", system_sizes=system_sizes, sample_avalanches=True, equilibration_timesteps=eq_timesteps)
+        #submit_jobs(config, f"qrpm_{mode}_av_chp", ncores=64, memory="150gb", time="72:00:00", nodes=4, record_error=True)
 
     system_sizes = []
 
@@ -258,8 +258,8 @@ if __name__ == "__main__":
         #us.append(10000)
 
         system_sizes = [32, 64, 128]
-        config = generate_config_very_high_fidelity(mode, us, system_sizes=system_sizes, sample_avalanches=True, simulator_type="graph", equilibration_timesteps=eq_timesteps)
-        ####submit_jobs(config, f"qrpm_{mode}_av_tg", ncores=64, memory="150gb", time="72:00:00", nodes=4, record_error=True)
+        config = generate_config_very_high_fidelity(mode, us, system_sizes=system_sizes, sample_avalanches=True, simulator_type="chp", equilibration_timesteps=eq_timesteps)
+        #submit_jobs(config, f"qrpm_{mode}_av_tc", ncores=64, memory="150gb", time="72:00:00", nodes=1, record_error=True)
         
         system_sizes = [32, 64, 128, 256]
         config = generate_config_very_high_fidelity(mode, us, system_sizes=system_sizes, sample_avalanches=False, equilibration_timesteps=eq_timesteps)
@@ -271,31 +271,3 @@ system_sizes1 = []
 system_sizes = [128]
 config = generate_config_very_high_fidelity_temporal(20, us, system_sizes=system_sizes, num_runs=20, sampling_timesteps=5000000, sampling_freq=1000)
 #submit_jobs(config, f"qrpm_20_eq_small", ncores=48, memory="150gb", time="72:00:00", nodes=4, record_error=True)
-
-#us = [0.1, 0.4, 0.6, 0.7, 0.8, 0.9, 1.1, 1.5, 2.0]
-us = list(np.linspace(0.1, 2.0, 40))
-us.append(5)
-us.append(10)
-us.append(15)
-us.append(20)
-us.append(25)
-system_sizes = [64]
-eq_timesteps = [5000, 10000, 25000, 50000, 100000]
-config = generate_config_very_high_fidelity(mode, us, system_sizes=system_sizes, nruns=5, sample_avalanches=False, equilibration_timesteps=eq_timesteps)
-####submit_jobs(config, f"qrpm_20_eq_large2", ncores=48, memory="150gb", time="72:00:00", nodes=4, record_error=True)
-
-
-us = np.linspace(0.1, 1.4, 40)
-system_sizes = [64]
-sampling_timesteps = 1000
-measurement_freq = 1
-config = generate_config_very_high_fidelity(
-    20, 
-    us, 
-    system_sizes=[10, 20, 30, 40, 50, 60], 
-    sample_structure=False,
-    simulator_type=["chp", "graph"]
-)
-save_config(config, "../configs/qrpm_debug.json")
-submit_jobs(config, f"qrpm_20_timing", ncores=1, memory="150gb", time="48:00:00", nodes=1, record_error=True, run_local=True)
-

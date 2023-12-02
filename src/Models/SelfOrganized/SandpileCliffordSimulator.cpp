@@ -78,11 +78,12 @@ SandpileCliffordSimulator::SandpileCliffordSimulator(Params &params) : Simulator
 
 void SandpileCliffordSimulator::init_state(uint32_t) {
 	if (simulator_type == "chp") {
-		state = std::make_shared<QuantumCHPState>(system_size);
+		chp_state = QuantumCHPState(system_size);
+		state = std::shared_ptr<QuantumCHPState>(&chp_state);
 	} else if (simulator_type == "graph") {
-		state = std::make_shared<QuantumGraphState>(system_size);
+		graph_state = QuantumGraphState(system_size);
+		state = std::shared_ptr<QuantumGraphState>(&graph_state);
 	}
-state2 = std::make_shared<QuantumGraphState>(system_size);
 
 	if (initial_state == SUBSTRATE) {
 		// Do nothing
@@ -91,7 +92,6 @@ state2 = std::make_shared<QuantumGraphState>(system_size);
 
 		for (uint32_t k = 0; k < scrambling_steps; k++) {
 			rc_timestep(state, 2, offset, true);
-rc_timestep(state2, 2, offset, true);
 			offset = !offset;
 		}
 	}
@@ -110,9 +110,6 @@ void SandpileCliffordSimulator::mzr(uint32_t i) {
 		} else if (mzr_mode == 1) {
 			state->mzr(i);
 			state->mzr(i+1);
-
-state2->mzr(i);
-state2->mzr(i+1);
 		} else if (mzr_mode == 2) {
 			if (randf() < 0.5)
 				state->mzr(i);
@@ -144,7 +141,6 @@ void SandpileCliffordSimulator::unitary(uint32_t i) {
 			qubits = std::vector<uint32_t>{i-1, i, i+1, i+2};
 
 		state->random_clifford(qubits);
-state2->random_clifford(qubits);
 	}
 }
 
@@ -194,8 +190,6 @@ uint32_t SandpileCliffordSimulator::get_shape(uint32_t s0, uint32_t s1, uint32_t
 	else if ((ds1 == -1) && (ds2 == 1))   return 6; // 0 1 2 (f)
 	else if ((ds1 == 1)  && (ds2 == -1))  return 6; // 2 1 0
 	else { 
-		//std::cout << "s1 = " << s1 << ", s2 = " << s2 << ", s3 = " << s3 << std::endl;
-		//std::cout << "ds1 = " << ds1 << ", ds2 = " << ds2 << std::endl;
 		throw std::invalid_argument("Something has gone wrong with the entropy substrate."); 
 	}
 }
@@ -214,19 +208,6 @@ void SandpileCliffordSimulator::feedback(uint32_t q) {
 	int s0 = state->cum_entropy<int>(q0);
 	int s1 = state->cum_entropy<int>(q);
 	int s2 = state->cum_entropy<int>(q2);
-
-int s02 = state2->cum_entropy<int>(q0);
-int s12 = state2->cum_entropy<int>(q);
-int s22 = state2->cum_entropy<int>(q2);
-
-if (s02 != s0 || s12 != s1 || s22 != s2) {
-std::cout << "invalid graph state: " << state2->to_string() << std::endl;
-auto state2_chp = state2->to_chp();
-int s03 = state2->cum_entropy<int>(q0);
-int s13 = state2->cum_entropy<int>(q);
-int s23 = state2->cum_entropy<int>(q2);
-}
-
 
 	uint32_t shape = get_shape(s0, s1, s2);
 
@@ -251,6 +232,9 @@ void SandpileCliffordSimulator::timestep() {
 
 data_t SandpileCliffordSimulator::take_samples() {
 	data_t samples;
+
+	if (simulator_type == "chp")
+		chp_state.tableau.rref();
 
 	std::vector<int> entropy_surface = state->get_entropy_surface<int>(2);
 

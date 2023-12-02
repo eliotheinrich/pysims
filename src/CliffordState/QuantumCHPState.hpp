@@ -14,6 +14,8 @@ class QuantumCHPState : public CliffordState {
     public:
         Tableau tableau;
 
+        QuantumCHPState()=default;
+
         QuantumCHPState(uint32_t num_qubits, int seed=-1)
          : CliffordState(num_qubits, seed), tableau(Tableau(num_qubits)) {}
         

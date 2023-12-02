@@ -7,8 +7,9 @@
 
 class SandpileCliffordSimulator : public Simulator {
 	private:
+		QuantumCHPState chp_state;
+		QuantumGraphState graph_state;
 		std::shared_ptr<CliffordState> state;
-		std::shared_ptr<QuantumGraphState> state2;
 		uint32_t system_size;
 
 		double unitary_prob;

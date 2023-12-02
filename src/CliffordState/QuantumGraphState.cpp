@@ -597,7 +597,7 @@ double QuantumGraphState::entropy(const std::vector<uint32_t> &qubits, uint32_t 
 	}
 
 
-	// Trim leaves in B
+	// Trim leafs in B
 	bool found_isolated = true;
 	uint32_t k = 0;
 	while (!found_isolated) {
