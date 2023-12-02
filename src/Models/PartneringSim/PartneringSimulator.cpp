@@ -42,8 +42,9 @@ void PartneringSimulator::init_state(uint32_t) {
 				affinity = (j == i + num_nodes) ? 1.0 : 1.0/num_nodes;
 			} else if (affinity_type == PROXIMITY) {
 				uint32_t d = std::abs(int(i - (j - num_nodes)));
-				if (d > num_nodes/2) 
+				if (d > num_nodes/2) {
 					d = num_nodes - d;
+				}
 				affinity = double(d)/num_nodes;
 			}
 
@@ -69,10 +70,11 @@ void PartneringSimulator::timesteps(uint32_t num_steps) {
 			std::vector<double> weights;
 			for (uint32_t j = num_nodes; j < 2*num_nodes; j++) {
 				double weight;
-				if (std::count(drawn.begin(), drawn.end(), j))
+				if (std::count(drawn.begin(), drawn.end(), j)) {
 					weight = 0.;
-				else
+				} else {
 					weight = affinity(idx1, j)*(1.0 - std::exp(-double(last_contact(idx1, j))/double(num_nodes*relaxation_time)));
+				}
 
 				weights.push_back(weight);
 			}
@@ -84,8 +86,9 @@ void PartneringSimulator::timesteps(uint32_t num_steps) {
 			partner_graph.add_edge(idx1, idx2);
 			augmented_graph.set_edge_weight(idx1, idx2, 0);
 			augmented_graph.set_edge_weight(idx2, idx1, 0);
-			if (start_sampling)
+			if (start_sampling) {
 				counts[idx1][idx2 - num_nodes]++;
+			}
 		}
 
 
@@ -118,28 +121,37 @@ void PartneringSimulator::add_global_properties_samples(data_t& samples) const {
 
 void PartneringSimulator::add_local_properties_samples(data_t& samples) const {
 	auto degree_counts = partner_graph.compute_degree_counts();
-	for (uint32_t i = 0; i < 2*num_nodes; i++) 
+	for (uint32_t i = 0; i < 2*num_nodes; i++) {
 		samples.emplace("deg_" + std::to_string(i), degree_counts[i]);
+	}
 }
 
 void PartneringSimulator::add_counts_samples(data_t& samples) const {
 	for (uint32_t i = 0; i < num_nodes; i++) {
-		for (uint32_t j = 0; j < num_nodes; j++)
+		for (uint32_t j = 0; j < num_nodes; j++) {
 			samples.emplace("count_" + std::to_string(i) + "_" + std::to_string(j), counts[i][j]);
+		}
 	}
 }
 
 data_t PartneringSimulator::take_samples() {
 	data_t samples;
 
-	if (sample_affinity)
+	if (sample_affinity) {
 		add_affinity_samples(samples);
-	if (sample_global_properties)
+	}
+
+	if (sample_global_properties) {
 		add_global_properties_samples(samples);
-	if (sample_local_properties)
+	}
+
+	if (sample_local_properties) {
 		add_local_properties_samples(samples);
-	if (sample_counts)
+	}
+
+	if (sample_counts) {
 		add_counts_samples(samples);
+	}
 
 	return samples;
 }

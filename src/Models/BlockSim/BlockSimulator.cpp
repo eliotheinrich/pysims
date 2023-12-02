@@ -66,7 +66,9 @@ BlockSimulator::BlockSimulator(Params &params) : Simulator(params), sampler(para
 std::string BlockSimulator::to_string() const {
     std::string s = "[";
     std::vector<std::string> buffer;
-    for (uint32_t i = 0; i < system_size; i++) buffer.push_back(std::to_string(surface[i]));
+    for (uint32_t i = 0; i < system_size; i++) {
+		buffer.push_back(std::to_string(surface[i]));
+	}
     s += join(buffer, ", ") + "]";
 
     return s;
@@ -91,25 +93,37 @@ uint32_t BlockSimulator::get_shape(uint32_t s0, uint32_t s1, uint32_t s2) const 
 }
 
 void BlockSimulator::avalanche(uint32_t i) {
-    if (precut && surface[i] > 0) surface[i]--;
+    if (precut && surface[i] > 0) {
+		surface[i]--;
+	}
 
     uint32_t left = i;
-    while (surface[left-1] > surface[i]) left--;
+    while (surface[left-1] > surface[i]) {
+		left--;
+	}
 
     uint32_t right = i;
-    while (surface[right+1] > surface[i]) right++;
+    while (surface[right+1] > surface[i]) {
+		right++;
+	}
 
-	for (uint32_t j = left; j < i; j++) surface[j]--;
-	for (uint32_t j = i+1; j < right+1; j++) surface[j]--;
+	for (uint32_t j = left; j < i; j++) {
+		surface[j]--;
+	}
+	for (uint32_t j = i+1; j < right+1; j++) {
+		surface[j]--;
+	}
     
     uint32_t size = right - left;
-    if (size > 0 && start_sampling)
+    if (size > 0 && start_sampling) {
         sampler.record_size(size);
+	}
 }
 
 bool BlockSimulator::can_deposit(uint32_t i) const {
-	if (i == 0 || i == system_size - 1)
+	if (i == 0 || i == system_size - 1) {
 		return false;
+	}
 
 	uint32_t shape = get_shape(surface[i-1], surface[i], surface[i+1]);
 
@@ -119,8 +133,9 @@ bool BlockSimulator::can_deposit(uint32_t i) const {
 
 void BlockSimulator::deposit(uint32_t i) {
 	if (depositing_type == 0) {
-		if (can_deposit(i))
+		if (can_deposit(i)) {
 			surface[i]++;
+		}
 	} else if (depositing_type == 1) {
 		bool continue_depositing = true;
 
@@ -152,11 +167,13 @@ void BlockSimulator::timesteps(uint32_t num_steps) {
             uint32_t shape = get_shape(surface[q-1], surface[q], surface[q+1]);
 
             if (std::count(feedback_strategy.begin(), feedback_strategy.end(), shape)) {
-                if (randf() < pu)
+                if (randf() < pu) {
 					deposit(q);
+				}
             } else {
-                if (randf() < pm)
+                if (randf() < pm) {
 					avalanche(q);
+				}
             }
         }
     }

@@ -31,10 +31,11 @@ RandomCliffordSimulator::RandomCliffordSimulator(Params &params) : Simulator(par
 }
 
 void RandomCliffordSimulator::init_state(uint32_t) {
-	if (simulator_type == "chp")
+	if (simulator_type == "chp") {
 		state = std::make_shared<QuantumCHPState>(system_size, seed);
-	else if (simulator_type == "graph")
+	} else if (simulator_type == "graph") {
 		state = std::make_shared<QuantumGraphState>(system_size, seed);
+	}
 }
 
 std::shared_ptr<Simulator> RandomCliffordSimulator::deserialize(Params &params, const std::string &data) {
@@ -44,10 +45,11 @@ std::shared_ptr<Simulator> RandomCliffordSimulator::deserialize(Params &params, 
 }
 
 void RandomCliffordSimulator::timesteps(uint32_t num_steps) {
-	if (system_size % gate_width != 0)
+	if (system_size % gate_width != 0) {
 		throw std::invalid_argument("Invalid gate width. Must divide system size.");
-	if (gate_width % 2 != 0)
+	} if (gate_width % 2 != 0) {
 		throw std::invalid_argument("Gate width must be even.");
+	}
 
 	bool offset_layer = initial_offset;
 
@@ -63,8 +65,9 @@ void RandomCliffordSimulator::timesteps(uint32_t num_steps) {
 					std::vector<int> surface2 = state->get_entropy_surface<int>(2);
 
 					int s = 0.0;
-					for (uint32_t i = 0; i < system_size; i++)
+					for (uint32_t i = 0; i < system_size; i++) {
 						s += std::abs(surface1[i] - surface2[i]);
+					}
 
 					interface_sampler.record_size(s);
 				} else {
@@ -87,8 +90,9 @@ data_t RandomCliffordSimulator::take_samples() {
 	std::vector<int> surface = state->get_entropy_surface<int>(2);
 	interface_sampler.add_samples(samples, surface);
 
-	if (sample_sparsity)
+	if (sample_sparsity) {
 		samples.emplace("sparsity", state->sparsity());
+	}
 
 	return samples;
 }

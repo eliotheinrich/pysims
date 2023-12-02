@@ -27,8 +27,9 @@ void RandomCircuitSamplingSimulator::brickwork_haar() {
 	}
 
 	for (uint32_t q = 0; q < system_size; q++) {
-		if (randf() < mzr_prob)
+		if (randf() < mzr_prob) {
 			state->measure(q);
+		}
 	}
 
 	offset = !offset;
@@ -36,10 +37,11 @@ void RandomCircuitSamplingSimulator::brickwork_haar() {
 
 void RandomCircuitSamplingSimulator::timesteps(uint32_t num_steps) {
 	for (uint32_t k = 0; k < num_steps; k++) {
-		if (evolution_type == FULL_HAAR)
+		if (evolution_type == FULL_HAAR) {
 			full_haar();
-		else if (evolution_type == BRICKWORK_HAAR)
+		} else if (evolution_type == BRICKWORK_HAAR) {
 			brickwork_haar();
+		}
 	}
 }
 

@@ -23,15 +23,17 @@ void BrickworkCircuitSimulator::timesteps(uint32_t num_steps) {
 
 			std::vector<uint32_t> qubits{q1, q2};
 
-			if (gate_type == RANDOM_HAAR)
+			if (gate_type == RANDOM_HAAR) {
 				state->evolve(haar_unitary(2), qubits);
-			else if (gate_type == RANDOM_REAL)
+			} else if (gate_type == RANDOM_REAL) {
 				state->evolve(random_real_unitary(), qubits);
+			}
 		}
 
 		for (uint32_t q = 0; q < system_size; q++) {
-			if (randf() < mzr_prob)
+			if (randf() < mzr_prob) {
 				state->measure(q);
+			}
 		}
 
 		offset = !offset;

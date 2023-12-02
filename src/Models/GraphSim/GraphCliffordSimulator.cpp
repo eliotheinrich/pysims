@@ -27,21 +27,27 @@ GraphCliffordSimulator::GraphCliffordSimulator(Params &params) : Simulator(param
 		m = get<int>(params, "m");
 		a = get<double>(params, "a");
 		rng = std::minstd_rand(get<int>(params, "seed", -1));
-	} else
+	} else {
 		mzr_prob = get<double>(params, "mzr_prob");
+	}
 
 }
 
 void GraphCliffordSimulator::init_state(uint32_t) {
 	state = std::shared_ptr<QuantumGraphState>(new QuantumGraphState(system_size));
 
-	if (evolution_type == QUANTUM_AUTOMATON) // quantum automaton circuit must be polarized
-		for (uint32_t i = 0; i < system_size; i++) state->h_gate(i);
+	if (evolution_type == QUANTUM_AUTOMATON) { // quantum automaton circuit must be polarized
+		for (uint32_t i = 0; i < system_size; i++) {
+			state->h_gate(i);
+		}
+	}
 }
 
 void GraphCliffordSimulator::mzr(uint32_t q) {
 	state->mzr(q);
-	if (evolution_type == QUANTUM_AUTOMATON) state->h_gate(q);
+	if (evolution_type == QUANTUM_AUTOMATON) {
+		state->h_gate(q);
+	}
 }
 
 void GraphCliffordSimulator::qa_timesteps(uint32_t num_steps) {
@@ -51,8 +57,9 @@ void GraphCliffordSimulator::qa_timesteps(uint32_t num_steps) {
 		qa_timestep(state);
 
 		for (uint32_t j = 0; j < system_size; j++) {
-			if (state->randf() < mzr_prob)
+			if (state->randf() < mzr_prob) {
 				mzr(j);
+			}
 		}
 	}
 }
@@ -67,8 +74,9 @@ void GraphCliffordSimulator::rc_timesteps(uint32_t num_steps) {
 		rc_timestep(state, gate_width, offset_layer);
 
 		for (uint32_t j = 0; j < system_size; j++) {
-			if (state->randf() < mzr_prob)
+			if (state->randf() < mzr_prob) {
 				mzr(j);
+			}
 		}
 
 		offset_layer = !offset_layer;
@@ -89,8 +97,9 @@ void GraphCliffordSimulator::unitary_timesteps(uint32_t num_steps) {
 		for (uint32_t j = 0; j < system_size; j++) {
 			auto neighbors = state->graph.neighbors(j);
 			for (auto k : neighbors) {
-				if (randf() < mzr_prob)
+				if (randf() < mzr_prob) {
 					state->toggle_edge_gate(j, k);
+				}
 			}
 		}
 
@@ -108,7 +117,9 @@ void GraphCliffordSimulator::generate_random_graph() {
 		std::vector<float> weights;
 		std::vector<uint32_t> sites;
 		for (uint32_t j = 0; j < system_size; j++) {
-			if (i == j || graph.contains_edge(i, j)) continue;
+			if (i == j || graph.contains_edge(i, j)) {
+				continue;
+			}
 
 			weights.push_back(std::pow(dist(i, j), a));
 			sites.push_back(j);
@@ -129,34 +140,38 @@ void GraphCliffordSimulator::generate_random_graph() {
 }
 
 void GraphCliffordSimulator::timesteps(uint32_t num_steps) {
-	if (evolution_type == RANDOM_CLIFFORD)
+	if (evolution_type == RANDOM_CLIFFORD) {
 		rc_timesteps(num_steps);
-	else if (evolution_type == QUANTUM_AUTOMATON)
+	} else if (evolution_type == QUANTUM_AUTOMATON) {
 		qa_timesteps(num_steps);
-	else if (evolution_type == UNITARY)
+	} else if (evolution_type == UNITARY) {
 		unitary_timesteps(num_steps);
-	else if (evolution_type == RANDOM_GRAPH)
+	} else if (evolution_type == RANDOM_GRAPH) {
 		generate_random_graph();
+	}
 }
 
 uint32_t GraphCliffordSimulator::dist(int i, int j) const {
 	uint32_t d = std::abs(i - j);
-	if (d > system_size/2) 
+	if (d > system_size/2) {
 		return (system_size - d);
-	else 
+	} else {
 		return d;
+	}
 }
 
 void GraphCliffordSimulator::add_distance_distribution(data_t &samples) const {
 	uint32_t max_dist = system_size/2;
 	std::vector<uint32_t> distribution(max_dist, 0);
 	for (uint32_t i = 0; i < system_size; i++) {
-		for (auto const j : state->graph.neighbors(i))
+		for (auto const j : state->graph.neighbors(i)) {
 			distribution[dist(i, j)]++;
+		}
 	}
 
-	for (uint32_t i = 0; i < max_dist; i++) 
+	for (uint32_t i = 0; i < max_dist; i++) {
 		samples.emplace("dist_" + std::to_string(i), distribution[i]);
+	}
 }
 
 
@@ -169,7 +184,9 @@ void GraphCliffordSimulator::add_avg_max_dist(data_t &samples) const {
 		for (auto j : state->graph.neighbors(i)) {
 			float d = dist(i, j);
 			p1 += d;
-			if (d > max_d) max_d = d;
+			if (d > max_d) {
+				max_d = d;
+			}
 
 			n++;
 		}
@@ -188,8 +205,9 @@ void GraphCliffordSimulator::add_avg_max_dist(data_t &samples) const {
 
 void GraphCliffordSimulator::add_degree_distribution(data_t &samples) const {
 	auto degree_counts = state->graph.compute_degree_counts();
-	for (uint32_t i = 0; i < system_size; i++) 
+	for (uint32_t i = 0; i < system_size; i++) {
 		samples.emplace("deg_" + std::to_string(i), degree_counts[i]);
+	}
 }
 
 data_t GraphCliffordSimulator::take_samples() {

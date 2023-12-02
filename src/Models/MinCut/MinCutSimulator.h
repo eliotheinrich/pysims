@@ -8,7 +8,7 @@
 class GraphEntropyState : public EntropyState {
 	public:
 		Graph state;
-		virtual double entropy(const std::vector<uint32_t>& sites, uint32_t index) const override;
+		virtual double entropy(const std::vector<uint32_t>& sites, uint32_t index) override;
 		GraphEntropyState()=default;
 		GraphEntropyState(uint32_t num_nodes) {
 			state = Graph(num_nodes);

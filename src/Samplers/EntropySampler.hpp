@@ -20,10 +20,10 @@ class EntropyState {
 
         EntropyState(uint32_t system_size) : system_size(system_size) {}
 
-        virtual double entropy(const std::vector<uint32_t>& sites, uint32_t index) const=0;
+        virtual double entropy(const std::vector<uint32_t>& sites, uint32_t index)=0;
 
         template <typename T = double>
-        T cum_entropy(uint32_t i, uint32_t index = 2u, bool direction = true) const {
+        T cum_entropy(uint32_t i, uint32_t index = 2u, bool direction = true) {
             if (direction) { // Left-oriented cumulative entropy
                 std::vector<uint32_t> sites(i+1);
                 std::iota(sites.begin(), sites.end(), 0);
@@ -36,7 +36,7 @@ class EntropyState {
         }
 
         template <typename T = double>
-        std::vector<T> get_entropy_surface(uint32_t index=2u) const {
+        std::vector<T> get_entropy_surface(uint32_t index=2u) {
             std::vector<T> entropy_surface(system_size);
 
             for (uint32_t i = 0; i < system_size; i++) {

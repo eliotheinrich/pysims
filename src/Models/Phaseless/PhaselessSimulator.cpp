@@ -24,8 +24,9 @@ void PhaselessSimulator::init_state(uint32_t) {
 	std::vector<uint32_t> q(system_size);
 	std::iota(q.begin(), q.end(), 0);
 	std::shuffle(q.begin(), q.end(), rng);
-	for (uint32_t i = 0; i < num_x_eigenstates; i++)
+	for (uint32_t i = 0; i < num_x_eigenstates; i++) {
 		state->h_gate(q[i]);
+	}
 }
 
 void PhaselessSimulator::apply_gate(uint32_t q1, uint32_t q2) {
@@ -58,8 +59,9 @@ void PhaselessSimulator::one_dimensional_timestep() {
 		apply_gate(qubit1, qubit2);
 	}
 
-	for (uint32_t q = 0; q < system_size; q++)
+	for (uint32_t q = 0; q < system_size; q++) {
 		measure(q);
+	}
 
 	offset = !offset;
 }
@@ -75,17 +77,20 @@ void PhaselessSimulator::two_dimensional_timestep() {
 		apply_gate(qubit1, qubit3);
 	}
 
-	for (uint32_t q = 0; q < system_size; q++)
+	for (uint32_t q = 0; q < system_size; q++) {
 		measure(q);
+	}
 }
 
 void PhaselessSimulator::timesteps(uint32_t num_steps) {
 	if (dim == 1) {
-		for (uint32_t i = 0; i < num_steps; i++)
+		for (uint32_t i = 0; i < num_steps; i++) {
 			one_dimensional_timestep();
+		}
 	} else if (dim == 2) {
-		for (uint32_t i = 0; i < num_steps; i++)
+		for (uint32_t i = 0; i < num_steps; i++) {
 			two_dimensional_timestep();
+		}
 	}
 }
 

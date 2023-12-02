@@ -150,7 +150,7 @@ std::string MatrixProductState::to_string() const {
 	return state.to_string();
 }
 
-double MatrixProductState::entropy(uint32_t q) const {
+double MatrixProductState::entropy(uint32_t q) {
 	if (q < 0 || q > num_qubits) {
 		throw std::invalid_argument("Invalid qubit passed to MatrixProductState.entropy; must have 0 <= q <= num_qubits.");
 	}
@@ -173,7 +173,7 @@ double MatrixProductState::entropy(uint32_t q) const {
 	return s;
 }
 
-double MatrixProductState::entropy(const std::vector<uint32_t>& qubits, uint32_t index) const {
+double MatrixProductState::entropy(const std::vector<uint32_t>& qubits, uint32_t index) {
 	if (index != 1) {
 		throw std::invalid_argument("Can only compute von Neumann (index = 1) entropy for MPS states.");
 	}

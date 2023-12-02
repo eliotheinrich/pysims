@@ -6,23 +6,29 @@
 #define DEFAULT_GATE_WIDTH 2
 
 
-static EvolutionType parse_evolution_type(std::string s) {
-	if (s == "random_clifford") return EvolutionType::RandomClifford;
-	else if (s == "quantum_automaton") return EvolutionType::QuantumAutomaton;
-	else if (s == "graph_operations") return EvolutionType::GraphOperations;
-	else {
-		std::cout << "Invalid evolution type: " << s << std::endl;
-		assert(false);
+static EvolutionType parse_evolution_type(const std::string& s) {
+	if (s == "random_clifford") {
+		return EvolutionType::RandomClifford;
+	} else if (s == "quantum_automaton") {
+		return EvolutionType::QuantumAutomaton;
+	} else if (s == "graph_operations") {
+		return EvolutionType::GraphOperations;
+	} else {
+		std::string error_message = "Invalid evolution type: " + s;
+		throw std::invalid_argument(error_message);
 	}
 }
 
-static FeedbackType parse_feedback_type(std::string s) {
-	if (s == "no_feedback") return FeedbackType::NoFeedback;
-	else if (s == "cluster_threshold") return FeedbackType::ClusterThreshold;
-	else if (s == "distance_threshold") return FeedbackType::DistanceThreshold;
-	else {
-		std::cout << "Invalid feedback type: " << s << std::endl;
-		assert(false);
+static FeedbackType parse_feedback_type(const std::string& s) {
+	if (s == "no_feedback") {
+		return FeedbackType::NoFeedback;
+	} else if (s == "cluster_threshold") {
+		return FeedbackType::ClusterThreshold;
+	} else if (s == "distance_threshold") {
+		return FeedbackType::DistanceThreshold;
+	} else {
+		std::string error_message = "Invalid feedback type: " + s;
+		throw std::invalid_argument(error_message);
 	}
 }
 
@@ -54,15 +60,18 @@ void SelfOrganizedCliffordSimulator::init_state(uint32_t) {
 
 void SelfOrganizedCliffordSimulator::mzr(uint32_t q) {
 	state->mzr(q);
-	if (evolution_type == EvolutionType::QuantumAutomaton) state->h_gate(q);
+	if (evolution_type == EvolutionType::QuantumAutomaton) {
+		state->h_gate(q);
+	}
 }
 
 uint32_t SelfOrganizedCliffordSimulator::dist(int i, int j) const {
 	uint32_t d = std::abs(i - j);
-	if (d > system_size/2) 
+	if (d > system_size/2) {
 		return (system_size - d);
-	else 
+	} else {
 		return d;
+	}
 }
 
 float SelfOrganizedCliffordSimulator::avg_dist() const {
@@ -75,8 +84,11 @@ float SelfOrganizedCliffordSimulator::avg_dist() const {
 		}
 	}
 
-	if (n == 0) return 0.;
-	else return d/n;
+	if (n == 0) {
+		return 0.;
+	} else {
+		return d/n;
+	}
 }
 
 float SelfOrganizedCliffordSimulator::max_component_size() const {
@@ -85,16 +97,20 @@ float SelfOrganizedCliffordSimulator::max_component_size() const {
 
 void SelfOrganizedCliffordSimulator::random_measure() {
 	for (uint32_t j = 0; j < system_size; j++) {
-		if (state->randf() < mzr_prob)
+		if (state->randf() < mzr_prob) {
 			mzr(j);
+		}
 	}
 }
 
 void SelfOrganizedCliffordSimulator::cluster_threshold() {
 	random_measure();
 
-	if (max_component_size()/system_size > threshold) x += dx;
-	else x -= dx;
+	if (max_component_size()/system_size > threshold) {
+		x += dx;
+	} else {
+		x -= dx;
+	}
 
 	mzr_prob = 1./(1. + std::exp(-x));
 }
@@ -102,8 +118,11 @@ void SelfOrganizedCliffordSimulator::cluster_threshold() {
 void SelfOrganizedCliffordSimulator::distance_threshold() {
 	random_measure();
 
-	if (avg_dist()/system_size > threshold) x += dx;
-	else x -= dx;
+	if (avg_dist()/system_size > threshold) {
+		x += dx;
+	} else {
+		x -= dx;
+	}
 
 	mzr_prob = 1./(1. + std::exp(-x));
 }
@@ -123,16 +142,22 @@ void SelfOrganizedCliffordSimulator::qa_timestep(bool offset, bool gate_type) {
 		uint32_t qubit1 = offset ? (2*i + 1) % system_size : 2*i;
 		uint32_t qubit2 = offset ? (2*i + 2) % system_size : (2*i + 1) % system_size;
 
-		if (rand() % 2 == 0) std::swap(qubit1, qubit2);
+		if (rand() % 2 == 0) {
+			std::swap(qubit1, qubit2);
+		}
 
-		if (gate_type) state->cz_gate(qubit1, qubit2);
-		else state->cx_gate(qubit1, qubit2);
+		if (gate_type) {
+			state->cz_gate(qubit1, qubit2);
+		} else {
+			state->cx_gate(qubit1, qubit2);
+		}
 	}
 }
 
 void SelfOrganizedCliffordSimulator::qa_timesteps(uint32_t num_steps) {
-	if (system_size % gate_width != 0)
+	if (system_size % gate_width != 0) {
 		throw std::invalid_argument("Invalid gate width. Must divide system size.");
+	}
 
 	for (uint32_t i = 0; i < num_steps; i++) {
 		qa_timestep(false, false); // no offset, cx
@@ -146,10 +171,11 @@ void SelfOrganizedCliffordSimulator::qa_timesteps(uint32_t num_steps) {
 
 void SelfOrganizedCliffordSimulator::rc_timesteps(uint32_t num_steps) {
 	uint32_t num_qubits = system_size;
-	if (system_size % gate_width != 0)
+	if (system_size % gate_width != 0) {
 		throw std::invalid_argument("Invalid gate width. Must divide system size.");
-	if (gate_width % 2 != 0)
+	} if (gate_width % 2 != 0) {
 		throw std::invalid_argument("Gate width must be even.");
+	}
 
 	uint32_t num_gates = num_qubits / gate_width;
 	bool offset_layer = initial_offset;
@@ -198,8 +224,9 @@ void SelfOrganizedCliffordSimulator::graph_timesteps(uint32_t num_steps) {
 	for (uint32_t i = 0; i < system_size; i++) {
 		// "measurement" step; with some probability, remove all edges incident on i
 		if (randf() < mzr_prob) {
-			for (auto const &j : state->graph.neighbors(i)) 
+			for (auto const &j : state->graph.neighbors(i)) {
 				state->toggle_edge_gate(i, j);
+			}
 		}
 	}
 }
@@ -215,12 +242,14 @@ void SelfOrganizedCliffordSimulator::timesteps(uint32_t num_steps) {
 void SelfOrganizedCliffordSimulator::add_distance_distribution(data_t &samples) const {
 	std::vector<uint32_t> hist(system_size/2, 0);
 	for (uint32_t i = 0; i < system_size; i++) {
-		for (auto const &j : state->graph.neighbors(i))
+		for (auto const &j : state->graph.neighbors(i)) {
 			hist[dist(i,j)]++;
+		}
 	}
 
-	for (uint32_t i = 0; i < system_size/2; i++)
+	for (uint32_t i = 0; i < system_size/2; i++) {
 		samples.emplace("dist_" + std::to_string(i), hist[i]);
+	}
 }
 
 data_t SelfOrganizedCliffordSimulator::take_samples() {

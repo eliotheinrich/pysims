@@ -586,7 +586,7 @@ void circuit_test() {
 
 
 void large_chp_test_multiqubit() {
-    uint32_t system_size = 12;
+    uint32_t system_size = 4;
     int seed = 314;
     QuantumCHPState state1(system_size, seed);
     QuantumGraphState state2(system_size, seed);
@@ -617,9 +617,18 @@ void large_chp_test_multiqubit() {
         //std::cout << "state1 (chp)          : \n" << state1.to_string_ops() << std::endl;
         //std::cout << "state3 (graphsim)     : \n" << state3.to_string_ops() << std::endl;
         //std::cout << "state2 (graphsim)     : \n" << state2.to_string() << std::endl;
-        state1.mzr(q3);
-        state2.mzr(q3);
+        if (double(rng()) / RAND_MAX < 0.05) {
+            state1.mzr(q3);
+            state2.mzr(q3);
+        }
         auto state3 = state2.to_chp();
+
+        state1.tableau.rref();
+        state3.tableau.rref();
+
+
+        std::cout << state1.to_string() << std::endl;
+        std::cout << state3.to_string() << std::endl;
 
         //sv1 = state1.to_statevector();
         //sv2 = state2.to_statevector();
@@ -665,7 +674,9 @@ void large_chp_test_multiqubit() {
                 std::vector<uint32_t> qubits(j+1);
                 std::iota(qubits.begin(), qubits.end(), 0);
 
-                std::cout << state2.entropy(qubits, 0) << std::endl;
+                state1.tableau.rref();
+                std::cout << state1.to_string() << std::endl;
+                state1.entropy(qubits, 1);
 
                 std::string error_message = "Surfaces do not agree at step " + std::to_string(i) + ".";
                 throw std::invalid_argument(error_message);

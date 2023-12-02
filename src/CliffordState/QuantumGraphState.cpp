@@ -413,7 +413,7 @@ void QuantumGraphState::toggle_edge_gate(uint32_t a, uint32_t b) {
 	apply_gatel(b, cb);
 }
 
-double QuantumGraphState::entropy(const std::vector<uint32_t> &qubits, uint32_t index) const {
+double QuantumGraphState::entropy(const std::vector<uint32_t> &qubits, uint32_t index) {
 	Graph bipartite_graph = graph.partition(qubits);
 	int s = 2*bipartite_graph.num_vertices;
 	for (uint32_t i = 0; i < bipartite_graph.num_vertices; i++) {

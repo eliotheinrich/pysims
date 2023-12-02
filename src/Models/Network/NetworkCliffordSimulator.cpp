@@ -34,15 +34,18 @@ void NetworkCliffordSimulator::timesteps(uint32_t num_steps) {
 
 void NetworkCliffordSimulator::add_degree_distribution(data_t& samples) const {
 	std::vector<uint32_t> dist(system_size);
-	for (uint32_t i = 0; i < system_size; i++)
+	for (uint32_t i = 0; i < system_size; i++) {
 		dist[network.degree(i)]++;
+	}
 
 	double sum = 0.0;
-	for (uint32_t i = 0; i < system_size; i++)
+	for (uint32_t i = 0; i < system_size; i++) {
 		sum += dist[i];
+	}
 
-	for (uint32_t i = 0; i < system_size; i++)
+	for (uint32_t i = 0; i < system_size; i++) {
 		samples.emplace("dist_" + std::to_string(i), dist[i]/sum);
+	}
 }
 
 void NetworkCliffordSimulator::add_spatially_averaged_entropy(data_t& samples) {

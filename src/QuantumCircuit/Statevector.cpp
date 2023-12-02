@@ -55,7 +55,7 @@ std::string Statevector::to_string() const {
 	return st;
 }
 
-double Statevector::entropy(const std::vector<uint32_t> &qubits, uint32_t index) const {
+double Statevector::entropy(const std::vector<uint32_t> &qubits, uint32_t index) {
 	DensityMatrix rho(*this);
 	return rho.entropy(qubits, index);
 }

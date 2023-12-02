@@ -24,7 +24,9 @@ void QuantumAutomatonSimulator::init_state(uint32_t) {
 	}
 
 	// Initially polarize in x-direction
-	for (uint32_t i = 0; i < system_size; i++) state->h_gate(i);
+	for (uint32_t i = 0; i < system_size; i++) {
+		state->h_gate(i);
+	}
 }
 
 void QuantumAutomatonSimulator::timesteps(uint32_t num_steps) {

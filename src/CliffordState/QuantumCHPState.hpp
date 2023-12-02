@@ -114,7 +114,7 @@ class QuantumCHPState : public CliffordState {
             return Tableau(partition_size, rows);
         }
 
-        virtual double entropy(const std::vector<uint32_t> &qubits, uint32_t index) const override {
+        virtual double entropy(const std::vector<uint32_t> &qubits, uint32_t index) override {
             uint32_t system_size = this->system_size();
             uint32_t partition_size = qubits.size();
 
@@ -131,8 +131,7 @@ class QuantumCHPState : public CliffordState {
                 return entropy(qubits_complement, index);
             }
 
-            Tableau ttableau = truncated_tableau(qubits);
-            int rank = ttableau.rank(false);
+            int rank = tableau.rank(qubits);
 
             int s = rank - partition_size;
 

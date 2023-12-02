@@ -418,6 +418,47 @@ class Tableau {
         }
 
         // Put tableau into reduced row echelon form
+        void rref(const std::vector<uint32_t>& sites, bool track_phase) {
+            uint32_t r1 = track_destabilizers ? num_qubits : 0;
+            uint32_t r2 = num_rows();
+
+            uint32_t pivot_row = 0;
+            uint32_t row = r1;
+
+            std::vector<uint32_t> inds(2*sites.size());
+            for (uint32_t i = 0; i < sites.size(); i++) {
+                inds[2*i] = sites[i];
+                inds[2*i+1] = sites[i] + num_qubits;
+            }
+
+            for (const auto c : inds) {
+                bool found_pivot = false;
+                for (uint32_t i = row; i < r2; i++) {
+                    if (rows[i][c]) {
+                        pivot_row = i;
+                        found_pivot = true;
+                        break;
+                    }
+                }
+
+                if (found_pivot) {
+                    //std::cout << "Pivoting on " << pivot_row << std::endl;
+                    //std::cout << "Swapping " << row << " with " << pivot_row << ".\n";
+                    std::swap(rows[row], rows[pivot_row]);
+
+                    for (uint32_t i = r1; i < r2; i++) {
+                        if (i != row && rows[i][c]) {
+                            rowsum(i, row, track_phase);
+                        }
+                    }
+
+                    row += 1;
+                } else {
+                    continue;
+                }
+            }
+        }
+
         void rref(bool track_phase=true) {
             uint32_t r1 = track_destabilizers ? num_qubits : 0;
             uint32_t r2 = num_rows();
@@ -457,10 +498,32 @@ class Tableau {
         uint32_t rank(bool track_phase=true) {
             rref(track_phase);
 
+            uint32_t r1 = track_destabilizers ? num_qubits : 0;
+            uint32_t r2 = num_rows();
+
             uint32_t r = 0;
-            for (uint32_t i = 0; i < num_rows(); i++) {
+            for (uint32_t i = r1; i < r2; i++) {
                 if (std::accumulate(rows[i].begin(), rows[i].end(), 0)) {
                     r++;
+                }
+            }
+
+            return r;
+        }
+
+        uint32_t rank(const std::vector<uint32_t>& sites, bool track_phase=true) {
+            rref(sites, track_phase);
+
+            uint32_t r1 = track_destabilizers ? num_qubits : 0;
+            uint32_t r2 = num_rows();
+
+            uint32_t r = 0;
+            for (uint32_t i = r1; i < r2; i++) {
+                for (uint32_t j = 0; j < sites.size(); j++) {
+                    if (rows[i][sites[j]] || rows[i][sites[j] + num_qubits]) {
+                        r++;
+                        break;
+                    }
                 }
             }
 
@@ -480,7 +543,7 @@ class Tableau {
             for (uint32_t i = 0; i < num_rows(); i++) {
                 s += (i == 0) ? "[" : " ";
                 s += rows[i].to_string();
-                s += (i == 2*rows.size() - 1) ? "]" : "\n";
+                s += (i == num_rows() - 1) ? "]" : "\n";
             }
             return s;
         }
@@ -491,9 +554,9 @@ class Tableau {
             for (uint32_t i = r1; i < num_rows(); i++) {
                 s += "[";
                 s += rows[i].to_string_ops();
-                s += (i == 2*rows.size() - 1) ? "]" : "]\n";
+                s += (i == num_rows() - 1) ? "]" : "\n";
             }
-            return s;
+            return s + "]";
         }
 
         int g(bool x1, bool z1, bool x2, bool z2) {
@@ -512,7 +575,7 @@ class Tableau {
                     return 0; 
                 }
             } else {
-                if (x2) { 
+                if (x2) {
                     return z2 ? -1 : 1;
                 } else { 
                     return 0; 
@@ -526,9 +589,11 @@ class Tableau {
 
             if (track_phase) {
                 int s = 0;
+                
                 if (r(i)) { 
                     s += 2; 
                 }
+
                 if (r(h)) { 
                     s += 2; 
                 }

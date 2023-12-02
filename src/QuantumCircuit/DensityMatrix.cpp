@@ -71,7 +71,7 @@ DensityMatrix DensityMatrix::partial_trace(const std::vector<uint32_t>& traced_q
 	return reduced_rho;
 }
 
-double DensityMatrix::entropy(const std::vector<uint32_t> &qubits, uint32_t index) const {
+double DensityMatrix::entropy(const std::vector<uint32_t> &qubits, uint32_t index) {
 	// If number of qubits is larger than half the system, take advantage of the fact that 
 	// S_A = S_\bar{A} to compute entropy for the smaller of A and \bar{A}
 	if (qubits.size() > num_qubits) {

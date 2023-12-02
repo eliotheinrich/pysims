@@ -28,6 +28,6 @@ Statevector UnitaryState::get_statevector() const {
 	return statevector;
 }
 
-double UnitaryState::entropy(const std::vector<uint32_t> &sites, uint32_t index) const {
+double UnitaryState::entropy(const std::vector<uint32_t> &sites, uint32_t index) {
 	return get_statevector().entropy(sites, index);
 }

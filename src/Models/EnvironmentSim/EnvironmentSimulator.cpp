@@ -8,12 +8,13 @@ EnvironmentSimulator::EnvironmentSimulator(Params &params) : Simulator(params), 
 	int_prob = get<double>(params, "int_prob");
 
 	env_dim = get<int>(params, "env_dim", DEFAULT_ENV_DIM);
-	if (env_dim == 1)
+	if (env_dim == 1) {
 		env_size = system_size;
-	else if (env_dim == 2)
+	} else if (env_dim == 2) {
 		env_size = system_size*system_size;
-	else
+	} else {
 		throw std::invalid_argument("Environment interactions must be 1d or 2d.");
+	}
 
 	params.emplace("env_size", (int) env_size);
 }
@@ -50,20 +51,22 @@ void EnvironmentSimulator::timesteps(uint32_t num_steps) {
 	for (uint32_t i = 0; i < num_steps; i++) {
 		for (uint32_t j = 0; j < system_size/2; j++) {
 			std::vector<uint32_t> qubits;
-			if (offset)
+			if (offset) {
 				qubits = std::vector<uint32_t>{2*j, (2*j+1)%system_size};
-			else
+			} else {
 				qubits = std::vector<uint32_t>{(2*j+1)%system_size, (2*j+2)%system_size};
+			}
 		
 			state->random_clifford(qubits);
 		}
 
 		offset = ! offset;
 
-		if (env_dim == 1)
+		if (env_dim == 1) {
 			one_dimensional_interactions();
-		else if (env_dim == 2)
+		} else if (env_dim == 2) {
 			two_dimensional_interactions();
+		}
 	}
 }
 

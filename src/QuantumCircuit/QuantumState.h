@@ -186,7 +186,7 @@ class DensityMatrix : public QuantumState {
 
 		DensityMatrix partial_trace(const std::vector<uint32_t>& traced_qubits) const;
 
-		virtual double entropy(const std::vector<uint32_t> &qubits, uint32_t index) const override;
+		virtual double entropy(const std::vector<uint32_t> &qubits, uint32_t index) override;
 
 		virtual void evolve(const Eigen::MatrixXcd& gate) override;
 		virtual void evolve(const Eigen::MatrixXcd& gate, const std::vector<uint32_t>& qbits) override;
@@ -218,7 +218,7 @@ class Statevector : public QuantumState {
 
 		virtual std::string to_string() const override;
 
-		virtual double entropy(const std::vector<uint32_t> &qubits, uint32_t index) const override;
+		virtual double entropy(const std::vector<uint32_t> &qubits, uint32_t index) override;
 
 		virtual void evolve(const Eigen::MatrixXcd &gate, const std::vector<uint32_t> &qubits) override;
 		virtual void evolve(const Eigen::MatrixXcd &gate) override;
@@ -251,7 +251,7 @@ class UnitaryState : public QuantumState {
 
 		std::string to_string() const;
 
-		virtual double entropy(const std::vector<uint32_t> &sites, uint32_t index) const override;
+		virtual double entropy(const std::vector<uint32_t> &sites, uint32_t index) override;
 
 		virtual void evolve(const Eigen::MatrixXcd &gate, const std::vector<uint32_t> &qubits);
 		virtual void evolve(const Eigen::MatrixXcd &gate) override;
@@ -301,8 +301,8 @@ class MatrixProductState : public QuantumState {
 
 		virtual std::string to_string() const override;
 
-		virtual double entropy(const std::vector<uint32_t>& qubits, uint32_t index) const override;
-		double entropy(uint32_t q) const;
+		virtual double entropy(const std::vector<uint32_t>& qubits, uint32_t index) override;
+		double entropy(uint32_t q);
 
 		void print_mps() const;
 

@@ -73,7 +73,7 @@ class QuantumGraphState : public CliffordState {
 
 		void toggle_edge_gate(uint32_t a, uint b);
 
-        virtual double entropy(const std::vector<uint32_t> &qubits, uint32_t index) const override;
+        virtual double entropy(const std::vector<uint32_t> &qubits, uint32_t index) override;
 
 		virtual double sparsity() const override;
 };

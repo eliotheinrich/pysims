@@ -19,12 +19,15 @@ inline static void rc_timestep(std::shared_ptr<CliffordState> state, uint32_t ga
 		std::transform(offset_qubits.begin(), offset_qubits.end(), offset_qubits.begin(), 
 						[system_size, offset, &periodic](uint32_t x) { 
 							uint32_t q = x + offset;
-							if (q % system_size != q) periodic = true;
+							if (q % system_size != q) {
+								periodic = true;
+							}
 							return q % system_size; 
 						});
 		
-		if (!(!periodic_bc && periodic))
+		if (!(!periodic_bc && periodic)) {
 			state->random_clifford(offset_qubits);
+		}
 	}
 }
 

@@ -7,8 +7,9 @@ using namespace RPM_utils;
 
 RPMSimulator::RPMSimulator(Params &params) : Simulator(params), sampler(params) {
     system_size = get<int>(params, "system_size");
-	if (system_size < 1)
+	if (system_size < 1) {
 		throw std::invalid_argument("System size must be larger than 0.");
+	}
 
     pm = get<double>(params, "pm");
     pu = get<double>(params, "pu");
@@ -17,7 +18,9 @@ RPMSimulator::RPMSimulator(Params &params) : Simulator(params), sampler(params) 
 	initial_state = get<int>(params, "initial_state", SUBSTRATE);
 
 	num_sites = 2*system_size;
-	if (!pbc) num_sites++;
+	if (!pbc) {
+		num_sites++;
+	}
 
 	params.emplace("u", pu/pm);
 
@@ -28,8 +31,9 @@ void RPMSimulator::init_state(uint32_t nthreads) {
 	surface = std::vector<int>(num_sites, 0);
 	if (initial_state == SUBSTRATE) {
 		for (uint32_t i = 0; i < num_sites; i++) {
-			if (i % 2 == 1)
+			if (i % 2 == 1) {
 				surface[i]++;
+			}
 		}
 	} else if (initial_state == PYRAMID) {
 		for (uint32_t i = 0; i < system_size; i++) {
@@ -37,15 +41,18 @@ void RPMSimulator::init_state(uint32_t nthreads) {
 			surface[num_sites - i - 1] = i + static_cast<int>(pbc);
 		}
 		
-		if (!pbc)
+		if (!pbc) {
 			surface[system_size] = system_size;
+		}
 	}
 }
 
 std::string RPMSimulator::to_string() const {
     std::string s = "[";
     std::vector<std::string> buffer;
-    for (uint32_t i = 0; i < num_sites; i++) buffer.push_back(std::to_string(surface[i]));
+    for (uint32_t i = 0; i < num_sites; i++) {
+		buffer.push_back(std::to_string(surface[i]));
+	}
     s += join(buffer, ", ") + "]";
 
     return s;
@@ -56,34 +63,40 @@ int RPMSimulator::slope(uint32_t i) const {
 }
 
 void RPMSimulator::peel(uint32_t i, bool right) {
-	if (randf() > pm)
+	if (randf() > pm) {
 		return;
+	}
 
 	int j = i;
 	if (right) {
 		while (surface[mod(j+1, num_sites)] > surface[i]) {
 			j++;
-		} j++;
+		} 
+		j++;
 	} else {
 		while (surface[mod(j-1, num_sites)] > surface[i]) {
 			j--;
-		} j--;
+		} 
+		j--;
 	}
 
 	int li = std::min(static_cast<int>(i), j);
 	int ri = std::max(static_cast<int>(i), j);
 
-	for (int k = li+1; k < ri; k++)
+	for (int k = li+1; k < ri; k++) {
 		surface[mod(k, num_sites)] -= 2;
+	}
 
 	uint32_t size = (ri - li)/2;
-	if (size > 0 && start_sampling)
+	if (size > 0 && start_sampling) {
 		sampler.record_size(size);
+	}
 }
 
 void RPMSimulator::raise(uint32_t i) {
-	if (randf() < pu)
+	if (randf() < pu) {
 		surface[i] += 2;
+	}
 }
 
 void RPMSimulator::timesteps(uint32_t num_steps) {

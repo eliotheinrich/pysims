@@ -30,8 +30,9 @@ Eigen::MatrixXcd GroverProjectionSimulator::create_oracle(uint32_t z, const std:
 	Eigen::MatrixXcd oracle = Eigen::MatrixXcd::Identity(s, s);
 
 	for (uint32_t i = 0; i < s; i++) {
-		if (quantumstate_utils::bits_congruent(i, z, qubits))
+		if (quantumstate_utils::bits_congruent(i, z, qubits)) {
 			oracle(i, i) = -1;
+		}
 	}
 
 	return oracle;
@@ -112,8 +113,9 @@ void GroverProjectionSimulator::timesteps(uint32_t num_steps) {
 			random_grover_projection();
 		} else if (projection_type == "single") {
 			for (uint32_t q = 0; q < system_size; q++) {
-				if (randf() < mzr_prob)
+				if (randf() < mzr_prob) {
 					grover_projection(q);
+				}
 			}
 		}
 

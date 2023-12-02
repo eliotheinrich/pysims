@@ -22,8 +22,9 @@ bool Clause::tautological() const {
 	for (uint32_t v1 = 0; v1 < 2; v1++) {
 		for (uint32_t v2 = 0; v2 < 2; v2++) {
 			for (uint32_t v3 = 0; v3 < 2; v3++) {
-				if (!evaluate(v1, v2, v3))
+				if (!evaluate(v1, v2, v3)) {
 					return false;
+				}
 			}
 		}
 	}
@@ -48,8 +49,9 @@ ConjugateNormalForm ConjugateNormalForm::random(uint32_t num_variables, uint32_t
 			x2 = dist(gen);
 			n2 = gen() % 2;
 
-			if (x2 != x1)
+			if (x2 != x1) {
 				valid = true;
+			}
 		}
 
 		valid = false;
@@ -59,8 +61,9 @@ ConjugateNormalForm ConjugateNormalForm::random(uint32_t num_variables, uint32_t
 			x3 = dist(gen);
 			n3 = gen() % 2;
 
-			if (x3 != x1 && x3 != x2)
+			if (x3 != x1 && x3 != x2) {
 				valid = true;
+			}
 		}
 
 		clauses.push_back(Clause(x1, x2, x3, n1, n2, n3));
@@ -70,12 +73,14 @@ ConjugateNormalForm ConjugateNormalForm::random(uint32_t num_variables, uint32_t
 }
 
 bool ConjugateNormalForm::evaluate(const std::vector<bool>& vals) const {
-	if (vals.size() != num_variables)
+	if (vals.size() != num_variables) {
 		throw std::invalid_argument("Number of variable assignments does not match number of variables.");
+	}
 
 	for (auto const& clause : clauses) {
-		if (!clause.evaluate(vals))
+		if (!clause.evaluate(vals)) {
 			return false;
+		}
 	}
 
 	return true;
@@ -109,8 +114,9 @@ void GroverSATSimulator::hadamard_transform() {
 	hadamard << 1.0, 1.0, 1.0, -1.0;
 	hadamard /= SQRT2;
 
-	for (uint32_t i = 0; i < system_size; i++)
+	for (uint32_t i = 0; i < system_size; i++) {
 		state->evolve(hadamard, std::vector<uint32_t>{i});
+	}
 }
 
 void GroverSATSimulator::timesteps(uint32_t num_steps) {
@@ -127,8 +133,9 @@ void GroverSATSimulator::add_fidelity_samples(data_t& samples) {
 	
 	double p = 0;
 	for (uint32_t i = 0; i < s; i++) {
-		if (oracle(i).real() < 0)
+		if (oracle(i).real() < 0) {
 			p += std::pow(std::abs(state->data(i)), 2.0);
+		}
 	}
 
 	samples.emplace("fidelity", p);
@@ -138,8 +145,9 @@ data_t GroverSATSimulator::take_samples() {
 	data_t samples;
 	sampler.add_samples(samples, state);
 
-	if (record_fidelity)
+	if (record_fidelity) {
 		add_fidelity_samples(samples);
+	}
 
 	return samples;
 }
