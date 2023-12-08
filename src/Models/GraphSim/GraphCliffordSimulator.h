@@ -36,12 +36,8 @@ class GraphCliffordSimulator : public Simulator {
 
 
 	public:
-		GraphCliffordSimulator(Params &params);
-
-		virtual void init_state(uint32_t) override;
+		GraphCliffordSimulator(Params &params, uint32_t);
 
 		virtual void timesteps(uint32_t num_steps) override;
 		virtual data_t take_samples() override;
-
-		CLONE(Simulator, GraphCliffordSimulator)
 };

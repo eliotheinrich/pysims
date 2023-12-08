@@ -83,13 +83,10 @@ class GroverSATSimulator : public Simulator {
 	public:
 		std::shared_ptr<Statevector> state;
 
-		GroverSATSimulator(Params &params);
+		GroverSATSimulator(Params &params, uint32_t);
 
-		virtual void init_state(uint32_t num_threads) override;
 		virtual void timesteps(uint32_t num_steps) override;
 
 		void add_fidelity_samples(data_t& samples);
 		virtual data_t take_samples() override;
-
-		CLONE(Simulator, GroverSATSimulator)
 };

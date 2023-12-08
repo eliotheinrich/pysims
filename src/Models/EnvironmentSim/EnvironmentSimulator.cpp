@@ -2,7 +2,7 @@
 
 #define DEFAULT_ENV_DIM 1
 
-EnvironmentSimulator::EnvironmentSimulator(Params &params) : Simulator(params), sampler(params) {
+EnvironmentSimulator::EnvironmentSimulator(Params &params, uint32_t) : Simulator(params), sampler(params) {
 	system_size = get<int>(params, "system_size");
 
 	int_prob = get<double>(params, "int_prob");
@@ -17,9 +17,7 @@ EnvironmentSimulator::EnvironmentSimulator(Params &params) : Simulator(params), 
 	}
 
 	params.emplace("env_size", (int) env_size);
-}
 
-void EnvironmentSimulator::init_state(uint32_t) {
 	state = std::make_shared<QuantumCHPState>(system_size + env_size);
 
 	offset = false;

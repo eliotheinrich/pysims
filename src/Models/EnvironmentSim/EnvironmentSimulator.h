@@ -19,14 +19,11 @@ class EnvironmentSimulator : public Simulator {
 		EntropySampler sampler;
 
 	public:
-		EnvironmentSimulator(Params& params);
+		EnvironmentSimulator(Params& params, uint32_t);
 
-		virtual void init_state(uint32_t) override;
 		void one_dimensional_interactions();
 		void two_dimensional_interactions();
 		virtual void timesteps(uint32_t num_steps) override;
 
 		virtual data_t take_samples() override;
-
-		CLONE(Simulator, EnvironmentSimulator);
 };

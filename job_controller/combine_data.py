@@ -1,7 +1,8 @@
-from pysims.pysimulators import *
 import argparse
 import re
 import os
+
+from dataframe import DataFrame
 
 if __name__ == "__main__":
 	parser = argparse.ArgumentParser()

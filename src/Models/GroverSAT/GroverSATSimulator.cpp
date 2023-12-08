@@ -86,7 +86,7 @@ bool ConjugateNormalForm::evaluate(const std::vector<bool>& vals) const {
 	return true;
 }
 
-GroverSATSimulator::GroverSATSimulator(Params &params) : Simulator(params), sampler(params) {
+GroverSATSimulator::GroverSATSimulator(Params &params, uint32_t num_threads) : Simulator(params), sampler(params) {
 	system_size = get<int>(params, "system_size");
 
 	num_variables = get<int>(params, "num_variables");
@@ -96,9 +96,7 @@ GroverSATSimulator::GroverSATSimulator(Params &params) : Simulator(params), samp
 	get<double>(params, "alpha", alpha);
 
 	record_fidelity = get<int>(params, "record_fidelity", DEFAULT_RECORD_FIDELITY);
-}
 
-void GroverSATSimulator::init_state(uint32_t num_threads) {
 	Eigen::setNbThreads(num_threads);
 	state = std::make_shared<Statevector>(system_size);
 	hadamard_transform();

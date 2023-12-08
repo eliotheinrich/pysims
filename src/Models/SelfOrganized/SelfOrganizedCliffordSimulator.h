@@ -59,12 +59,9 @@ class SelfOrganizedCliffordSimulator : public Simulator {
 		void add_distance_distribution(data_t &samples) const;
 
 	public:
-		SelfOrganizedCliffordSimulator(Params &params);
+		SelfOrganizedCliffordSimulator(Params &params, uint32_t);
 
-		virtual void init_state(uint32_t) override;
 		virtual void timesteps(uint32_t num_steps) override;
 
 		virtual data_t take_samples() override;
-
-		CLONE(Simulator, SelfOrganizedCliffordSimulator)
 };

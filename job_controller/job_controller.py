@@ -1,8 +1,9 @@
-from pysims.pysimulators import *
 import subprocess
 import os
 import shutil
 import json
+
+from dataframe import write_config
 
 def save_config(config, filename):
     config = json.loads(config)
@@ -25,10 +26,9 @@ def submit_jobs(
         run_local=False,
         atol=1e-5,
         rtol=1e-5,
-        serialize=False,
         average_congruent_runs=True,
         record_error=True,
-        parallelization_type=0
+        parallelization_type=1
     ):
 
     metaparams = {
@@ -41,7 +41,6 @@ def submit_jobs(
         "average_congruent_runs": average_congruent_runs,
         "parallelization_type": parallelization_type,
         
-        "serialize": serialize,
         "record_error": record_error
     }
     
@@ -62,7 +61,11 @@ def submit_jobs(
     
     # Setup
     cwd = os.getcwd()
-    case_dir = os.path.join(cwd, f'{job_name}_case')
+    do_run_file = os.path.join(cwd, "do_run.py")
+    combine_data_file = os.path.join(cwd, "combine_data.py")
+    
+    data_dir = os.path.join(cwd, 'data')
+    case_dir = os.path.join(cwd, f'cases/{job_name}_case')
     if os.path.exists(case_dir):
         shutil.rmtree(case_dir)
     os.mkdir(case_dir)
@@ -70,24 +73,22 @@ def submit_jobs(
     if run_local:
         os.chdir(f'{case_dir}')
         for i in range(nodes):
-            script = ["python", "../do_run.py", f"{job_name}_{i}", f"{json.dumps(metaparams)}", f"{json.dumps(config)}"]
-
+            script = ["python", do_run_file, f"{job_name}_{i}", f"{json.dumps(metaparams)}", f"{json.dumps(config)}"]
             subprocess.run(script)
         
-        
 
-        combine_script = ["python", "../combine_data.py", job_name, str(record_error)]
+        combine_script = ["python", combine_data_file, job_name, str(record_error)]
         subprocess.run(combine_script)
-        subprocess.run(["mv", "-f", f"{job_name}.json", ".."])
+        subprocess.run(["mv", "-f", f"{job_name}.json", data_dir])
         if cleanup:
             shutil.rmtree(case_dir)
     else:
-        dependencies = []
         for i in range(nodes):
             script = [
                 f"#!/usr/bin/tcsh",
                 f"#SBATCH --partition={partition}",
                 f"#SBATCH --job-name={job_name}",
+                f"#SBATCH --output=slurm.{job_name}.%j.out",
                 f"#SBATCH --cpus-per-task={ncores}",
                 f"#SBATCH --nodes=1 --ntasks=1",
                 f"#SBATCH --mem={memory}",
@@ -97,7 +98,7 @@ def submit_jobs(
                 f"conda activate test",
                 f"cd {case_dir}",
                 
-                f"python ../do_run.py {job_name}_{i} '{json.dumps(metaparams)}' '{json.dumps(config)}'",
+                f"python {do_run_file} {job_name}_{i} '{json.dumps(metaparams)}' '{json.dumps(config)}'",
             ]
 
             script = '\n'.join(script)
@@ -106,16 +107,14 @@ def submit_jobs(
                 f.write(script)
 
             # Replace s
-            sbatch_process = subprocess.run(["sbatch", job_name_str], capture_output=True, text=True)
-            sbatch_output = sbatch_process.stdout
-            jobid = sbatch_output.strip().split()[-1]
-            dependencies.append(jobid)
+            subprocess.run(["sbatch", job_name_str], text=True)
             subprocess.run(["rm", job_name_str])
 
         combine_script = [
             f"#!/usr/bin/tcsh",
             f"#SBATCH --partition=shared",
             f"#SBATCH --job-name={job_name}",
+            f"#SBATCH --output=slurm.{job_name}.%j.out"
             f"#SBATCH --cpus-per-task=1",
             f"#SBATCH --nodes=1 --ntasks=1",
             f"#SBATCH --mem=50gb",
@@ -125,8 +124,8 @@ def submit_jobs(
             f"conda activate test",
             f"cd {case_dir}",
             
-            f"python ../combine_data.py {job_name} {record_error}",
-            f"mv -f {job_name}.json ..",
+            f"python {combine_data_file} {job_name} {record_error}",
+            f"mv -f {os.path.join(case_dir), job_name + '.json'} {data_dir}",
         ]
         
         if cleanup:
@@ -136,7 +135,6 @@ def submit_jobs(
         job_name_str = os.path.join(case_dir, f'{job_name}.sl')
         with open(job_name_str, 'w') as f:
             f.write(combine_script)
-
         subprocess.run(["sbatch", f"--dependency=singleton", job_name_str])
 
 def field_to_string(field) -> str:

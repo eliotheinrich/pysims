@@ -64,8 +64,10 @@ class ADAMOptimizer {
 
 			std::vector<double> params = initial_params;
 
+			t = 0;
 			for (uint32_t i = 0; i < num_iterations; i++) {
 				t++;
+
 				std::vector<double> gradients = compute_gradients(cost_func, params);
 				update_params(params, gradients);
 				

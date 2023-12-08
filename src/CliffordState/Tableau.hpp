@@ -4,10 +4,7 @@
 #include <vector>
 #include <random>
 #include <variant>
-#include <unordered_set>
 #include <algorithm>
-
-#include <iostream>
 
 #include "QuantumState.h"
 
@@ -73,31 +70,40 @@ static void remove_even_indices(std::vector<T> &v) {
     }
 }
 
-inline static uint32_t get_width(uint32_t N, uint32_t w) {
-    return N / w + static_cast<bool>(N % w);
-}
 
 class PauliString {
     public:
         uint32_t num_qubits;
-        std::vector<bool> bit_string;
         bool phase;
 
-        PauliString()=default;
-        PauliString(uint32_t num_qubits) : num_qubits(num_qubits), bit_string(std::vector<bool>(2*num_qubits, false)), phase(false) {}
+        // Store bitstring as an array of 32-bit words
+        // The bits are formatted as:
+        // x0 z0 x1 z1 ... x15 z15
+        // x16 z16 x17 z17 ... etc
+        // This is slightly more efficient than the originally format originally described
+        // by Aaronson and Gottesman (https://arxiv.org/abs/quant-ph/0406196) as it 
+        // is more cache-friendly; most operations only act on a single word.
+        std::vector<uint32_t> bit_string;
+		uint32_t width;
 
-        static PauliString rand(uint32_t num_qubits, std::minstd_rand *r) {
+        PauliString()=default;
+        PauliString(uint32_t num_qubits) : num_qubits(num_qubits), phase(false) {
+			width = (2u*num_qubits) / 32 + static_cast<bool>((2u*num_qubits) % 32);
+            bit_string = std::vector<uint32_t>(width, 0);
+        }
+
+        static PauliString rand(uint32_t num_qubits, std::minstd_rand& r) {
             PauliString p(num_qubits);
 
-            std::transform(p.bit_string.begin(), p.bit_string.end(), p.bit_string.begin(), [&r](bool) { 
-                return (*r)() % 2; 
-            });
+            for (uint32_t j = 0; j < p.width; j++) {
+                p.bit_string[j] = r();
+            }
 
-            p.set_r((*r)() % 2);
+            p.set_r(r() % 2);
 
             // Need to check that at least one bit is nonzero so that p is not the identity
-            for (uint32_t j = 0; j < 2*num_qubits; j++) {
-                if (p.bit_string[j]) {
+            for (uint32_t j = 0; j < num_qubits; j++) {
+                if (p.xz(j)) {
                     return p;
                 }
             }
@@ -105,7 +111,7 @@ class PauliString {
             return PauliString::rand(num_qubits, r);
         }
 
-        static PauliString basis(uint32_t num_qubits, std::string P, uint32_t q, bool r) {
+        static PauliString basis(uint32_t num_qubits, const std::string& P, uint32_t q, bool r) {
             PauliString p(num_qubits);
             if (P == "X") {
                 p.set_x(q, true);
@@ -124,30 +130,54 @@ class PauliString {
             return p;
         }
 
-        static PauliString basis(uint32_t num_qubits, std::string P, uint32_t q) {
+        static PauliString basis(uint32_t num_qubits, const std::string& P, uint32_t q) {
             return PauliString::basis(num_qubits, P, q, false);
         }
 
-        PauliString copy() {
+        PauliString copy() const {
             PauliString p(num_qubits);
             std::copy(bit_string.begin(), bit_string.end(), p.bit_string.begin());
             p.set_r(r());
             return p;
         }
 
-        inline bool operator[](size_t i) {
-            return bit_string[i];
+        inline bool operator[](size_t i) const {
+            size_t word_ind = i / 32;
+            size_t bit_ind = i % 32;
+            return (bit_string[word_ind] >> bit_ind) & 1u;
         }
 
-        inline void set(size_t i, bool b) {
-            bit_string[i] = b;
+        bool operator==(const PauliString &rhs) const {
+            if (num_qubits != rhs.num_qubits) {
+                return false;
+            }
+            
+            if (r() != rhs.r()) {
+                return false;
+            }
+            
+            for (uint32_t i = 0; i < num_qubits; i++) {
+                if (x(i) != rhs.x(i)) {
+                    return false;
+                }
+
+                if (z(i) != rhs.z(i)) {
+                    return false;
+                }
+            }
+
+            return true;
         }
 
-        std::vector<bool>::iterator begin() {
+		bool operator!=(const PauliString &rhs) const { 
+            return !(this->operator==(rhs)); 
+        }
+
+        std::vector<uint32_t>::iterator begin() {
             return bit_string.begin();
         }
 
-        std::vector<bool>::iterator end() {
+        std::vector<uint32_t>::iterator end() {
             return bit_string.end();
         }
 
@@ -201,9 +231,14 @@ class PauliString {
 
         std::string to_string() const {
             std::string s = "[ ";
-            for (uint32_t i = 0; i < 2*num_qubits; i++) {
-                s += bit_string[i] ? "1" : "0";
+            for (uint32_t i = 0; i < num_qubits; i++) {
+                s += x(i) ? "1" : "0";
             }
+
+            for (uint32_t i = 0; i < num_qubits; i++) {
+                s += z(i) ? "1" : "0";
+            }
+
             s += " | ";
 
             s += phase ? "1 ]" : "0 ]";
@@ -213,15 +248,19 @@ class PauliString {
 
         std::string to_string_ops() const {
             std::string s = phase ? "-" : "+";
+
             for (uint32_t i = 0; i < num_qubits; i++) {
                 s += to_op(i);
             }
+
             return s;
         }
 
         void s_gate(uint32_t a) {
-            bool xa = x(a);
-            bool za = z(a);
+            uint8_t xza = xz(a);
+            bool xa = (xza >> 0u) & 1u;
+            bool za = (xza >> 1u) & 1u;
+
             bool r = phase;
 
             set_r(r != (xa && za));
@@ -229,8 +268,10 @@ class PauliString {
         }
 
         void h_gate(uint32_t a) {
-            bool xa = x(a);
-            bool za = z(a);
+            uint8_t xza = xz(a);
+            bool xa = (xza >> 0u) & 1u;
+            bool za = (xza >> 1u) & 1u;
+
             bool r = phase;
 
             set_r(r != (xa && za));
@@ -239,10 +280,14 @@ class PauliString {
         }
 
         void cx_gate(uint32_t a, uint32_t b) {
-            bool xa = x(a);
-            bool za = z(a);
-            bool xb = x(b);
-            bool zb = z(b);
+            uint8_t xza = xz(a);
+            bool xa = (xza >> 0u) & 1u;
+            bool za = (xza >> 1u) & 1u;
+
+            uint8_t xzb = xz(b);
+            bool xb = (xzb >> 0u) & 1u;
+            bool zb = (xzb >> 1u) & 1u;
+
             bool r = phase;
 
             set_r(r != ((xa && zb) && ((xb != za) != true)));
@@ -283,39 +328,25 @@ class PauliString {
         // Returns the circuit which maps this PauliString onto p
         tableau_utils::Circuit transform(PauliString const &p) const;
 
+        // It is slightly faster (~20-30%) to query both the x and z bits at a given site
+        // at the same time, storing them in the first two bits of the return value.
+        inline uint8_t xz(uint32_t i) const {
+            uint32_t word = bit_string[i / 16u];
+            uint32_t bit_ind = 2u*(i % 16u);
 
-        bool operator==(const PauliString &rhs) const {
-            if (num_qubits != rhs.num_qubits) {
-                return false;
-            }
-            
-            if (r() != rhs.r()) {
-                return false;
-            }
-            
-            for (uint32_t i = 0; i < num_qubits; i++) {
-                if (x(i) != rhs.x(i)) {
-                    return false;
-                }
-
-                if (z(i) != rhs.z(i)) {
-                    return false;
-                }
-            }
-
-            return true;
-        }
-
-		bool operator!=(const PauliString &rhs) const { 
-            return !(this->operator==(rhs)); 
+            return 0u | (((word >> bit_ind) & 3u) << 0u);
         }
 
         inline bool x(uint32_t i) const { 
-            return bit_string[i]; 
+            uint32_t word = bit_string[i / 16u];
+            uint32_t bit_ind = 2u*(i % 16u);
+            return (word >> bit_ind) & 1u;
         }
 
         inline bool z(uint32_t i) const { 
-            return bit_string[i + num_qubits]; 
+            uint32_t word = bit_string[i / 16u];
+            uint32_t bit_ind = 2u*(i % 16u) + 1u;
+            return (word >> bit_ind) & 1u; 
         }
 
         inline bool r() const { 
@@ -323,11 +354,15 @@ class PauliString {
         }
 
         inline void set_x(uint32_t i, bool v) { 
-            bit_string[i] = v; 
+            uint32_t word_ind = i / 16u;
+            uint32_t bit_ind = 2u*(i % 16u);
+            bit_string[word_ind] = (bit_string[word_ind] & ~(1u << bit_ind)) | (v << bit_ind);
         }
 
         inline void set_z(uint32_t i, bool v) { 
-            bit_string[i + num_qubits] = v; 
+            uint32_t word_ind = i / 16u;
+            uint32_t bit_ind = 2u*(i % 16u) + 1u;
+            bit_string[word_ind] = (bit_string[word_ind] & ~(1u << bit_ind)) | (v << bit_ind);
         }
 
         inline void set_r(bool v) { 
@@ -418,23 +453,19 @@ class Tableau {
         }
 
         // Put tableau into reduced row echelon form
-        void rref(const std::vector<uint32_t>& sites, bool track_phase) {
+        void rref(const std::vector<uint32_t>& sites) {
             uint32_t r1 = track_destabilizers ? num_qubits : 0;
             uint32_t r2 = num_rows();
 
             uint32_t pivot_row = 0;
             uint32_t row = r1;
 
-            std::vector<uint32_t> inds(2*sites.size());
-            for (uint32_t i = 0; i < sites.size(); i++) {
-                inds[2*i] = sites[i];
-                inds[2*i+1] = sites[i] + num_qubits;
-            }
-
-            for (const auto c : inds) {
+            for (uint32_t k = 0; k < 2*sites.size(); k++) {
+                uint32_t c = sites[k % sites.size()];
+                bool z = k < sites.size();
                 bool found_pivot = false;
                 for (uint32_t i = row; i < r2; i++) {
-                    if (rows[i][c]) {
+                    if ((z && rows[i].z(c)) || (!z && rows[i].x(c))) {
                         pivot_row = i;
                         found_pivot = true;
                         break;
@@ -442,13 +473,15 @@ class Tableau {
                 }
 
                 if (found_pivot) {
-                    //std::cout << "Pivoting on " << pivot_row << std::endl;
-                    //std::cout << "Swapping " << row << " with " << pivot_row << ".\n";
                     std::swap(rows[row], rows[pivot_row]);
 
                     for (uint32_t i = r1; i < r2; i++) {
-                        if (i != row && rows[i][c]) {
-                            rowsum(i, row, track_phase);
+                        if (i == row) {
+                            continue;
+                        }
+
+                        if ((z && rows[i].z(c)) || (!z && rows[i].x(c))) {
+                            rowsum(i, row);
                         }
                     }
 
@@ -459,60 +492,8 @@ class Tableau {
             }
         }
 
-        void rref(bool track_phase=true) {
-            uint32_t r1 = track_destabilizers ? num_qubits : 0;
-            uint32_t r2 = num_rows();
-
-            uint32_t pivot_row = 0;
-            uint32_t row = r1;
-
-
-            for (uint32_t c = 0; c < 2*num_qubits; c++) {
-                bool found_pivot = false;
-                for (uint32_t i = row; i < r2; i++) {
-                    if (rows[i][c]) {
-                        pivot_row = i;
-                        found_pivot = true;
-                        break;
-                    }
-                }
-
-                if (found_pivot) {
-                    //std::cout << "Pivoting on " << pivot_row << std::endl;
-                    //std::cout << "Swapping " << row << " with " << pivot_row << ".\n";
-                    std::swap(rows[row], rows[pivot_row]);
-
-                    for (uint32_t i = r1; i < r2; i++) {
-                        if (i != row && rows[i][c]) {
-                            rowsum(i, row, track_phase);
-                        }
-                    }
-
-                    row += 1;
-                } else {
-                    continue;
-                }
-            }
-        }
-
-        uint32_t rank(bool track_phase=true) {
-            rref(track_phase);
-
-            uint32_t r1 = track_destabilizers ? num_qubits : 0;
-            uint32_t r2 = num_rows();
-
-            uint32_t r = 0;
-            for (uint32_t i = r1; i < r2; i++) {
-                if (std::accumulate(rows[i].begin(), rows[i].end(), 0)) {
-                    r++;
-                }
-            }
-
-            return r;
-        }
-
-        uint32_t rank(const std::vector<uint32_t>& sites, bool track_phase=true) {
-            rref(sites, track_phase);
+        uint32_t rank(const std::vector<uint32_t>& sites) {
+            rref(sites);
 
             uint32_t r1 = track_destabilizers ? num_qubits : 0;
             uint32_t r2 = num_rows();
@@ -520,7 +501,7 @@ class Tableau {
             uint32_t r = 0;
             for (uint32_t i = r1; i < r2; i++) {
                 for (uint32_t j = 0; j < sites.size(); j++) {
-                    if (rows[i][sites[j]] || rows[i][sites[j] + num_qubits]) {
+                    if (rows[i].x(sites[j]) || rows[i].z(sites[j])) {
                         r++;
                         break;
                     }
@@ -528,6 +509,18 @@ class Tableau {
             }
 
             return r;
+        }
+
+        void rref() {
+            std::vector<uint32_t> qubits(num_qubits);
+            std::iota(qubits.begin(), qubits.end(), 0);
+            rref(qubits);
+        }
+
+        uint32_t rank() {
+            std::vector<uint32_t> qubits(num_qubits);
+            std::iota(qubits.begin(), qubits.end(), 0);
+            return rank(qubits);
         }
 
         inline void validate_qubit(uint32_t a) const {
@@ -550,16 +543,19 @@ class Tableau {
 
         std::string to_string_ops() const {
             std::string s = "";
-            uint32_t r1 = track_destabilizers ? num_qubits : 0;
-            for (uint32_t i = r1; i < num_rows(); i++) {
-                s += "[";
-                s += rows[i].to_string_ops();
+            for (uint32_t i = 0; i < num_rows(); i++) {
+                s += (i == 0) ? "[" : " ";
+                s += "[" + rows[i].to_string_ops() + "]";
                 s += (i == num_rows() - 1) ? "]" : "\n";
             }
             return s + "]";
         }
 
-        int g(bool x1, bool z1, bool x2, bool z2) {
+        int g(uint32_t xz1, uint8_t xz2) {
+            bool x1 = (xz1 >> 0u) & 1u;
+            bool z1 = (xz1 >> 1u) & 1u;
+            bool x2 = (xz2 >> 0u) & 1u;
+            bool z2 = (xz2 >> 1u) & 1u;
             if (!x1 && !z1) { 
                 return 0; 
             } else if (x1 && z1) {
@@ -583,35 +579,30 @@ class Tableau {
             }
         }
 
-        void rowsum(uint32_t h, uint32_t i, bool track_phase=true) {
-            //if (!track_destabilizers)
-            //    throw std::invalid_argument("Cannot perform rowsum without track_destabilizers.");
-
-            if (track_phase) {
-                int s = 0;
-                
-                if (r(i)) { 
-                    s += 2; 
-                }
-
-                if (r(h)) { 
-                    s += 2; 
-                }
-
-                for (uint32_t j = 0; j < num_qubits; j++)
-                    s += Tableau::g(x(i,j), z(i,j), x(h,j), z(h,j));
-
-                if (s % 4 == 0) {
-                    set_r(h, false);
-                } else if (std::abs(s % 4) == 2) {
-                    set_r(h, true);
-                }
+        void rowsum(uint32_t h, uint32_t i) {
+            int s = 0;
+            
+            if (r(i)) { 
+                s += 2; 
             }
 
-            for (uint32_t j = 0; j < 2*num_qubits; j++) {
-                bool v1 = rows[h][j];
-                bool v2 = rows[i][j];
-                rows[h].set(j, v1 ^ v2);
+            if (r(h)) { 
+                s += 2; 
+            }
+
+            for (uint32_t j = 0; j < num_qubits; j++) {
+                s += Tableau::g(rows[i].xz(j), rows[h].xz(j));
+            }
+
+            if (s % 4 == 0) {
+                set_r(h, false);
+            } else if (std::abs(s % 4) == 2) {
+                set_r(h, true);
+            }
+
+            uint32_t width = rows[h].width;
+            for (uint32_t j = 0; j < width; j++) {
+                rows[h].bit_string[j] ^= rows[i].bit_string[j];
             }
         }
 
@@ -672,7 +663,6 @@ class Tableau {
                     }
                 }
 
-                // TODO check that copy is happening, not passing reference
                 std::swap(rows[p - num_qubits], rows[p]);
                 rows[p] = PauliString(num_qubits);
 

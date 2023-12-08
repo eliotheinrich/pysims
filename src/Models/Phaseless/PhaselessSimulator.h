@@ -24,14 +24,11 @@ class PhaselessSimulator : public Simulator {
 		void apply_gate(uint32_t q1, uint32_t q2);
 
 	public:
-		PhaselessSimulator(Params& params);
+		PhaselessSimulator(Params& params, uint32_t);
 
-		virtual void init_state(uint32_t) override;
 		void one_dimensional_timestep();
 		void two_dimensional_timestep();
 		virtual void timesteps(uint32_t num_steps) override;
 
 		data_t take_samples() override;
-
-		CLONE(Simulator, PhaselessSimulator);
 };

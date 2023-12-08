@@ -70,8 +70,7 @@ bool test_GroverSimulation() {
     p["mzr_prob"] = (double) 0.0;
     p["nmax"] = 50;
 
-    GroverProjectionSimulator gs(p);
-    gs.init_state(1);
+    GroverProjectionSimulator gs(p,1);
     
     //for (uint32_t i = 0; i < 10; i++) {
     //    auto gate = haar_unitary(3);
@@ -244,7 +243,7 @@ bool test_vqse_energy() {
 }
 
 #include <random>
-#include "utils.cpp"
+#include "Models.h"
 #include <sstream>
 
 void print_params(std::vector<double> params) {
@@ -586,7 +585,7 @@ void circuit_test() {
 
 
 void large_chp_test_multiqubit() {
-    uint32_t system_size = 4;
+    uint32_t system_size = 33;
     int seed = 314;
     QuantumCHPState state1(system_size, seed);
     QuantumGraphState state2(system_size, seed);
@@ -594,32 +593,24 @@ void large_chp_test_multiqubit() {
     std::mt19937 rng(seed);
 
     uint32_t num_iters = 1000;
+    std::cout << "Initial state: \n" << state1.to_string() << std::endl << state1.to_string_ops() << std::endl;
 
     for (uint32_t i = 0; i < num_iters; i++) {
         uint32_t q1 = rng() % system_size;
         uint32_t q2 = rng() % system_size;
-        while (q2 == q1)
+        while (q2 == q1) {
             q2 = rng() % system_size;
+        }
 
         std::vector<uint32_t> qbits{q1, q2};
-        //std::cout << "Random clifford on " << q1 << " " << q2 << std::endl;
         state1.random_clifford(qbits);
         state2.random_clifford(qbits);
 
         uint32_t q3 = rng() % system_size;
 
-        //Statevector sv3 = state3.to_statevector();
-        //std::cout << "mzr on " << q3 << std::endl;
-        //std::cout << "Before mzr: \n";
-        //std::cout << "sv1 (chp)          : " << sv1.to_string() << std::endl;
-        //std::cout << "sv2 (graphsim)     : " << sv2.to_string() << std::endl;
-        //std::cout << "sv3 (graphsim->chp): " << sv3.to_string() << std::endl;
-        //std::cout << "state1 (chp)          : \n" << state1.to_string_ops() << std::endl;
-        //std::cout << "state3 (graphsim)     : \n" << state3.to_string_ops() << std::endl;
-        //std::cout << "state2 (graphsim)     : \n" << state2.to_string() << std::endl;
         if (double(rng()) / RAND_MAX < 0.05) {
-            state1.mzr(q3);
-            state2.mzr(q3);
+            //state1.mzr(q3);
+            //state2.mzr(q3);
         }
         auto state3 = state2.to_chp();
 
@@ -627,32 +618,14 @@ void large_chp_test_multiqubit() {
         state3.tableau.rref();
 
 
-        std::cout << state1.to_string() << std::endl;
-        std::cout << state3.to_string() << std::endl;
-
-        //sv1 = state1.to_statevector();
-        //sv2 = state2.to_statevector();
-        //state3 = state2.to_chp();
-        //sv3 = state3.to_statevector();
-        //state1.tableau.rref();
-        //state3.tableau.rref();
-        //std::cout << "After mzr: \n";
-        //std::cout << "sv1 (chp)          : " << sv1.to_string() << std::endl;
-        //std::cout << "sv2 (graphsim)     : " << sv2.to_string() << std::endl;
-        //std::cout << "sv3 (graphsim->chp): " << sv3.to_string() << std::endl;
-        //std::cout << "state1 (chp)          : \n" << state1.to_string_ops() << std::endl;
-        //std::cout << "state3 (graphsim)     : \n" << state3.to_string_ops() << std::endl;
-        //std::cout << "state2 (graphsim)     : \n" << state2.to_string() << std::endl;
-
+        //std::cout << state1.to_string() << std::endl;
+        //std::cout << state3.to_string() << std::endl;
 
         if (state1 != state3) {
             Statevector sv1 = state1.to_statevector();
             Statevector sv2 = state2.to_statevector();
             std::cout << "state1: \n" << state1.to_string() << std::endl;
             std::cout << "state2: \n" << state2.to_string() << std::endl;
-        //    std::cout << "state3: \n" << state3.to_string() << std::endl;
-
-        //    throw std::invalid_argument("States do not match.");
         }
 
 
@@ -686,7 +659,7 @@ void large_chp_test_multiqubit() {
 }
 
 void large_chp_test_singlequbit() {
-    uint32_t system_size = 4;
+    uint32_t system_size = 33;
     int seed = 314;
     QuantumCHPState state1(system_size, seed);
     QuantumGraphState state2(system_size, seed);
@@ -768,17 +741,14 @@ void large_chp_test_singlequbit() {
 int main() {
     //circuit_test();
     //large_chp_test_singlequbit();
-    large_chp_test_multiqubit();
-    //QuantumCHPState state(2);
-    //Statevector sv = state.to_statevector();
+    //large_chp_test_multiqubit();
 
-    //std::cout << state.to_string_ops() << std::endl;
-    //std::cout << sv.to_string() << std::endl;
+    Params params;
+    params.emplace("system_size", 10);
+    params.emplace("mzr_prob", 0.1);
 
-    //state.h_gate(0);
-    //state.cx_gate(0, 1);
-    //sv = state.to_statevector();
-
-    //std::cout << state.to_string_ops() << std::endl;
-    //std::cout << sv.to_string() << std::endl;
+    params.emplace("sample_variable_mutual_information", true);
+    RandomCliffordSimulator sim(params, 1);
+    sim.timesteps(100);
+    auto samples = sim.take_samples();
 }

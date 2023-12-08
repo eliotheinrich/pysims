@@ -30,10 +30,7 @@ class GroverProjectionSimulator : public Simulator {
 		void grover_projection(uint32_t qubit);
 		void random_grover_projection();
 
-		GroverProjectionSimulator(Params &params);
+		GroverProjectionSimulator(Params &params, uint32_t);
 
-		virtual void init_state(uint32_t num_threads) override;
 		virtual void timesteps(uint32_t num_steps) override;
-
-		CLONE(Simulator, GroverProjectionSimulator)
 };

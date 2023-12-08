@@ -15,7 +15,7 @@ static inline float sample_powerlaw(float y, float x0, float x1, float a) {
 	return std::pow((std::pow(x1, a+1) - std::pow(x0, a+1))*y + std::pow(x0, a+1), 1./(a+1.));
 }
 
-GraphCliffordSimulator::GraphCliffordSimulator(Params &params) : Simulator(params), sampler(params) {
+GraphCliffordSimulator::GraphCliffordSimulator(Params &params, uint32_t) : Simulator(params), sampler(params) {
 	system_size = get<int>(params, "system_size");
 
 	evolution_type = get<std::string>(params, "evolution_type", DEFAULT_EVOLUTION_TYPE);
@@ -31,10 +31,7 @@ GraphCliffordSimulator::GraphCliffordSimulator(Params &params) : Simulator(param
 		mzr_prob = get<double>(params, "mzr_prob");
 	}
 
-}
-
-void GraphCliffordSimulator::init_state(uint32_t) {
-	state = std::shared_ptr<QuantumGraphState>(new QuantumGraphState(system_size));
+	state = std::make_shared<QuantumGraphState>(system_size);
 
 	if (evolution_type == QUANTUM_AUTOMATON) { // quantum automaton circuit must be polarized
 		for (uint32_t i = 0; i < system_size; i++) {

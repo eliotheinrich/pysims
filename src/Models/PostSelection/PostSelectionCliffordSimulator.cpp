@@ -4,9 +4,11 @@
 
 #define DEFAULT_CLIFFORD_TYPE "chp"
 
-PostSelectionCliffordSimulator::PostSelectionCliffordSimulator(Params &params) : Simulator(params), sampler(params) {
+PostSelectionCliffordSimulator::PostSelectionCliffordSimulator(Params &params, uint32_t) : Simulator(params), sampler(params) {
 	system_size = get<int>(params, "system_size");
 	mzr_prob = get<double>(params, "mzr_prob");
+
+	state = std::make_shared<QuantumCHPState>(system_size);
 }
 
 void PostSelectionCliffordSimulator::mzr(uint32_t i) {

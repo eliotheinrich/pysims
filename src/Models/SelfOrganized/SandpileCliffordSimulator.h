@@ -46,9 +46,7 @@ class SandpileCliffordSimulator : public Simulator {
 		uint32_t get_shape(uint32_t s0, uint32_t s1, uint32_t s2) const;
 
 	public:
-		SandpileCliffordSimulator(Params &params);
-
-		virtual void init_state(uint32_t) override;
+		SandpileCliffordSimulator(Params &params, uint32_t);
 
 		virtual void equilibration_timesteps(uint32_t num_steps) override {
 			start_sampling = false;
@@ -57,14 +55,6 @@ class SandpileCliffordSimulator : public Simulator {
 		}
 
 		virtual void timesteps(uint32_t num_steps) override;
-		virtual std::string serialize() const override {
-			std::string s = state->to_string();
-			auto substrings = split(s, "\n");
-			substrings.erase(substrings.begin());
-			return join(substrings, "\n");
-		}
 
 		virtual data_t take_samples() override;
-
-		CLONE(Simulator, SandpileCliffordSimulator)
 };

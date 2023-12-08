@@ -4,9 +4,6 @@
 #include <QuantumCHPState.hpp>
 #include <QuantumGraphState.h>
 
-#include <cmath>
-#include <numeric>
-
 #define DEFAULT_BOUNDARY_CONDITIONS "pbc"
 #define DEFAULT_FEEDBACK_MODE 22
 #define DEFAULT_UNITARY_QUBITS false
@@ -17,7 +14,7 @@
 #define SUBSTRATE 0
 #define PYRAMID 1 
 
-SandpileCliffordSimulator::SandpileCliffordSimulator(Params &params) : Simulator(params), interface_sampler(params), entropy_sampler(params) {
+SandpileCliffordSimulator::SandpileCliffordSimulator(Params &params, uint32_t) : Simulator(params), interface_sampler(params), entropy_sampler(params) {
 	system_size = get<int>(params, "system_size");
 
 	mzr_prob = get<double>(params, "mzr_prob");
@@ -72,9 +69,8 @@ SandpileCliffordSimulator::SandpileCliffordSimulator(Params &params) : Simulator
 	else if (feedback_mode == 29) feedback_strategy = std::vector<uint32_t>{1, 2, 4, 5, 6};
 	else if (feedback_mode == 30) feedback_strategy = std::vector<uint32_t>{1, 3, 4, 5, 6};
 	else if (feedback_mode == 31) feedback_strategy = std::vector<uint32_t>{1, 2, 3, 4, 5, 6};
-}
 
-void SandpileCliffordSimulator::init_state(uint32_t) {
+
 	state = std::make_shared<QuantumCHPState>(system_size);
 
 	if (initial_state == SUBSTRATE) {

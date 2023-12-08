@@ -3,12 +3,15 @@
 #define FULL_HAAR 0
 #define BRICKWORK_HAAR 1
 
-RandomCircuitSamplingSimulator::RandomCircuitSamplingSimulator(Params &params) : Simulator(params), entropy_sampler(params), prob_sampler(params) {
+RandomCircuitSamplingSimulator::RandomCircuitSamplingSimulator(Params &params, uint32_t num_threads) : Simulator(params), entropy_sampler(params), prob_sampler(params) {
 	system_size = get<int>(params, "system_size");
 
 	mzr_prob = get<double>(params, "mzr_prob");
 	evolution_type = get<int>(params, "evolution_type", FULL_HAAR);
 	offset = false;
+
+	Eigen::setNbThreads(num_threads);
+	state = std::make_shared<Statevector>(system_size);
 }
 
 void RandomCircuitSamplingSimulator::full_haar() {

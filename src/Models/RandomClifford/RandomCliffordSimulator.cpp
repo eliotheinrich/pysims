@@ -10,7 +10,7 @@
 
 #define DEFAULT_SAMPLE_SPARSITY false
 
-RandomCliffordSimulator::RandomCliffordSimulator(Params &params) : Simulator(params), entropy_sampler(params), interface_sampler(params) {
+RandomCliffordSimulator::RandomCliffordSimulator(Params &params, uint32_t) : Simulator(params), entropy_sampler(params), interface_sampler(params) {
 	system_size = get<int>(params, "system_size");
 
 	mzr_prob = get<double>(params, "mzr_prob");
@@ -28,20 +28,13 @@ RandomCliffordSimulator::RandomCliffordSimulator(Params &params) : Simulator(par
 	seed = get<int>(params, "seed", -1);
 
 	start_sampling = false;
-}
 
-void RandomCliffordSimulator::init_state(uint32_t) {
+
 	if (simulator_type == "chp") {
 		state = std::make_shared<QuantumCHPState>(system_size, seed);
 	} else if (simulator_type == "graph") {
 		state = std::make_shared<QuantumGraphState>(system_size, seed);
 	}
-}
-
-std::shared_ptr<Simulator> RandomCliffordSimulator::deserialize(Params &params, const std::string &data) {
-	std::shared_ptr<RandomCliffordSimulator> sim(new RandomCliffordSimulator(params));
-	sim->state = std::make_shared<QuantumCHPState>(data);
-	return sim;
 }
 
 void RandomCliffordSimulator::timesteps(uint32_t num_steps) {

@@ -1,15 +1,12 @@
 #pragma once
+
 #include <Eigen/Dense>
 #include <unsupported/Eigen/MatrixFunctions>
 #include <vector>
 #include <variant>
 #include <string>
 #include <complex>
-#include <math.h>
 #include <memory>
-
-
-#include <iostream>
 
 // --- Definitions for gates/measurements --- //
 

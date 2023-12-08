@@ -2,16 +2,16 @@ from job_controller import config_to_string, submit_jobs, save_config
 from pysims.pysimulators import *
 
 
-def vqse_config(num_qubits):
+def vqse_config(num_qubits, maxiter=2000, nruns=16):
     config = {"circuit_type": "vqse"}
     
     # VQSE parameters
-    config["num_runs"] = 16
+    config["num_runs"] = nruns
     config["num_qubits"] = num_qubits
     config["hamiltonian_type"] = [0]
-    config["m"] = 2 
-    config["num_iterations"] = 2000
-    config["gradient_type"] = 0
+    config["m"] = 1
+    config["num_iterations"] = maxiter
+    config["gradient_type"] = 1
     config["noisy_gradients"] = False
     #config["gradient_noise"] = [0.0, 1e-9, 1e-8, 1e-7, 1e-6, 1e-5, 1e-4, 1e-3, 1e-2, 1e-1]
 
@@ -29,7 +29,7 @@ def vqse_config(num_qubits):
     config["density_matrix_target"] = True
 
     # Ansatz
-    config["ansatz_depth"] = list(range(num_qubits//2, 2*num_qubits+1, num_qubits//2))
+    config["ansatz_depth"] = [2] #list(range(num_qubits//2, 2*num_qubits+1, num_qubits//2))
     config["rotation_gates"] = "Rx, Ry, Rz"
     config["entangling_gate"] = "cz"
     
@@ -39,8 +39,8 @@ def vqse_config(num_qubits):
     return config_to_string(config)
 
 
-config = vqse_config(6)
-submit_jobs(config, "vqse_test6", ncores=64, memory="150gb", time="48:00:00")
+config = vqse_config(2, nruns=1, maxiter=1000)
+submit_jobs(config, "vqse_test", ncores=2, ncores_per_task=1, memory="1gb", time="1:00:00", cleanup=False, parallelization_type=1, run_local=True)
 
 def vqse_config_test(num_qubits):
     config = {"circuit_type": "vqse"}
@@ -59,7 +59,7 @@ def vqse_config_test(num_qubits):
     #config["num_shots"] = [1024, 2048, 4096, 8192, 16384, 32768]
 
     # Target
-    config["target_type"] = 1 # real
+    config["target_type"] = 0 # real
     config["target_depth"] = num_qubits
     config["num_measurements"] = 1
     config["post_measurement_layers"] = 2

@@ -53,9 +53,8 @@ class RandomCliffordSimulator : public Simulator {
 		bool start_sampling;
 
 	public:
-		RandomCliffordSimulator(Params &params);
+		RandomCliffordSimulator(Params &params, uint32_t num_threads);
 
-		virtual void init_state(uint32_t) override;
 		virtual void equilibration_timesteps(uint32_t num_steps) override {
 			start_sampling = false;
 			timesteps(num_steps);
@@ -63,16 +62,5 @@ class RandomCliffordSimulator : public Simulator {
 		}
 		virtual void timesteps(uint32_t num_steps) override;
 
-		virtual std::string serialize() const override {
-			std::string s = state->to_string();
-			auto substrings = split(s, "\n");
-			substrings.erase(substrings.begin());
-			return join(substrings, "\n");
-		}
-
-		virtual std::shared_ptr<Simulator> deserialize(Params &params, const std::string &data) override;
-
 		virtual data_t take_samples() override;
-
-		CLONE(Simulator, RandomCliffordSimulator)
 };

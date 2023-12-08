@@ -38,6 +38,20 @@ uint32_t QuantumCircuit::num_params() const {
 	return n;
 }
 
+uint32_t QuantumCircuit::length() const {
+  return instructions.size();
+}
+
+bool QuantumCircuit::contains_measurement() const {
+  for (auto const &inst : instructions) {
+    if (inst.index() == 1) {
+      return true;
+    }
+  }
+
+  return false;
+}
+
 void QuantumCircuit::add_instruction(const Instruction& inst) {
 	instructions.push_back(inst);
 }
@@ -69,9 +83,16 @@ void QuantumCircuit::add_gate(const Eigen::MatrixXcd& gate, const std::vector<ui
 }
 
 void QuantumCircuit::append(const QuantumCircuit& other) {
+  if (num_qubits != other.num_qubits) {
+    throw std::invalid_argument("Cannot append QuantumCircuits; numbers of qubits do not match.");
+  }
 	for (auto const &inst : other.instructions) {
 		add_instruction(inst);
 	}
+}
+
+void QuantumCircuit::append(const Instruction& inst) {
+  add_instruction(inst);
 }
 
 QuantumCircuit QuantumCircuit::bind_params(const std::vector<double>& params) const {

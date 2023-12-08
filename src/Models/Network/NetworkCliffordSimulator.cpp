@@ -2,7 +2,7 @@
 
 #define DEFAULT_NUM_PARTITIONS 10
 
-NetworkCliffordSimulator::NetworkCliffordSimulator(Params &params) : Simulator(params), sampler(params) {
+NetworkCliffordSimulator::NetworkCliffordSimulator(Params &params, uint32_t) : Simulator(params), sampler(params) {
 	system_size = get<int>(params, "system_size");
 
 	p = get<double>(params, "p");
@@ -11,9 +11,7 @@ NetworkCliffordSimulator::NetworkCliffordSimulator(Params &params) : Simulator(p
 	alpha = get<double>(params, "alpha");
 
 	num_partitions = get<int>(params, "num_partition", DEFAULT_NUM_PARTITIONS);
-}
 
-void NetworkCliffordSimulator::init_state(uint32_t) {
 	state = std::make_shared<QuantumCHPState>(system_size);
 	network = Graph::scale_free_graph(system_size, alpha);
 }

@@ -25,12 +25,9 @@ class NetworkCliffordSimulator : public Simulator {
 		void add_spatially_averaged_entropy(data_t& samples);
 
 	public:
-		NetworkCliffordSimulator(Params& params);
+		NetworkCliffordSimulator(Params& params, uint32_t);
 
-		virtual void init_state(uint32_t) override;
 		virtual void timesteps(uint32_t num_steps) override;
 
 		data_t take_samples() override;
-
-		CLONE(Simulator, NetworkCliffordSimulator);
 };

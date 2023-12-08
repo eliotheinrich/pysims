@@ -5,7 +5,7 @@
 
 #define DEFAULT_SAMPLE_MEASUREMENT_OUTCOMES true
 
-PhaselessSimulator::PhaselessSimulator(Params &params) : Simulator(params), sampler(params) {
+PhaselessSimulator::PhaselessSimulator(Params &params, uint32_t) : Simulator(params), sampler(params) {
 	system_size = get<int>(params, "system_size");
 
 	mzr_prob = get<double>(params, "mzr_prob");
@@ -15,9 +15,7 @@ PhaselessSimulator::PhaselessSimulator(Params &params) : Simulator(params), samp
 	dim = get<int>(params, "dim", DEFAULT_DIM);
 	
 	sample_measurement_outcomes = get<int>(params, "sample_measurement_outcomes", DEFAULT_SAMPLE_MEASUREMENT_OUTCOMES);
-}
 
-void PhaselessSimulator::init_state(uint32_t) {
 	state = std::make_shared<QuantumCHPState>(system_size);
 	offset = false;
 

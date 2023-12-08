@@ -88,9 +88,9 @@ FetchContent_Declare(
 list(APPEND EXTERNALS bspl)
 
 
-#if (DEFINED DATAFRAME_SOURCE)
-#    set(dataframe_SOURCE_DIR ${DATAFRAME_SOURCE})
-#else()
+if (DEFINED DATAFRAME_SOURCE)
+    set(dataframe_SOURCE_DIR ${DATAFRAME_SOURCE})
+else()
     FetchContent_Declare(
         dataframe
         GIT_REPOSITORY https://github.com/eliotheinrich/dataframe
@@ -98,7 +98,7 @@ list(APPEND EXTERNALS bspl)
         GIT_SHALLOW TRUE
     )
     list(APPEND EXTERNALS dataframe)
-#endif()
+endif()
 
 FetchContent_Declare(
     eigen
@@ -162,8 +162,8 @@ foreach(DIR IN LISTS MODEL_DIRS)
 endforeach()
 
 foreach(LIB IN LISTS SIMLATOR_LIBS)
-    target_link_libraries(LIB samplers)
-    target_include_directories(LIB PUBLIC ${SAMPLERS_DIR})
+    target_link_libraries(${LIB} samplers)
+    target_include_directories(${LIB} PUBLIC ${SAMPLERS_DIR})
 endforeach()
 
 
@@ -172,7 +172,7 @@ endforeach()
 #    set_target_properties(${LIB} PROPERTIES DEBUG_POSTFIX ${CMAKE_DEBUG_POSTFIX})
 #endforeach()
 
-add_library(sim_utils STATIC src/utils.cpp)
+add_library(sim_utils STATIC src/Models.h)
 target_include_directories(sim_utils PRIVATE ${MODEL_DIRS})
 # IF LINKER ERROR APPEARS IN MPS SIMULATION, LINK TO itensor HERE!!
 target_link_libraries(sim_utils PRIVATE ${LAPACKBLAS} ${SIMULATOR_LIBS})

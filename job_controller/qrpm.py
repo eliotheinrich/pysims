@@ -12,6 +12,7 @@ def generate_config_very_high_fidelity(
         scrambling_steps=None,
         sample_avalanches=False, 
         sample_structure=True, 
+        sample_variable_mutual_information=False,
         equilibration_timesteps=1000,
         sampling_timesteps=2000
     ):
@@ -58,6 +59,9 @@ def generate_config_very_high_fidelity(
         mutual_information_zparams.append(params)
     
     config["zparams1"] = mutual_information_zparams
+    
+    config["pbc"] = True
+    config["sample_variable_mutual_information"] = sample_variable_mutual_information
 
     config["sample_surface"] = True
     config["sample_surface_avg"] = True
@@ -163,15 +167,9 @@ def generate_config_very_high_fidelity_temporal(
 if __name__ == "__main__":
     modes = { 1: (1, 25), 2: (1, 5), 3: (1, 4), 4: (2, 4), 5: (2, 5), 6: (3, 6), 7: (1, 5), 8: (1.5, 3.5), 9: (2, 4), 10: (0.5, 4.0), 11: (1.0, 3.0), 12: (1.5, 3.5), 13: (0.5, 3.0), 14: (0.1, 2.0), 15: (0.5, 1.5), 16: (0.5, 1.5), 17: (0.5, 2.5), 18: (1.0, 3.0), 19: (0.1, 2.5), 20: (0.4, 1.5), 21: (0.1, 1.0), 22: (0.1, 1.0), 23: (0.4, 1.5), 24: (0.1, 1.0), 25: (0.001, 0.6), 26: (0.1, 0.5), 27: (0.3, 1.0), 28: (0.2, 0.6), 29: (0.001, 0.4), 30: (0.001, 0.4)}
 
-# waiting for 
-#	high res timeseries: t
-#	high res spaceseries (with surface info): s1
-#	low res spaceseries (with surface info): s2
-#	low res avalanche distribution: av
-
-    modes_critical = {
+    #modes_critical = {
         #10: (1.1, 1.3, 500),
-        20: (0.55, 1.1, 5000),
+    #    20: (0.55, 1.1, 5000),
         #22: (0.2, 0.4, 500),
         #6: (3.2, 3.6),
         #7: (1.6, 2.0),
@@ -181,22 +179,23 @@ if __name__ == "__main__":
         #17: (1.25, 1.6),
         #19: (0.25, 0.5),
         #26: (0.08, 0.3)
-    }
+    #}
 
+    modes = {mode: (u0, u1, 3000) for mode, (u0, u1) in modes.items()}
 
     # General data for critical exponent determination
     # Mostly near critical point. 
     # Record error for KPZ fluctuation calculations
-    for mode, (umin, umax, eq_timesteps) in modes_critical.items():
-        us = list(np.linspace(umin, umax, 30))
+    for mode, (umin, umax, eq_timesteps) in modes.items():
+        us = list(np.linspace(umin, umax, 80))
         
-        system_sizes = [512]
+        system_sizes = [256]
         config = generate_config_very_high_fidelity(mode, us, system_sizes=system_sizes, nruns=10, sample_avalanches=False, equilibration_timesteps=eq_timesteps)
-        #submit_jobs(config, f"qrpm_{mode}_s0", ncores=64, memory="150gb", time="96:00:00", nodes=4, record_error=True, cleanup=False)
+        submit_jobs(config, f"qrpm_{mode}_s", ncores=64, memory="150gb", time="96:00:00", nodes=1, record_error=True)
 
-        system_sizes = [32, 64, 128, 256]
+        system_sizes = [256]
         config = generate_config_very_high_fidelity_temporal(mode, us, num_runs=1250, system_sizes=system_sizes, sampling_timesteps=100)
-        #submit_jobs(config, f"qrpm_{mode}_t2", ncores=64, memory="250gb", time="72:00:00", nodes=8, record_error=True)
+        submit_jobs(config, f"qrpm_{mode}_t", ncores=64, memory="250gb", time="72:00:00", nodes=2, record_error=True)
 
 
 
@@ -228,18 +227,18 @@ if __name__ == "__main__":
         system_sizes = [32, 64, 128, 256]
         config = generate_config_very_high_fidelity(mode, us, system_sizes=system_sizes, sample_avalanches=False, equilibration_timesteps=eq_timesteps)
         #submit_jobs(config, f"qrpm_{mode}_s2", ncores=64, memory="150gb", time="72:00:00", nodes=4, record_error=True)
-
+        
         system_sizes = [32, 64, 128]
-        config = generate_config_very_high_fidelity(mode, us, simulator_type="chp", system_sizes=system_sizes, sample_avalanches=True, equilibration_timesteps=eq_timesteps)
-        #submit_jobs(config, f"qrpm_{mode}_av_chp", ncores=64, memory="150gb", time="72:00:00", nodes=4, record_error=True)
+        config = generate_config_very_high_fidelity(mode, us, simulator_type="chp", system_sizes=system_sizes, sample_avalanches=True, sample_variable_mutual_information=True, equilibration_timesteps=eq_timesteps)
+        #submit_jobs(config, f"qrpm_{mode}_av_test", ncores=64, memory="150gb", time="24:00:00", nodes=1, record_error=True, cleanup=False)
 
     system_sizes = []
 
 
     modes_very_broad = {
-        10: (0.5, 6.0, 2000),
-        #20: (0.2, 1.4, 5000), # Avalanches might be interesting in intermediate regime but don't care about might higher
-        #22: (0.1, 3.0, 2000),
+        10: (0.2, 20.0, 2000),
+        20: (0.2, 20.0, 5000), # Avalanches might be interesting in intermediate regime but don't care about might higher
+        22: (0.2, 20.0, 2000),
         #6: (3.2, 3.6),
         #7: (1.6, 2.0),
         #11: (1.6, 1.9),
@@ -252,10 +251,8 @@ if __name__ == "__main__":
 
     for mode, (umin, umax, eq_timesteps) in modes_very_broad.items():
         us = list(np.linspace(umin, umax, 40))
-        #us.append(10)
-        #us.append(100)
-        #us.append(1000)
-        #us.append(10000)
+        us.append(100)
+        us.append(1000)
 
         system_sizes = [32, 64, 128]
         config = generate_config_very_high_fidelity(mode, us, system_sizes=system_sizes, sample_avalanches=True, simulator_type="chp", equilibration_timesteps=eq_timesteps)
@@ -265,6 +262,10 @@ if __name__ == "__main__":
         config = generate_config_very_high_fidelity(mode, us, system_sizes=system_sizes, sample_avalanches=False, equilibration_timesteps=eq_timesteps)
         #submit_jobs(config, f"qrpm_{mode}_s3", ncores=64, memory="150gb", time="72:00:00", nodes=4, record_error=True)
 
+        system_sizes = [32, 64, 256]
+        config = generate_config_very_high_fidelity_temporal(mode, us, num_runs=1250, system_sizes=system_sizes, sampling_timesteps=100)
+        #submit_jobs(config, f"qrpm_{mode}_tkpz", ncores=48, memory="150gb", time="72:00:00", nodes=4, record_error=True)
+
 us = [0.1, 0.4, 0.6, 0.7, 0.8, 0.9, 1.1, 1.5, 2.0]
 #us = list(np.linspace(0.1, 2.0, 40))
 system_sizes1 = []
@@ -272,7 +273,7 @@ system_sizes = [128]
 config = generate_config_very_high_fidelity_temporal(20, us, system_sizes=system_sizes, num_runs=20, sampling_timesteps=5000000, sampling_freq=1000)
 #submit_jobs(config, f"qrpm_20_eq_small", ncores=48, memory="150gb", time="72:00:00", nodes=4, record_error=True)
 
-system_sizes = [16]
-us = np.linspace(0.1, 1.5, 20)
-config = generate_config_very_high_fidelity(10, us=us, system_sizes=system_sizes, equilibration_timesteps=50, sampling_timesteps=100)
-save_config(config, '../configs/qrpm_profile.json')
+#system_sizes = [16]
+#us = np.linspace(0.1, 1.5, 20)
+#config = generate_config_very_high_fidelity(10, us=us, system_sizes=system_sizes, equilibration_timesteps=50, sampling_timesteps=100)
+#save_config(config, '../configs/qrpm_profile.json')

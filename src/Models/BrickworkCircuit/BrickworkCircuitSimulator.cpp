@@ -3,12 +3,15 @@
 #define RANDOM_HAAR 0
 #define RANDOM_REAL 1
 
-BrickworkCircuitSimulator::BrickworkCircuitSimulator(Params &params) : Simulator(params), sampler(params) {
+BrickworkCircuitSimulator::BrickworkCircuitSimulator(Params &params, uint32_t num_threads) : Simulator(params), sampler(params) {
 	system_size = get<int>(params, "system_size");
 
 	mzr_prob = get<double>(params, "mzr_prob");
 	gate_type = get<int>(params, "gate_type", RANDOM_HAAR);
 	offset = false;
+
+	Eigen::setNbThreads(num_threads);
+	state = std::make_shared<Statevector>(system_size);
 }
 
 void BrickworkCircuitSimulator::mzr(uint32_t q) {

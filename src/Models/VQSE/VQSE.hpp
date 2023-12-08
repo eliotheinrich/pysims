@@ -6,15 +6,23 @@
 
 #include <functional>
 #include <optional>
+#include <stdexcept>
 
-#define ADAPTIVE_HAMILTONIAN 0
-#define LOCAL_HAMILTONIAN 1
-#define GLOBAL_HAMILTONIAN 2
+#define VQSE_ADAPTIVE_HAMILTONIAN 0
+#define VQSE_LOCAL_HAMILTONIAN 1
+#define VQSE_GLOBAL_HAMILTONIAN 2
+
+#define VQSE_EXACT_SAMPLING 0
+#define VQSE_SIMULATED_SAMPLING 1
+
+#define VQSE_QUANTUMCIRUIT 0
+#define VQSE_DENSITYMATRIX 1
+#define VQSE_STATEVECTOR 2
 
 #define DEFAULT_NUM_SHOTS 1024
 
 
-typedef std::variant<QuantumCircuit, DensityMatrix> target_t;
+typedef std::variant<QuantumCircuit, DensityMatrix, Statevector> target_t;
 
 static inline uint32_t to_uint(const std::vector<bool>& vals) {
 	uint32_t i = 0;
@@ -37,7 +45,7 @@ class VQSE {
 
 		uint32_t hamiltonian_type;
 
-		bool simulated_sampling;
+		bool sampling_type;
 		uint32_t num_shots;
 
 		std::mt19937 rng;
@@ -48,17 +56,25 @@ class VQSE {
 		ADAMOptimizer optimizer;
 
 
-		static DensityMatrix make_target(const target_t& target) {
-			if (target.index() == 0) { // QuantumCircuit
+		static DensityMatrix make_density_target(const target_t& target) {
+			if (target.index() == VQSE_QUANTUMCIRUIT) {
 				return DensityMatrix(std::get<QuantumCircuit>(target));
-			} else {
+			} else if (target.index() == VQSE_DENSITYMATRIX) {
 				return std::get<DensityMatrix>(target);
-			}
+			} else {
+        return DensityMatrix(std::get<Statevector>(target));
+      }
 		}
 
 
 		std::map<uint32_t, double> get_outcomes_exact(const QuantumCircuit& circuit, const target_t& target) {
-			DensityMatrix rho = VQSE::make_target(target);
+      // Optimization to get exact results
+      if (target.index() == VQSE_STATEVECTOR) {
+        Statevector state = std::get<Statevector>(target);
+        return state.probabilities_map();
+      }
+
+			DensityMatrix rho = VQSE::make_density_target(target);
 			rho.evolve(circuit);
 
 			return rho.probabilities_map();
@@ -66,32 +82,30 @@ class VQSE {
 
 		std::map<uint32_t, double> get_outcomes_simulated(const QuantumCircuit& circuit, const target_t& target) {
 			std::map<uint32_t, uint32_t> outcome_hist;
-			if (target.index() == 0) { // QuantumCircuit
-				for (uint32_t i = 0; i < num_shots; i++) {
-					Statevector state(std::get<QuantumCircuit>(target));
-					state.evolve(circuit);
-					uint32_t outcome = to_uint(state.measure_all());
-					if (outcome_hist.count(outcome)) {
-						outcome_hist[outcome]++;
-					} else {
-						outcome_hist.emplace(outcome, 1);
-					}
-				}
-			} else if (target.index() == 1) { // DensityMatrix
+
+      std::vector<double> probabilities;
+			if (target.index() == VQSE_QUANTUMCIRUIT) {
+        DensityMatrix rho(std::get<QuantumCircuit>(target));
+        probabilities = rho.probabilities();
+			} else if (target.index() == VQSE_DENSITYMATRIX) {
 				DensityMatrix rho = std::get<DensityMatrix>(target);
 				rho.evolve(circuit);
-				auto probabilities = rho.diagonal();
+			  probabilities = rho.probabilities();
+			} else {
+				Statevector state = std::get<Statevector>(target);
+				state.evolve(circuit);
+				probabilities = state.probabilities();
+      }
 
-				std::discrete_distribution<uint32_t> dist(probabilities.begin(), probabilities.end());
-				for (uint32_t i = 0; i < num_shots; i++) {
-					uint32_t outcome = dist(rng);
-					if (outcome_hist.count(outcome)) {
-						outcome_hist[outcome]++;
-					} else {
-						outcome_hist.emplace(outcome, 1);
-					}
-				}
-			}
+      std::discrete_distribution<uint32_t> dist(probabilities.begin(), probabilities.end());
+      for (uint32_t i = 0; i < num_shots; i++) {
+        uint32_t outcome = dist(rng);
+        if (outcome_hist.count(outcome)) {
+          outcome_hist[outcome]++;
+        } else {
+          outcome_hist.emplace(outcome, 1);
+        }
+      }
 
 			std::map<uint32_t, double> outcomes;
 			for (auto const &[b, c] : outcome_hist) {
@@ -103,6 +117,7 @@ class VQSE {
 
 		void update_eigenvalue_estimates(const std::map<uint32_t, double>& outcomes) {
 			std::vector<std::pair<uint32_t, double>> pairs;
+
 			for (const auto& pair : outcomes) {
 				pairs.push_back(pair);
 			}
@@ -117,16 +132,17 @@ class VQSE {
 		}
 
 		double cost_function(const std::vector<double>& params, const target_t& target) {
+      auto rho = make_density_target(target);
 			epoch++;
 
 			QuantumCircuit circuit = ansatz.bind_params(params);
 
 			std::map<uint32_t, double> outcomes;
 
-			if (simulated_sampling) {
-				outcomes = get_outcomes_simulated(circuit, target);
-			} else {
+			if (sampling_type == VQSE_EXACT_SAMPLING) {
 				outcomes = get_outcomes_exact(circuit, target);
+			} else {
+				outcomes = get_outcomes_simulated(circuit, target);
 			}
 
 			if (epoch % update_frequency == 0) {
@@ -163,11 +179,11 @@ class VQSE {
 		double compute_energy_estimate(const std::map<uint32_t, double>& outcomes) const {
 			double t = optimizer.t/double(num_iterations);
 
-			if (hamiltonian_type == ADAPTIVE_HAMILTONIAN) {
+			if (hamiltonian_type == VQSE_ADAPTIVE_HAMILTONIAN) {
 				return (1 - t)*local_energy(outcomes) + t*global_energy(outcomes);
-			} else if (hamiltonian_type == LOCAL_HAMILTONIAN) {
+			} else if (hamiltonian_type == VQSE_LOCAL_HAMILTONIAN) {
 				return local_energy(outcomes);
-			} else if (hamiltonian_type == GLOBAL_HAMILTONIAN) {
+			} else if (hamiltonian_type == VQSE_GLOBAL_HAMILTONIAN) {
 				return global_energy(outcomes);
 			}
 			
@@ -281,12 +297,12 @@ class VQSE {
 			const QuantumCircuit& ansatz, 
 			uint32_t m, 
 			uint32_t num_iterations, 
-			uint32_t hamiltonian_type=ADAPTIVE_HAMILTONIAN, 
+			uint32_t hamiltonian_type=VQSE_ADAPTIVE_HAMILTONIAN, 
 			uint32_t update_frequency=30,
-			bool simulated_sampling=false,
+			bool sampling_type=false,
 			uint32_t num_shots=DEFAULT_NUM_SHOTS,
 			std::optional<ADAMOptimizer> optimizer = std::nullopt)
-		: ansatz(ansatz), m(m), hamiltonian_type(hamiltonian_type), simulated_sampling(simulated_sampling), num_shots(num_shots),
+		: ansatz(ansatz), m(m), hamiltonian_type(hamiltonian_type), sampling_type(sampling_type), num_shots(num_shots),
 		  update_frequency(update_frequency), num_iterations(num_iterations) {
 			
 			this->optimizer = (optimizer == std::nullopt) ? ADAMOptimizer() : optimizer.value();
@@ -318,20 +334,35 @@ class VQSE {
 		}
 
 		Eigen::VectorXd true_eigenvalues(const target_t& target) const {
-			DensityMatrix rho = VQSE::make_target(target);
+      if (target.index() == VQSE_STATEVECTOR) {
+        Eigen::VectorXd val(1); val << 1.0;
+        return val;
+      }
+
+			DensityMatrix rho = VQSE::make_density_target(target);
 			Eigen::SelfAdjointEigenSolver<Eigen::MatrixXcd> solver;
 			solver.compute(rho.data);
 			return solver.eigenvalues().tail(m).reverse();
 		}
 
 		std::pair<Eigen::VectorXd, Eigen::MatrixXcd> true_eigensystem(const target_t& target) const {
+      if (target.index() == VQSE_STATEVECTOR) {
+        Eigen::VectorXd val(1); val << 1.0;
+        Eigen::MatrixXcd vec = std::get<Statevector>(target).data.transpose();
+
+        return std::make_pair(val, vec);
+      }
+
+      // QuantumCircuits and DensityMatrix must both be converted to evolved DensityMatrix and diagonalized
+
 			Eigen::SelfAdjointEigenSolver<Eigen::MatrixXcd> solver;
-			DensityMatrix rho = VQSE::make_target(target);
+			DensityMatrix rho = VQSE::make_density_target(target);
 			solver.compute(rho.data);
 
 			Eigen::VectorXd eigenvalues = solver.eigenvalues().tail(m).reverse();
 			uint32_t s = (1u << num_qubits);
 			Eigen::MatrixXcd eigenvectors = solver.eigenvectors().block(0,s-m,s,m).rowwise().reverse().transpose();
+      //Eigen::VectorXcd vec = solver.eigenvectors().block(0,N-1,N,1).rowwise().reverse();
 
 			return std::make_pair(eigenvalues, eigenvectors);
 		}
@@ -370,7 +401,11 @@ class VQSE {
 			const std::vector<double>& initial_params, 
 			std::optional<std::function<void(const std::vector<double>&)>> callback = std::nullopt
 		) {
-    		auto target_cost_function = [this, &target](std::vector<double>& params) { return cost_function(params, target); };
+      if (target.index() == VQSE_STATEVECTOR && m != 1) {
+        throw std::invalid_argument("Cannot target a Statevector with m != 1.");
+      }
+
+    	auto target_cost_function = [this, &target](std::vector<double>& params) { return cost_function(params, target); };
 			epoch = 0;
 
 			params = initial_params;

@@ -43,12 +43,9 @@ class QuantumAutomatonSimulator : public Simulator {
 		EntropySampler sampler;
 
 	public:
-		QuantumAutomatonSimulator(Params &params);
+		QuantumAutomatonSimulator(Params &params, uint32_t);
 
-		virtual void init_state(uint32_t) override;
 		virtual void timesteps(uint32_t num_steps) override;
 
 		virtual data_t take_samples() override;
-
-		CLONE(Simulator, QuantumAutomatonSimulator)
 };

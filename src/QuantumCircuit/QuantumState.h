@@ -176,6 +176,7 @@ class DensityMatrix : public QuantumState {
 	public:
 		Eigen::MatrixXcd data;
 
+    DensityMatrix()=default;
 		DensityMatrix(uint32_t num_qubits);
 		DensityMatrix(const Statevector& state);
 		DensityMatrix(const QuantumCircuit& circuit);
@@ -209,6 +210,7 @@ class Statevector : public QuantumState {
 	public:
 		Eigen::VectorXcd data;
 
+    Statevector()=default;
 		Statevector(uint32_t num_qubits);
 		Statevector(uint32_t num_qubits, uint32_t qregister);
 		Statevector(const QuantumCircuit &circuit);
@@ -227,9 +229,11 @@ class Statevector : public QuantumState {
 		virtual void evolve(const QuantumCircuit& circuit) override { 
 			QuantumState::evolve(circuit); 
 		}
+    void evolve(const QuantumCircuit& circuit, const std::vector<bool>& outcomes);
 
 		double measure_probability(uint32_t q, bool outcome) const;
 		virtual bool measure(uint32_t q) override;
+    bool measure(uint32_t q, bool outcome);
 
 		double norm() const;
 		void normalize();
@@ -237,6 +241,7 @@ class Statevector : public QuantumState {
 
 		double probabilities(uint32_t z, const std::vector<uint32_t>& qubits) const;
 		virtual std::vector<double> probabilities() const override;
+		std::map<uint32_t, double> probabilities_map() const;
 
 		std::complex<double> inner(const Statevector& other) const;
 
@@ -247,6 +252,7 @@ class UnitaryState : public QuantumState {
 	public:
 		Eigen::MatrixXcd unitary;
 
+    UnitaryState()=default;
 		UnitaryState(uint32_t num_qubits);
 
 		std::string to_string() const;
@@ -297,6 +303,7 @@ class MatrixProductState : public QuantumState {
 	public:
 		uint32_t bond_dimension;
 
+    MatrixProductState()=default;
 		MatrixProductState(uint32_t num_qubits, uint32_t bond_dimension, double sv_threshold=1e-4);
 
 		virtual std::string to_string() const override;

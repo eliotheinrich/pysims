@@ -27,17 +27,11 @@ class MinCutSimulator : public Simulator {
 		EntropySampler sampler;
 
 	public:
-		MinCutSimulator(Params &params);
+		MinCutSimulator(Params &params, uint32_t);
 
 		std::string to_string() const;
-
-		virtual void init_state(uint32_t) override {
-			state = std::make_shared<GraphEntropyState>(system_size/2);
-		}
 
 		virtual void timesteps(uint32_t num_steps) override;
 
 		virtual data_t take_samples() override;
-
-		CLONE(Simulator, MinCutSimulator)
 };

@@ -10,7 +10,7 @@
 using namespace dataframe;
 using namespace dataframe::utils;
 
-PartneringSimulator::PartneringSimulator(Params &params) : Simulator(params) {
+PartneringSimulator::PartneringSimulator(Params &params, uint32_t) : Simulator(params) {
 	num_nodes = get<int>(params, "num_nodes");
 	affinity_type = get<int>(params, "affinity_type", DEFAULT_AFFINITY_TYPE);
 
@@ -22,13 +22,8 @@ PartneringSimulator::PartneringSimulator(Params &params) : Simulator(params) {
 	sample_counts = get<int>(params, "sample_counts", false);
 
 	counts = std::vector<std::vector<uint32_t>>(num_nodes, std::vector<uint32_t>(num_nodes, 0));
-}
 
-static inline double power_law(double x0, double x1, double n, double r) {
-	return std::pow(((std::pow(x1, n + 1.0) - std::pow(x0, n + 1.0))*r + std::pow(x0, n + 1.0)), 1.0/(n + 1.0));
-}
 
-void PartneringSimulator::init_state(uint32_t) {
 	partner_graph = Graph(2*num_nodes);
 	affinity_graph = Graph(2*num_nodes);
 	augmented_graph = Graph(2*num_nodes);

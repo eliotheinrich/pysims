@@ -5,6 +5,9 @@
 
 #include <climits>
 
+static inline double power_law(double x0, double x1, double n, double r) {
+	return std::pow(((std::pow(x1, n + 1.0) - std::pow(x0, n + 1.0))*r + std::pow(x0, n + 1.0)), 1.0/(n + 1.0));
+}
 
 class PartneringSimulator : public dataframe::Simulator {
 	private:
@@ -41,9 +44,8 @@ class PartneringSimulator : public dataframe::Simulator {
 		Graph affinity_graph;
 		Graph augmented_graph;
 
-		PartneringSimulator(dataframe::Params &params);
+		PartneringSimulator(dataframe::Params &params, uint32_t);
 
-		virtual void init_state(uint32_t) override;
 		virtual void timesteps(uint32_t num_steps) override;
 		virtual void equilibration_timesteps(uint32_t num_steps) override {
 			start_sampling = false;
@@ -52,6 +54,4 @@ class PartneringSimulator : public dataframe::Simulator {
 		}
 
 		virtual dataframe::data_t take_samples() override;
-
-		CLONE(dataframe::Simulator, PartneringSimulator)
 };

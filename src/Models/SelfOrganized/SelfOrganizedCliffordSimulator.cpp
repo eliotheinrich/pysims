@@ -32,7 +32,7 @@ static FeedbackType parse_feedback_type(const std::string& s) {
 	}
 }
 
-SelfOrganizedCliffordSimulator::SelfOrganizedCliffordSimulator(Params &params) : Simulator(params), sampler(params) {
+SelfOrganizedCliffordSimulator::SelfOrganizedCliffordSimulator(Params &params, uint) : Simulator(params), sampler(params) {
 	system_size = get<int>(params, "system_size");
 
 	mzr_prob = get<double>(params, "mzr_prob");
@@ -49,9 +49,7 @@ SelfOrganizedCliffordSimulator::SelfOrganizedCliffordSimulator(Params &params) :
 	avalanche_size = 0;
 
 	initial_offset = false;
-}
 
-void SelfOrganizedCliffordSimulator::init_state(uint32_t) {
 	state = std::make_shared<QuantumGraphState>(system_size);
 	if (evolution_type == EvolutionType::QuantumAutomaton) { // quantum automaton circuit must be polarized
 		for (uint32_t i = 0; i < system_size; i++) state->h_gate(i);
