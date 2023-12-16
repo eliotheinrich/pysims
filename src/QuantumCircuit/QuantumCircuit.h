@@ -2,7 +2,7 @@
 
 #include <random>
 #include "CircuitUtils.h"
-#include "Instructions.hpp"
+#include "Gates.hpp"
 
 #include <iostream>
 

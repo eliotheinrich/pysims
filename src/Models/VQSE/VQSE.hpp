@@ -66,11 +66,11 @@ class VQSE {
       }
 		}
 
-
 		std::map<uint32_t, double> get_outcomes_exact(const QuantumCircuit& circuit, const target_t& target) {
       // Optimization to get exact results
       if (target.index() == VQSE_STATEVECTOR) {
         Statevector state = std::get<Statevector>(target);
+        state.evolve(circuit);
         return state.probabilities_map();
       }
 
@@ -85,7 +85,9 @@ class VQSE {
 
       std::vector<double> probabilities;
 			if (target.index() == VQSE_QUANTUMCIRUIT) {
-        DensityMatrix rho(std::get<QuantumCircuit>(target));
+        QuantumCircuit full_circuit = std::get<QuantumCircuit>(target);
+        full_circuit.append(circuit);
+        DensityMatrix rho(full_circuit);
         probabilities = rho.probabilities();
 			} else if (target.index() == VQSE_DENSITYMATRIX) {
 				DensityMatrix rho = std::get<DensityMatrix>(target);
@@ -132,7 +134,6 @@ class VQSE {
 		}
 
 		double cost_function(const std::vector<double>& params, const target_t& target) {
-      auto rho = make_density_target(target);
 			epoch++;
 
 			QuantumCircuit circuit = ansatz.bind_params(params);
@@ -362,7 +363,6 @@ class VQSE {
 			Eigen::VectorXd eigenvalues = solver.eigenvalues().tail(m).reverse();
 			uint32_t s = (1u << num_qubits);
 			Eigen::MatrixXcd eigenvectors = solver.eigenvectors().block(0,s-m,s,m).rowwise().reverse().transpose();
-      //Eigen::VectorXcd vec = solver.eigenvectors().block(0,N-1,N,1).rowwise().reverse();
 
 			return std::make_pair(eigenvalues, eigenvectors);
 		}
@@ -405,8 +405,11 @@ class VQSE {
         throw std::invalid_argument("Cannot target a Statevector with m != 1.");
       }
 
-    	auto target_cost_function = [this, &target](std::vector<double>& params) { return cost_function(params, target); };
 			epoch = 0;
+
+    	auto target_cost_function = [this, &target](std::vector<double>& params) { 
+        return cost_function(params, target); 
+      };
 
 			params = initial_params;
 			params = optimizer.minimize(target_cost_function, params, num_iterations, callback);

@@ -34,5 +34,5 @@ def vqse_circuit_config(num_qubits, hamiltonian_type=0, target_depth=1, maxiter=
     return config_to_string(config)
 
 
-config = vqse_circuit_config(8, nruns=16, maxiter=200, target_depth=16, hamiltonian_type=2)
+config = vqse_circuit_config(8, nruns=16, maxiter=1000, target_depth=16, hamiltonian_type=2)
 submit_jobs(config, "vqse_circuit", ncores=64, ncores_per_task=4, memory="10gb", time="24:00:00", cleanup=True)

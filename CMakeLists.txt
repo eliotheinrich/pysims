@@ -123,11 +123,6 @@ include_directories(
     ${PFFFT_DIR}
 )
 
-message("dataframe found: ${dataframe_FOUND}")
-message("dataframe_SOURCE_DIR = ${dataframe_SOURCE_DIR}")
-message(${dataframe_SOURCE_DIR})
-
-
 add_library(graph
     src/Graph.cpp
 )
@@ -153,9 +148,10 @@ set(PHASELESS_DIR ${CMAKE_SOURCE_DIR}/src/Models/Phaseless)
 set(NETWORK_CLIFFORD_DIR ${CMAKE_SOURCE_DIR}/src/Models/Network)
 set(ENV_SIM_DIR ${CMAKE_SOURCE_DIR}/src/Models/EnvironmentSim)
 set(RCS_DIR ${CMAKE_SOURCE_DIR}/src/Models/RandomCircuitSampling)
+set(RH_DIR ${CMAKE_SOURCE_DIR}/src/Models/RandomHamiltonian)
 
-set(MODEL_DIRS ${CLIFFORD_DIR} ${QUANTUMCIRCUIT_DIR} ${RCS_DIR} ${VQSE_DIR} ${QA_DIR} ${RC_DIR} ${MC_DIR} ${BS_DIR} ${SOC_DIR} ${GS_DIR} ${PS_DIR} ${BW_DIR} ${PARTNER_DIR} ${GROVERSAT_DIR} ${PHASELESS_DIR} ${NETWORK_CLIFFORD_DIR} ${ENV_SIM_DIR})
-set(SIMULATOR_LIBS clifford_state quantum_circuit quantum_automaton random_clifford random_circuit_sampling mincut blocksim self_organized graphsim post_selection brickwork_circuit vqse partnersim groversat phaseless network_clifford env_sim)
+set(MODEL_DIRS ${CLIFFORD_DIR} ${QUANTUMCIRCUIT_DIR} ${RH_DIR} ${RCS_DIR} ${VQSE_DIR} ${QA_DIR} ${RC_DIR} ${MC_DIR} ${BS_DIR} ${SOC_DIR} ${GS_DIR} ${PS_DIR} ${BW_DIR} ${PARTNER_DIR} ${GROVERSAT_DIR} ${PHASELESS_DIR} ${NETWORK_CLIFFORD_DIR} ${ENV_SIM_DIR})
+set(SIMULATOR_LIBS clifford_state quantum_circuit quantum_automaton random_clifford random_hamiltonian random_circuit_sampling mincut blocksim self_organized graphsim post_selection brickwork_circuit vqse partnersim groversat phaseless network_clifford env_sim)
 
 foreach(DIR IN LISTS MODEL_DIRS) 
     add_subdirectory(${DIR})

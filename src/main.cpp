@@ -12,7 +12,7 @@
 using namespace dataframe;
 using namespace dataframe::utils;
 
-std::vector<Params> load_config_file(const std::string& filename) {
+std::string load_file(const std::string& filename) {
   std::ifstream file(filename);
 
   std::string content;
@@ -25,7 +25,11 @@ std::vector<Params> load_config_file(const std::string& filename) {
     file.close();
   }
 
-  return parse_config(content);
+  return content;
+}
+
+std::vector<Params> load_config_file(const std::string& filename) {
+  return parse_config(load_file(filename));
 }
 
 template <class T>
@@ -35,7 +39,7 @@ DataSlide execute_simulation(Params& params, uint32_t num_threads) {
   return slide;
 }
 
-int main(int argc, char* argv[]) {
+void simulation(int argc, char* argv[]) {
   if (argc != 3) {
     throw std::invalid_argument("Must provide a number of threads and config filename.");
   }
@@ -85,5 +89,28 @@ int main(int argc, char* argv[]) {
       throw std::invalid_argument("Invalid circuit type passed.");
     }
   }
+}
 
+void read_dataframe(int argc, char* argv[]) {
+  std::string filename = argv[1];
+  std::string content = load_file(filename);
+
+  DataFrame frame(content);
+}
+
+
+#include <glaze/glaze.hpp>
+
+struct my_struct {
+  std::map<std::string, std::variant<int, std::string>> data;
+};
+
+
+int main(int argc, char* argv[]) {
+  //read_dataframe(argc, argv);
+  my_struct test;
+  test.data.emplace("hello", "world");
+  test.data.emplace("integer", 1);
+  std::string buffer = glz::write_json(test);
+  std::cout << "Buffer = \n" << buffer << std::endl;
 }

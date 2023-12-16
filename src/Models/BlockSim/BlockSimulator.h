@@ -6,8 +6,8 @@
 class BlockSimulator : public Simulator {
   private:
     uint32_t system_size;
-    float pu;
-    float pm;
+    double pu;
+    double pm;
     std::vector<int> surface;
 
     bool random_sites;

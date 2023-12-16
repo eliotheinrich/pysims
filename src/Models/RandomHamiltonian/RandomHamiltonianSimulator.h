@@ -4,26 +4,24 @@
 #include <QuantumState.h>
 #include <QuantumStateSampler.hpp>
 
-class RandomCircuitSamplingSimulator : public Simulator {
+class RandomHamiltonianSimulator : public Simulator {
 	private:
 		uint32_t system_size;
 
-		double mzr_prob;
-		int evolution_type;
-
-		bool offset;
+    double dt;
+    double mu;
+    double sigma;
 
 		EntropySampler entropy_sampler;
 		QuantumStateSampler prob_sampler;
 
-		void full_haar();
-		void brickwork_haar();
-    void random_haar();
+    Eigen::MatrixXcd hamiltonian;
+    Eigen::MatrixXcd evolution_operator;
 
 	public:
 		std::shared_ptr<Statevector> state;
 
-		RandomCircuitSamplingSimulator(Params &params, uint32_t num_threads);
+		RandomHamiltonianSimulator(Params &params, uint32_t num_threads);
 
 		virtual void timesteps(uint32_t num_steps) override;
 

@@ -1,6 +1,7 @@
 add_library(quantum_circuit STATIC
     CircuitUtils.cpp
     Instructions.hpp
+    Gates.hpp
     QuantumCircuit.cpp
     Statevector.cpp
     DensityMatrix.cpp

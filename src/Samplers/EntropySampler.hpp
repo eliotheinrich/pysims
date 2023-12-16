@@ -22,28 +22,28 @@ class EntropyState {
     virtual double entropy(const std::vector<uint32_t>& sites, uint32_t index)=0;
 
     template <typename T = double>
-      T cum_entropy(uint32_t i, uint32_t index = 2u, bool direction = true) {
-        if (direction) { // Left-oriented cumulative entropy
-          std::vector<uint32_t> sites(i+1);
-          std::iota(sites.begin(), sites.end(), 0);
-          return static_cast<T>(entropy(sites, index));
-        } else { // Right-oriented cumulative entropy
-          std::vector<uint32_t> sites(system_size - i);
-          std::iota(sites.begin(), sites.end(), i);
-          return static_cast<T>(entropy(sites, index));
-        }
+    T cum_entropy(uint32_t i, uint32_t index = 2u, bool direction = true) {
+      if (direction) { // Left-oriented cumulative entropy
+        std::vector<uint32_t> sites(i+1);
+        std::iota(sites.begin(), sites.end(), 0);
+        return static_cast<T>(entropy(sites, index));
+      } else { // Right-oriented cumulative entropy
+        std::vector<uint32_t> sites(system_size - i);
+        std::iota(sites.begin(), sites.end(), i);
+        return static_cast<T>(entropy(sites, index));
       }
+    }
 
     template <typename T = double>
-      std::vector<T> get_entropy_surface(uint32_t index=2u) {
-        std::vector<T> entropy_surface(system_size);
+    std::vector<T> get_entropy_surface(uint32_t index=2u) {
+      std::vector<T> entropy_surface(system_size);
 
-        for (uint32_t i = 0; i < system_size; i++) {
-          entropy_surface[i] = cum_entropy<T>(i, index);
-        }
-
-        return entropy_surface;
+      for (uint32_t i = 0; i < system_size; i++) {
+        entropy_surface[i] = cum_entropy<T>(i, index);
       }
+
+      return entropy_surface;
+    }
 };
 
 class EntropySampler {
@@ -124,6 +124,20 @@ class EntropySampler {
 
       samples.emplace("mutual_information" + std::to_string(index), 
           state->entropy(interval1, index) + state->entropy(interval2, index) - state->entropy(interval3, index));
+
+      //uint32_t num_partitions = std::max(system_size/spacing, 1u);
+
+      //Sample sample;
+      //std::vector<uint32_t> offset_sites(sites.size());
+      //for (uint32_t i = 0; i < num_partitions; i++) {
+      //  std::transform(sites.begin(), sites.end(), offset_sites.begin(), 
+      //    [i, this](uint32_t x) { return (x + i*spacing) % system_size; }
+      //  );
+
+      //  sample = sample.combine(state->entropy(offset_sites, index));
+      //}
+
+      //return sample;
     }
 
     void add_variable_mutual_information_samples(data_t &samples, uint32_t index, std::shared_ptr<EntropyState> state) const {
@@ -216,7 +230,8 @@ class EntropySampler {
         std::string error_message = std::to_string(s) + " is not between " + std::to_string(min_eta) + " and " + std::to_string(max_eta) + ". \n";
         throw std::invalid_argument(error_message);
       }
-      double bin_width = static_cast<double>(min_eta - max_eta)/num_bins;
+
+      double bin_width = static_cast<double>(max_eta - min_eta)/num_bins;
       return static_cast<uint32_t>((s - min_eta) / bin_width);
     }
 
@@ -280,9 +295,6 @@ class EntropySampler {
     Sample spatially_averaged_entropy(const std::vector<uint32_t> &sites, uint32_t index, std::shared_ptr<EntropyState> state) const {
       uint32_t num_partitions = std::max((system_size - partition_size)/spacing, 1u);
 
-      //double s = 0.;
-      //double s2 = 0.;
-
       Sample sample;
       std::vector<uint32_t> offset_sites(sites.size());
       for (uint32_t i = 0; i < num_partitions; i++) {
@@ -291,18 +303,8 @@ class EntropySampler {
         );
 
         sample = sample.combine(state->entropy(offset_sites, index));
-
-        //double st = state->entropy(offset_sites, index);
-        //s += st;
-        //s2 += st*st;
       }
 
-      //s /= num_partitions;
-      //s2 /= num_partitions;
-
-      //double stdev = std::sqrt(std::abs(s2 - s*s));
-
-      //return Sample(s, stdev, num_partitions);        
       return sample;
     }
 
@@ -312,9 +314,6 @@ class EntropySampler {
 
       uint32_t num_partitions = std::max((system_size - partition_size)/spacing, 1u);
 
-      //double s = 0.;
-      //double s2 = 0.;
-
       Sample sample;
       std::vector<uint32_t> offset_sites(partition_size);
       for (uint32_t i = 0; i < num_partitions; i++) {
@@ -323,18 +322,8 @@ class EntropySampler {
         );
 
         sample = sample.combine(state->entropy(offset_sites, index));
-
-        //double st = state->entropy(offset_sites, index);
-        //s += st;
-        //s2 += st*st;
       }
 
-      //s /= num_partitions;
-      //s2 /= num_partitions;
-
-      //double stdev = std::sqrt(std::abs(s2 - s*s));
-
-      //return Sample(s, stdev, num_partitions);        
       return sample;
     }
 

@@ -94,8 +94,7 @@ bool Statevector::measure(uint32_t q) {
   uint32_t s = 1u << num_qubits;
 
   double prob_zero = measure_probability(q, 0);
-
-  uint32_t outcome = randf() < prob_zero;
+  uint32_t outcome = !(randf() < prob_zero);
 
   for (uint32_t i = 0; i < s; i++) {
     if (((i >> q) & 1u) != outcome) {
@@ -239,6 +238,7 @@ std::map<uint32_t, double> Statevector::probabilities_map() const {
 
 std::vector<double> Statevector::probabilities() const {
   uint32_t s = 1u << num_qubits;
+
   std::vector<double> probs(s);
   for (uint32_t i = 0; i < s; i++) {
     probs[i] = std::pow(std::abs(data(i)), 2);

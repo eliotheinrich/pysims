@@ -125,7 +125,7 @@ def submit_jobs(
             f"cd {case_dir}",
             
             f"python {combine_data_file} {job_name} {record_error}",
-            f"mv -f {os.path.join(case_dir), job_name + '.json'} {data_dir}",
+            f"mv -f {os.path.join(case_dir, job_name + '.json')} {data_dir}",
         ]
         
         if cleanup:

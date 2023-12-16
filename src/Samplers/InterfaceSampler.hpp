@@ -238,18 +238,6 @@ class InterfaceSampler {
         staircase_counts[size]++;
       }
 
-      // Normalize
-      //double sum = 0.0;
-      //for (uint32_t i = 0; i < num_sites; i++)
-      //	sum += staircase_counts[i];
-
-      //std::vector<double> avalanche_prob(num_sites, 0.0);
-
-      //if (total_avalanches != 0) {
-      //	for (uint32_t i = 0; i < num_bins; i++)
-      //		staircase_prob[i] = static_cast<double>(avalanche_sizes[i])/total_avalanches;
-      //}
-
       samples.emplace("staircases", staircase_counts);
     }
 

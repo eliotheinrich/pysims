@@ -165,7 +165,8 @@ def generate_config_very_high_fidelity_temporal(
     return config_to_string(config)
 
 if __name__ == "__main__":
-    modes = { 1: (1, 25), 2: (1, 5), 3: (1, 4), 4: (2, 4), 5: (2, 5), 6: (3, 6), 7: (1, 5), 8: (1.5, 3.5), 9: (2, 4), 10: (0.5, 4.0), 11: (1.0, 3.0), 12: (1.5, 3.5), 13: (0.5, 3.0), 14: (0.1, 2.0), 15: (0.5, 1.5), 16: (0.5, 1.5), 17: (0.5, 2.5), 18: (1.0, 3.0), 19: (0.1, 2.5), 20: (0.4, 1.5), 21: (0.1, 1.0), 22: (0.1, 1.0), 23: (0.4, 1.5), 24: (0.1, 1.0), 25: (0.001, 0.6), 26: (0.1, 0.5), 27: (0.3, 1.0), 28: (0.2, 0.6), 29: (0.001, 0.4), 30: (0.001, 0.4)}
+    # revisit 3, 23
+    modes = { 1: (5, 15), 2: (2.5, 4.0), 3: (2.5, 3.5), 4: (2.5, 3.5), 5: (2, 5), 6: (2.5, 4), 7: (1, 2.5), 8: (2.0, 3.0), 9: (1.5, 3.75), 10: (1.1, 1.3), 11: (1.3, 2.0), 12: (1.0, 3), 13: (0.1, 1.0), 14: (0.7, 1.6), 15: (0.1, 1.0), 16: (0.75, 1.2), 17: (1.0, 1.75), 18: (1.0, 3.0), 19: (0.05, 0.75), 20: (0.4, 1.5), 21: (0.01, 0.5), 22: (0.2, 0.4), 23: (0.4, 1.5), 24: (0.01, 0.5), 25: (0.001, 0.6), 26: (0.01, 0.25), 27: (0.3, 1.0), 28: (0.01, 0.3), 29: (0.001, 0.2), 30: (0.001, 0.2)}
 
     #modes_critical = {
         #10: (1.1, 1.3, 500),
@@ -181,21 +182,38 @@ if __name__ == "__main__":
         #26: (0.08, 0.3)
     #}
 
-    modes = {mode: (u0, u1, 3000) for mode, (u0, u1) in modes.items()}
+    modes = {
+        1: (8.0, 13.0),
+        2: (3.0, 4.0),
+        3: (0.01, 20.0),
+        13: (0.5, 0.8),
+        15: (0.01, 20.0),
+        19: (0.25, 10.0),
+        21: (0.01, 10.0),
+        24: (0.01, 10.0),
+        26: (0.1, 0.25),
+        28: (0.01, 20.0),
+        29: (0.0001, 0.1),
+    }
+
+    #include_modes = [13, 15, 19, 21, 24, 29]
+    include_modes = [21, 28, 29]
+    modes = {mode: (u0, u1, 3000) for mode, (u0, u1) in modes.items() if mode in include_modes}
 
     # General data for critical exponent determination
     # Mostly near critical point. 
     # Record error for KPZ fluctuation calculations
     for mode, (umin, umax, eq_timesteps) in modes.items():
-        us = list(np.linspace(umin, umax, 80))
+        res = 80 if mode not in [29, 30] else 40
+        us = list(np.linspace(umin, umax, res))
         
         system_sizes = [256]
-        config = generate_config_very_high_fidelity(mode, us, system_sizes=system_sizes, nruns=10, sample_avalanches=False, equilibration_timesteps=eq_timesteps)
-        submit_jobs(config, f"qrpm_{mode}_s", ncores=64, memory="150gb", time="96:00:00", nodes=1, record_error=True)
+        config = generate_config_very_high_fidelity(mode, us, system_sizes=system_sizes, nruns=5, sample_avalanches=False, equilibration_timesteps=eq_timesteps)
+        submit_jobs(config, f"qrpm_{mode}_s", ncores=64, memory="150gb", time="96:00:00", nodes=2, record_error=True)
 
         system_sizes = [256]
-        config = generate_config_very_high_fidelity_temporal(mode, us, num_runs=1250, system_sizes=system_sizes, sampling_timesteps=100)
-        submit_jobs(config, f"qrpm_{mode}_t", ncores=64, memory="250gb", time="72:00:00", nodes=2, record_error=True)
+        config = generate_config_very_high_fidelity_temporal(mode, us, num_runs=500, system_sizes=system_sizes, sampling_timesteps=100)
+        #submit_jobs(config, f"qrpm_{mode}_t", ncores=64, memory="250gb", time="72:00:00", nodes=4, record_error=True)
 
 
 

@@ -1,0 +1,5 @@
+add_library(random_hamiltonian
+  RandomHamiltonianSimulator.cpp
+)
+target_link_libraries(random_hamiltonian quantum_circuit)
+target_include_directories(random_hamiltonian PUBLIC ${QUANTUMCIRCUIT_DIR})

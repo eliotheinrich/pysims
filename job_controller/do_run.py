@@ -21,5 +21,5 @@ if __name__ == "__main__":
  
 	pc = ParallelCompute(configs, **metaparams)
 
-	pc.compute(verbose = True)
+	pc.compute()
 	pc.write_json(f'{job_name}.json')

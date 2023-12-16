@@ -60,11 +60,14 @@ class QuantumStateSampler {
         }
       }
 
-      std::vector<double> probability_probs(num_bins);
-      for (uint32_t i = 0; i < num_bins; i++) {
-        probability_probs[i] = static_cast<double>(probability_counts[i])/num_counts;
-      }
 
+      std::vector<double> probability_probs(num_bins, 0.0);
+      
+      if (num_counts != 0) {
+        for (uint32_t i = 0; i < num_bins; i++) {
+          probability_probs[i] = static_cast<double>(probability_counts[i])/num_counts;
+        }
+      }
 
       samples.emplace("probabilities", probability_probs);
     }
