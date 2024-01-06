@@ -1,7 +1,9 @@
 #include "GroverSATSimulator.h"
-#include <math.h>
 
 #define DEFAULT_RECORD_FIDELITY false
+
+using namespace dataframe;
+using namespace dataframe::utils;
 
 Clause::Clause(uint32_t x1, uint32_t x2, uint32_t x3, bool n1, bool n2, bool n3)
 	: x1(x1), x2(x2), x3(x3), n1(n1), n2(n2), n3(n3) {

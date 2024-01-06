@@ -1,9 +1,10 @@
 #pragma once
 
 #include <Simulator.hpp>
-#include <QuantumGraphState.h>
+#include <CliffordState.h>
+#include <Samplers.h>
 
-class GraphCliffordSimulator : public Simulator {
+class GraphCliffordSimulator : public dataframe::Simulator {
 	private:
 		uint32_t system_size;
 
@@ -30,14 +31,14 @@ class GraphCliffordSimulator : public Simulator {
 		void generate_random_graph();
 
 		uint32_t dist(int i, int j) const;
-		void add_distance_distribution(data_t &samples) const;
-		void add_degree_distribution(data_t &samples) const;
-		void add_avg_max_dist(data_t &samples) const;
+		void add_distance_distribution(dataframe::data_t &samples) const;
+		void add_degree_distribution(dataframe::data_t &samples) const;
+		void add_avg_max_dist(dataframe::data_t &samples) const;
 
 
 	public:
-		GraphCliffordSimulator(Params &params, uint32_t);
+		GraphCliffordSimulator(dataframe::Params &params, uint32_t);
 
 		virtual void timesteps(uint32_t num_steps) override;
-		virtual data_t take_samples() override;
+		virtual dataframe::data_t take_samples() override;
 };

@@ -1,5 +1,8 @@
 #include "MinCutSimulator.h"
 
+using namespace dataframe;
+using namespace dataframe::utils;
+
 double GraphEntropyState::entropy(const std::vector<uint32_t> &sites, uint32_t index) {
 	if (sites.size() % 2) {
 		throw std::invalid_argument("Number of sites must be even in MinCutSimulator.");

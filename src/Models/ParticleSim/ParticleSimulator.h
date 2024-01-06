@@ -1,9 +1,9 @@
 #pragma once
 
 #include <Simulator.hpp>
-#include <InterfaceSampler.hpp>
+#include <Samplers.h>
 
-class ParticleSimulator : public Simulator {
+class ParticleSimulator : public dataframe::Simulator {
   private:
     uint32_t system_size;
     double pu;
@@ -15,11 +15,11 @@ class ParticleSimulator : public Simulator {
     uint32_t get_shape(uint32_t s0, uint32_t s1, uint32_t s2) const;
 
   public:
-    ParticleSimulator(Params &params, uint32_t);
+    ParticleSimulator(dataframe::Params &params, uint32_t);
 
     virtual void timesteps(uint32_t num_steps) override;
 
     std::string to_string() const;
 
-    virtual data_t take_samples() override;
+    virtual dataframe::data_t take_samples() override;
 };

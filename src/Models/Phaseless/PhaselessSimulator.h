@@ -1,9 +1,10 @@
 #pragma once
 
 #include <Simulator.hpp>
-#include <QuantumCHPState.hpp>
+#include <CliffordState.h>
+#include <Samplers.h>
 
-class PhaselessSimulator : public Simulator {
+class PhaselessSimulator : public dataframe::Simulator {
 	private:
 		uint32_t system_size;
 
@@ -24,11 +25,11 @@ class PhaselessSimulator : public Simulator {
 		void apply_gate(uint32_t q1, uint32_t q2);
 
 	public:
-		PhaselessSimulator(Params& params, uint32_t);
+		PhaselessSimulator(dataframe::Params& params, uint32_t);
 
 		void one_dimensional_timestep();
 		void two_dimensional_timestep();
 		virtual void timesteps(uint32_t num_steps) override;
 
-		data_t take_samples() override;
+    dataframe::data_t take_samples() override;
 };

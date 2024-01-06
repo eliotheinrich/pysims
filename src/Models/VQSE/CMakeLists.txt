@@ -4,5 +4,6 @@ add_library(vqse
     VQSEConfig.hpp
     VQSECircuitConfig.hpp
 )
-target_link_libraries(vqse quantum_circuit)
-target_include_directories(vqse PUBLIC ${QUANTUMCIRCUIT_DIR})
+
+set_target_properties(vqse PROPERTIES LINKER_LANGUAGE CXX)
+target_link_libraries(vqse PRIVATE quantum_state)

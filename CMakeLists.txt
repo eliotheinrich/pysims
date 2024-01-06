@@ -1,7 +1,4 @@
-cmake_minimum_required(VERSION 3.15..3.26)
-
-find_program(CMAKE_C_COMPILER NAMES $ENV{CC} gcc PATHS ENV PATH NO_DEFAULT_PATH)
-find_program(CMAKE_CXX_COMPILER NAMES $ENV{CXX} g++ PATHS ENV PATH NO_DEFAULT_PATH)
+cmake_minimum_required(VERSION 3.27)
 
 project(cliffordsim LANGUAGES CXX)
 
@@ -9,6 +6,9 @@ set(CMAKE_CXX_STANDARD 20)
 if (NOT CMAKE_BUILD_TYPE)
     set(CMAKE_BUILD_TYPE Release)
 endif()
+
+find_program(CMAKE_C_COMPILER NAMES $ENV{CC} gcc PATHS ENV PATH NO_DEFAULT_PATH)
+find_program(CMAKE_CXX_COMPILER NAMES $ENV{CXX} g++ PATHS ENV PATH NO_DEFAULT_PATH)
 
 message("Build type: " ${CMAKE_BUILD_TYPE})
 message("Compiler: " ${CMAKE_CXX_COMPILER})
@@ -29,26 +29,6 @@ set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/lib)
 set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS} -g -DDEBUG -DSERIAL")
 set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS} -O3")
 
-
-# ---------------------------------- #
-# -- Manually installed libraries -- #
-# ---------------------------------- #
-
-set(PFFFT_DIR $ENV{PFFFT_DIR})
-find_library(PFFFT_LIB pffft HINTS ${PFFFT_DIR}/lib)
-add_compile_definitions(PFFFT_ENABLE_DOUBLE)
-
-#set(CMAKE_BUILD_WITH_INSTALL_RPATH ON)
-
-set(BLAS_DIR $ENV{BLAS_PATH})
-set(LAPACK_DIR $ENV{LAPACK_PATH})
-set(LAPACKBLAS gfortran lapack openblas)
-set(LAPACKBLAS_DIR ${LAPACK_DIR} ${BLAS_DIR})
-link_directories(${LAPACKBLAS_DIR})
-
-set(ITENSOR_DIR $ENV{ITENSOR_DIR})
-add_library(itensor STATIC IMPORTED)
-set_target_properties(itensor PROPERTIES IMPORTED_LOCATION ${ITENSOR_DIR}/lib/libitensor.a)
 
 # -------------------------------- #
 # ------ Fetching externals ------ #
@@ -71,23 +51,6 @@ execute_process(
 list(APPEND CMAKE_PREFIX_PATH "${NB_DIR}")
 find_package(nanobind CONFIG REQUIRED)
 
-FetchContent_Declare(
-    nlohmann
-    GIT_REPOSITORY https://github.com/nlohmann/json
-    GIT_TAG master
-    GIT_SHALLOW TRUE
-)
-list(APPEND EXTERNALS nlohmann)
-
-FetchContent_Declare(
-    bspl
-    GIT_REPOSITORY https://github.com/bshoshany/thread-pool
-    GIT_TAG master
-    GIT_SHALLOW TRUE
-)
-list(APPEND EXTERNALS bspl)
-
-
 if (DEFINED DATAFRAME_SOURCE)
     set(dataframe_SOURCE_DIR ${DATAFRAME_SOURCE})
 else()
@@ -98,6 +61,19 @@ else()
         GIT_SHALLOW TRUE
     )
     list(APPEND EXTERNALS dataframe)
+endif()
+
+if (DEFINED UTILS_SOURCE)
+    set(utils_SOURCE_DIR ${UTILS_SOURCE})
+    add_subdirectory(${UTILS_SOURCE} "utils_src")
+else()
+    FetchContent_Declare(
+        utils
+        GIT_REPOSITORY https://github.com/eliotheinrich/utils
+        GIT_TAG main
+        GIT_SHALLOW TRUE
+    )
+    list(APPEND EXTERNALS utils)
 endif()
 
 FetchContent_Declare(
@@ -116,22 +92,11 @@ list(APPEND EXTERNALS eigen)
 FetchContent_MakeAvailable(${EXTERNALS})
 
 include_directories(
-    ${nlohmann_SOURCE_DIR}/include 
-    ${bspl_SOURCE_DIR}/include 
     ${dataframe_SOURCE_DIR}/src
+    ${utils_SOURCE_DIR}/include
     ${eigen_SOURCE_DIR}
-    ${PFFFT_DIR}
 )
 
-add_library(graph
-    src/Graph.cpp
-)
-
-set(SAMPLERS_DIR ${CMAKE_SOURCE_DIR}/src/Samplers)
-add_subdirectory(${SAMPLERS_DIR})
-
-set(CLIFFORD_DIR ${CMAKE_SOURCE_DIR}/src/CliffordState)
-set(QUANTUMCIRCUIT_DIR ${CMAKE_SOURCE_DIR}/src/QuantumCircuit)
 
 set(VQSE_DIR ${CMAKE_SOURCE_DIR}/src/Models/VQSE)
 set(QA_DIR ${CMAKE_SOURCE_DIR}/src/Models/QuantumAutomaton)
@@ -150,28 +115,23 @@ set(ENV_SIM_DIR ${CMAKE_SOURCE_DIR}/src/Models/EnvironmentSim)
 set(RCS_DIR ${CMAKE_SOURCE_DIR}/src/Models/RandomCircuitSampling)
 set(RH_DIR ${CMAKE_SOURCE_DIR}/src/Models/RandomHamiltonian)
 
-set(MODEL_DIRS ${CLIFFORD_DIR} ${QUANTUMCIRCUIT_DIR} ${RH_DIR} ${RCS_DIR} ${VQSE_DIR} ${QA_DIR} ${RC_DIR} ${MC_DIR} ${BS_DIR} ${SOC_DIR} ${GS_DIR} ${PS_DIR} ${BW_DIR} ${PARTNER_DIR} ${GROVERSAT_DIR} ${PHASELESS_DIR} ${NETWORK_CLIFFORD_DIR} ${ENV_SIM_DIR})
-set(SIMULATOR_LIBS clifford_state quantum_circuit quantum_automaton random_clifford random_hamiltonian random_circuit_sampling mincut blocksim self_organized graphsim post_selection brickwork_circuit vqse partnersim groversat phaseless network_clifford env_sim)
+set(MODEL_DIRS ${RH_DIR} ${RCS_DIR} ${VQSE_DIR} ${QA_DIR} ${RC_DIR} ${MC_DIR} ${BS_DIR} ${SOC_DIR} ${GS_DIR} ${PS_DIR} ${BW_DIR} ${PARTNER_DIR} ${GROVERSAT_DIR} ${PHASELESS_DIR} ${NETWORK_CLIFFORD_DIR} ${ENV_SIM_DIR})
+set(SIMULATOR_LIBS quantum_automaton random_clifford random_hamiltonian random_circuit_sampling mincut blocksim self_organized graphsim post_selection brickwork_circuit vqse partnersim groversat phaseless network_clifford env_sim)
 
 foreach(DIR IN LISTS MODEL_DIRS) 
     add_subdirectory(${DIR})
 endforeach()
 
-foreach(LIB IN LISTS SIMLATOR_LIBS)
-    target_link_libraries(${LIB} samplers)
-    target_include_directories(${LIB} PUBLIC ${SAMPLERS_DIR})
-endforeach()
-
-
-
 #foreach(LIB IN LISTS SIMULATOR_LIBS)
-#    set_target_properties(${LIB} PROPERTIES DEBUG_POSTFIX ${CMAKE_DEBUG_POSTFIX})
+#    message(${LIB})
+#    target_link_libraries(${LIB} samplers graph quantum_state clifford_state)
 #endforeach()
+
+
 
 add_library(sim_utils STATIC src/Models.h)
 target_include_directories(sim_utils PRIVATE ${MODEL_DIRS})
-# IF LINKER ERROR APPEARS IN MPS SIMULATION, LINK TO itensor HERE!!
-target_link_libraries(sim_utils PRIVATE ${LAPACKBLAS} ${SIMULATOR_LIBS})
+target_link_libraries(sim_utils PRIVATE ${SIMULATOR_LIBS})
 
 
 if (PS_BUILDING_PYTHON)
@@ -183,7 +143,7 @@ if (PS_BUILDING_PYTHON)
     )
     set_target_properties(pysimulators PROPERTIES POSITION_INDEPENDENT_CODE ON)
     target_include_directories(pysimulators PRIVATE src ${MODEL_DIRS})
-    target_link_libraries(pysimulators PRIVATE blas lapack itensor ${SIMULATOR_LIBS})
+    target_link_libraries(pysimulators PRIVATE ${SIMULATOR_LIBS})
 
     install(
         TARGETS pysimulators
@@ -199,16 +159,15 @@ else()
 
     set(CMAKE_DEBUG_POSTFIX "d")
     set_target_properties(main PROPERTIES DEBUG_POSTFIX ${CMAKE_DEBUG_POSTFIX})
-    target_link_libraries(main PUBLIC ${LAPACKBLAS} itensor ${SIMULATOR_LIBS})
+    target_link_libraries(main PUBLIC ${SIMULATOR_LIBS})
 
     # --- TEST --- #
     add_executable(test src/test.cpp)
     target_include_directories(test PRIVATE
         src
         ${MODEL_DIRS}
-        src/Samplers
     )
 
     set_target_properties(test PROPERTIES DEBUG_POSTFIX ${CMAKE_DEBUG_POSTFIX})
-    target_link_libraries(test PUBLIC ${LAPACKBLAS} itensor ${SIMULATOR_LIBS})
+    target_link_libraries(test PUBLIC quantum_state clifford_state ${SIMULATOR_LIBS})
 endif()

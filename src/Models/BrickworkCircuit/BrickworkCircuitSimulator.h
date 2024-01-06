@@ -2,8 +2,9 @@
 
 #include <Simulator.hpp>
 #include <QuantumState.h>
+#include <Samplers.h>
 
-class BrickworkCircuitSimulator : public Simulator {
+class BrickworkCircuitSimulator : public dataframe::Simulator {
 	private:
 		uint32_t system_size;
 
@@ -19,9 +20,9 @@ class BrickworkCircuitSimulator : public Simulator {
 	public:
 		std::shared_ptr<Statevector> state;
 
-		BrickworkCircuitSimulator(Params &params, uint32_t num_threads);
+		BrickworkCircuitSimulator(dataframe::Params &params, uint32_t num_threads);
 
 		virtual void timesteps(uint32_t num_steps) override;
 
-		virtual data_t take_samples() override;
+		virtual dataframe::data_t take_samples() override;
 };

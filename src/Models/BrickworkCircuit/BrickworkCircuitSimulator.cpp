@@ -3,6 +3,9 @@
 #define RANDOM_HAAR 0
 #define RANDOM_REAL 1
 
+using namespace dataframe;
+using namespace dataframe::utils;
+
 BrickworkCircuitSimulator::BrickworkCircuitSimulator(Params &params, uint32_t num_threads) : Simulator(params), sampler(params) {
 	system_size = get<int>(params, "system_size");
 

@@ -3,7 +3,8 @@
 #define SUBSTRATE 0
 #define PYRAMID 1
 
-using namespace RPM_utils;
+using namespace dataframe;
+using namespace dataframe::utils;
 
 RPMSimulator::RPMSimulator(Params &params, uint32_t) : Simulator(params), sampler(params) {
   system_size = get<int>(params, "system_size");

@@ -2,6 +2,9 @@
 
 #define DEFAULT_ENV_DIM 1
 
+using namespace dataframe;
+using namespace dataframe::utils;
+
 EnvironmentSimulator::EnvironmentSimulator(Params &params, uint32_t) : Simulator(params), sampler(params) {
 	system_size = get<int>(params, "system_size");
 
@@ -16,7 +19,7 @@ EnvironmentSimulator::EnvironmentSimulator(Params &params, uint32_t) : Simulator
 		throw std::invalid_argument("Environment interactions must be 1d or 2d.");
 	}
 
-	params.emplace("env_size", (int) env_size);
+	params.emplace("env_size", static_cast<double>(env_size));
 
 	state = std::make_shared<QuantumCHPState>(system_size + env_size);
 

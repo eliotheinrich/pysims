@@ -2,6 +2,7 @@
 
 #include <Simulator.hpp>
 #include <QuantumState.h>
+#include <Samplers.h>
 
 #define SQRT2 1.41421356237
 
@@ -61,7 +62,7 @@ static Eigen::VectorXcd generate_householder(uint32_t num_qubits) {
 	return -householder;
 }
 
-class GroverSATSimulator : public Simulator {
+class GroverSATSimulator : public dataframe::Simulator {
 	private:
 		uint32_t system_size; 
 
@@ -83,10 +84,10 @@ class GroverSATSimulator : public Simulator {
 	public:
 		std::shared_ptr<Statevector> state;
 
-		GroverSATSimulator(Params &params, uint32_t);
+		GroverSATSimulator(dataframe::Params &params, uint32_t);
 
 		virtual void timesteps(uint32_t num_steps) override;
 
-		void add_fidelity_samples(data_t& samples);
-		virtual data_t take_samples() override;
+		void add_fidelity_samples(dataframe::data_t& samples);
+		virtual dataframe::data_t take_samples() override;
 };

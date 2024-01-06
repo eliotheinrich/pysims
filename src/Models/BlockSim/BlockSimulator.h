@@ -1,9 +1,9 @@
 #pragma once
 
 #include <Simulator.hpp>
-#include <InterfaceSampler.hpp>
+#include <Samplers.h>
 
-class BlockSimulator : public Simulator {
+class BlockSimulator : public dataframe::Simulator {
   private:
     uint32_t system_size;
     double pu;
@@ -30,7 +30,7 @@ class BlockSimulator : public Simulator {
     void deposit(uint32_t i);
 
   public:
-    BlockSimulator(Params &params, uint32_t);
+    BlockSimulator(dataframe::Params &params, uint32_t);
 
     virtual void timesteps(uint32_t num_steps) override;
     virtual void equilibration_timesteps(uint32_t num_steps) override {
@@ -41,5 +41,5 @@ class BlockSimulator : public Simulator {
 
     std::string to_string() const;
 
-    virtual data_t take_samples() override;
+    virtual dataframe::data_t take_samples() override;
 };

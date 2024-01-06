@@ -1,10 +1,11 @@
 #pragma once
 
-#include <Graph.h>
+#include <Graph.hpp>
 #include <Simulator.hpp>
-#include <QuantumCHPState.hpp>
+#include <CliffordState.h>
+#include <Samplers.h>
 
-class NetworkCliffordSimulator : public Simulator {
+class NetworkCliffordSimulator : public dataframe::Simulator {
 	private:
 		uint32_t system_size;
 
@@ -21,13 +22,13 @@ class NetworkCliffordSimulator : public Simulator {
 		EntropySampler sampler;
 
 
-		void add_degree_distribution(data_t& samples) const;
-		void add_spatially_averaged_entropy(data_t& samples);
+		void add_degree_distribution(dataframe::data_t& samples) const;
+		void add_spatially_averaged_entropy(dataframe::data_t& samples);
 
 	public:
-		NetworkCliffordSimulator(Params& params, uint32_t);
+		NetworkCliffordSimulator(dataframe::Params& params, uint32_t);
 
 		virtual void timesteps(uint32_t num_steps) override;
 
-		data_t take_samples() override;
+		dataframe::data_t take_samples() override;
 };

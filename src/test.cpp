@@ -7,7 +7,10 @@
 #include <vector>
 #include <map>
 #include <Frame.h>
-#include <InterfaceSampler.hpp>
+#include <Samplers.h>
+
+using namespace dataframe;
+using namespace dataframe::utils;
 
 std::string print_pair(std::pair<double, double> p) {
     return std::to_string(p.first) + ", " + std::to_string(p.second);
@@ -66,9 +69,9 @@ bool test_Statevector() {
 bool test_GroverSimulation() {
     std::cout << "Beginning grover simulation\n";
     Params p;
-    p["system_size"] = 3;
+    p["system_size"] = 3.0;
     p["mzr_prob"] = (double) 0.0;
-    p["nmax"] = 50;
+    p["nmax"] = 50.0;
 
     GroverProjectionSimulator gs(p,1);
     
@@ -302,7 +305,6 @@ bool test_parametrized_circuit() {
 }
 
 #include <fstream>
-#include <CircuitUtils.h>
 #include <iomanip>
 
 void small_chp_test() {
@@ -744,10 +746,10 @@ int main() {
     //large_chp_test_multiqubit();
 
     Params params;
-    params.emplace("system_size", 10);
+    params.emplace("system_size", 10.0);
     params.emplace("mzr_prob", 0.1);
 
-    params.emplace("sample_variable_mutual_information", true);
+    params.emplace("sample_variable_mutual_information", 1.0);
     RandomCliffordSimulator sim(params, 1);
     sim.timesteps(100);
     auto samples = sim.take_samples();

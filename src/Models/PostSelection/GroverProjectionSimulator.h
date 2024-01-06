@@ -2,11 +2,12 @@
 
 #include <Simulator.hpp>
 #include <QuantumState.h>
+#include <Samplers.h>
 
-class GroverProjectionSimulator : public Simulator {
+class GroverProjectionSimulator : public dataframe::Simulator {
 	private:
 		uint32_t system_size;
-		float mzr_prob;
+		double mzr_prob;
 		uint32_t nmax;
 		double eps;
 
@@ -30,7 +31,7 @@ class GroverProjectionSimulator : public Simulator {
 		void grover_projection(uint32_t qubit);
 		void random_grover_projection();
 
-		GroverProjectionSimulator(Params &params, uint32_t);
+		GroverProjectionSimulator(dataframe::Params &params, uint32_t);
 
 		virtual void timesteps(uint32_t num_steps) override;
 };

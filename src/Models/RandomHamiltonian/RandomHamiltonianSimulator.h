@@ -2,9 +2,9 @@
 
 #include <Simulator.hpp>
 #include <QuantumState.h>
-#include <QuantumStateSampler.hpp>
+#include <Samplers.h>
 
-class RandomHamiltonianSimulator : public Simulator {
+class RandomHamiltonianSimulator : public dataframe::Simulator {
 	private:
 		uint32_t system_size;
 
@@ -21,9 +21,9 @@ class RandomHamiltonianSimulator : public Simulator {
 	public:
 		std::shared_ptr<Statevector> state;
 
-		RandomHamiltonianSimulator(Params &params, uint32_t num_threads);
+		RandomHamiltonianSimulator(dataframe::Params &params, uint32_t num_threads);
 
 		virtual void timesteps(uint32_t num_steps) override;
 
-		virtual data_t take_samples() override;
+		virtual dataframe::data_t take_samples() override;
 };

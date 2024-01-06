@@ -5,6 +5,8 @@
 #define DEFAULT_DX 0.05
 #define DEFAULT_GATE_WIDTH 2
 
+using namespace dataframe;
+using namespace dataframe::utils;
 
 static EvolutionType parse_evolution_type(const std::string& s) {
 	if (s == "random_clifford") {

@@ -1,11 +1,11 @@
 #include "QuantumAutomatonSimulator.h"
-#include <QuantumCHPState.hpp>
-#include <QuantumGraphState.h>
-#include <iostream>
 #include <assert.h>
 
 #define DEFAULT_CLIFFORD_TYPE "chp"
 #define DEFAULT_SAMPLE_SURFACE false
+
+using namespace dataframe;
+using namespace dataframe::utils;
 
 QuantumAutomatonSimulator::QuantumAutomatonSimulator(Params &params, uint32_t) : Simulator(params), sampler(params) {
 	system_size = get<int>(params, "system_size");

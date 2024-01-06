@@ -1,7 +1,8 @@
 #pragma once
 
 #include <Simulator.hpp>
-#include <QuantumGraphState.h>
+#include <CliffordState.h>
+#include <Samplers.h>
 
 enum EvolutionType {
 	RandomClifford,
@@ -15,7 +16,7 @@ enum FeedbackType {
 	DistanceThreshold
 };
 
-class SelfOrganizedCliffordSimulator : public Simulator {
+class SelfOrganizedCliffordSimulator : public dataframe::Simulator {
 	private:
 		uint32_t system_size;
 
@@ -56,12 +57,12 @@ class SelfOrganizedCliffordSimulator : public Simulator {
 		void cluster_threshold();
 		void distance_threshold();
 
-		void add_distance_distribution(data_t &samples) const;
+		void add_distance_distribution(dataframe::data_t &samples) const;
 
 	public:
-		SelfOrganizedCliffordSimulator(Params &params, uint32_t);
+		SelfOrganizedCliffordSimulator(dataframe::Params &params, uint32_t);
 
 		virtual void timesteps(uint32_t num_steps) override;
 
-		virtual data_t take_samples() override;
+		virtual dataframe::data_t take_samples() override;
 };

@@ -30,7 +30,7 @@ cutoff = args.cutoff[0]
 
 compile_script = [
     f"cd buildp",
-    f"cmake -DCMAKE_CXX_FLAGS=\"-pg\" -DCMAKE_BUILD_TYPE=Debug ..",
+    f"cmake -DCMAKE_CXX_FLAGS=\"-pg\" -DCMAKE_BUILD_TYPE=Debug -DDATAFRAME_SOURCE=\"/data/heinriea/dataframe\" ..",
     f"make main -j{ncores}",
     f"cd ..",
 ]

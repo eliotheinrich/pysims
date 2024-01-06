@@ -1,7 +1,7 @@
 #pragma once
 
 #include "VQSE.hpp"
-#include "Frame.h"
+#include <Frame.h>
 
 // Ansatz types
 #define HARDWARE_EFFICIENT_ANSATZ 0
@@ -36,49 +36,49 @@
 #define DEFAULT_RECORD_ENERGY_LEVELS false
 #define DEFAULT_NUM_ENERGY_LEVELS 1
 
-class VQSEConfig : public Config {
+class VQSEConfig : public dataframe::Config {
   public:
-    VQSEConfig(Params &params) : Config(params) {
+    VQSEConfig(dataframe::Params &params) : dataframe::Config(params) {
       // VQSE configuration
-      num_qubits = get<int>(params, "num_qubits");			
-      m = get<int>(params, "m");
-      hamiltonian_type = get<int>(params, "hamiltonian_type", VQSE_ADAPTIVE_HAMILTONIAN);
-      num_iterations = get<int>(params, "num_iterations");
-      update_frequency = get<int>(params, "update_frequency", DEFAULT_UPDATE_FREQUENCY);
-      simulated_sampling = get<int>(params, "simulated_sampling", DEFAULT_SIMULATED_SAMPLING);
-      num_shots = get<int>(params, "num_shots", DEFAULT_NUM_SHOTS);
-      params_init = get<int>(params, "params_init", DEFAULT_PARAMS_INIT);
+      num_qubits = dataframe::utils::get<int>(params, "num_qubits");			
+      m = dataframe::utils::get<int>(params, "m");
+      hamiltonian_type = dataframe::utils::get<int>(params, "hamiltonian_type", VQSE_ADAPTIVE_HAMILTONIAN);
+      num_iterations = dataframe::utils::get<int>(params, "num_iterations");
+      update_frequency = dataframe::utils::get<int>(params, "update_frequency", DEFAULT_UPDATE_FREQUENCY);
+      simulated_sampling = dataframe::utils::get<int>(params, "simulated_sampling", DEFAULT_SIMULATED_SAMPLING);
+      num_shots = dataframe::utils::get<int>(params, "num_shots", DEFAULT_NUM_SHOTS);
+      params_init = dataframe::utils::get<int>(params, "params_init", DEFAULT_PARAMS_INIT);
 
       // Gradient configuration	
-      gradient_type = get<int>(params, "gradient_type", DEFAULT_GRADIENT_TYPE);
-      noisy_gradients = get<int>(params, "noisy_gradients", DEFAULT_NOISY_GRADIENTS);
-      gradient_noise = get<double>(params, "gradient_noise", DEFAULT_GRADIENT_NOISE);
+      gradient_type = dataframe::utils::get<int>(params, "gradient_type", DEFAULT_GRADIENT_TYPE);
+      noisy_gradients = dataframe::utils::get<int>(params, "noisy_gradients", DEFAULT_NOISY_GRADIENTS);
+      gradient_noise = dataframe::utils::get<double>(params, "gradient_noise", DEFAULT_GRADIENT_NOISE);
 
-      // Target configuration
-      target_type = get<int>(params, "target_type", DEFAULT_TARGET);
-      density_matrix_target = get<int>(params, "density_matrix_target", DEFAULT_DENSITY_MATRIX_TARGET);
-      target_depth = get<int>(params, "target_depth");
-      post_measurement_layers = get<int>(params, "post_measurement_layers", DEFAULT_POST_MEASUREMENT_LAYERS);
-      num_measurements = get<int>(params, "num_measurements", DEFAULT_NUM_MEASUREMENTS);
+      // Tardataframe::utils::get configuration
+      target_type = dataframe::utils::get<int>(params, "target_type", DEFAULT_TARGET);
+      density_matrix_target = dataframe::utils::get<int>(params, "density_matrix_target", DEFAULT_DENSITY_MATRIX_TARGET);
+      target_depth = dataframe::utils::get<int>(params, "target_depth");
+      post_measurement_layers = dataframe::utils::get<int>(params, "post_measurement_layers", DEFAULT_POST_MEASUREMENT_LAYERS);
+      num_measurements = dataframe::utils::get<int>(params, "num_measurements", DEFAULT_NUM_MEASUREMENTS);
 
       // Ansatz configuration
-      ansatz_type = get<int>(params, "ansatz_type", DEFAULT_ANSATZ);
-      ansatz_depth = get<int>(params, "ansatz_depth");
-      entangling_gate = get<std::string>(params, "entangling_gate", "cz");
-      rotation_gates = parse_rotation_gates(get<std::string>(params, "rotation_gates", "Rx, Ry, Rz"));
+      ansatz_type = dataframe::utils::get<int>(params, "ansatz_type", DEFAULT_ANSATZ);
+      ansatz_depth = dataframe::utils::get<int>(params, "ansatz_depth");
+      entangling_gate = dataframe::utils::get<std::string>(params, "entangling_gate", "cz");
+      rotation_gates = parse_rotation_gates(dataframe::utils::get<std::string>(params, "rotation_gates", "Rx, Ry, Rz"));
 
       // Data collection
-      record_err = get<int>(params, "record_err", DEFAULT_RECORD_ERR);
-      record_fidelity = get<int>(params, "record_fidelity", DEFAULT_RECORD_FIDELITY);
-      record_energy_levels = get<int>(params, "record_energy_levels", DEFAULT_RECORD_ENERGY_LEVELS);
-      num_energy_levels = get<int>(params, "num_energy_levels", DEFAULT_NUM_ENERGY_LEVELS);
+      record_err = dataframe::utils::get<int>(params, "record_err", DEFAULT_RECORD_ERR);
+      record_fidelity = dataframe::utils::get<int>(params, "record_fidelity", DEFAULT_RECORD_FIDELITY);
+      record_energy_levels = dataframe::utils::get<int>(params, "record_energy_levels", DEFAULT_RECORD_ENERGY_LEVELS);
+      num_energy_levels = dataframe::utils::get<int>(params, "num_energy_levels", DEFAULT_NUM_ENERGY_LEVELS);
 
       if (num_energy_levels > (1u << num_qubits)) {
         throw std::invalid_argument("Not enough qubits to compute requested energy levels.");
       }
     }
 
-    void add_est_eigenvalues(DataSlide& slide) {	
+    void add_est_eigenvalues(dataframe::DataSlide& slide) {	
       slide.add_data("est_eigenvalues");
       for (auto const &e : vqse.eigenvalue_estimates) {
         slide.push_data("est_eigenvalues", e);
@@ -90,7 +90,7 @@ class VQSEConfig : public Config {
       }
     }
 
-    void add_true_eigensystem(DataSlide &slide) {
+    void add_true_eigensystem(dataframe::DataSlide &slide) {
       auto [eigenvalues, eigenvectors] = vqse.true_eigensystem(target);
 
       slide.add_data("true_eigenvalues");
@@ -114,7 +114,7 @@ class VQSEConfig : public Config {
 
     }
 
-    virtual DataSlide compute(uint32_t num_threads) override {
+    virtual dataframe::DataSlide compute(uint32_t num_threads) override {
       Eigen::setNbThreads(num_threads);
 
       if (!VQSEConfig::printed_ompi_threads) {
@@ -138,7 +138,7 @@ class VQSEConfig : public Config {
 
       target = VQSEConfig::prepare_target(num_qubits, target_depth, target_type, post_measurement_layers, measured_qubits, density_matrix_target);
 
-      DataSlide slide;
+      dataframe::DataSlide slide;
 
       if (record_err) {
         slide.add_data("rel_err");
@@ -245,7 +245,7 @@ class VQSEConfig : public Config {
       std::string token;
 
       while (std::getline(ss, token, ',')) {
-        gates.push_back(strip(token));
+        gates.push_back(dataframe::utils::strip(token));
       }
 
       return gates;

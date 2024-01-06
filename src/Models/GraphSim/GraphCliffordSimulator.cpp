@@ -1,7 +1,6 @@
 #include "GraphCliffordSimulator.h"
 #include "RandomCliffordSimulator.h"
 #include "QuantumAutomatonSimulator.h"
-#include <iostream>
 
 #define DEFAULT_EVOLUTION_TYPE "random_clifford"
 #define DEFAULT_GATE_WIDTH 2
@@ -10,6 +9,9 @@
 #define QUANTUM_AUTOMATON "quantum_automaton"
 #define UNITARY "unitary"
 #define RANDOM_GRAPH "random_graph"
+
+using namespace dataframe;
+using namespace dataframe::utils;
 
 static inline float sample_powerlaw(float y, float x0, float x1, float a) {
 	return std::pow((std::pow(x1, a+1) - std::pow(x0, a+1))*y + std::pow(x0, a+1), 1./(a+1.));

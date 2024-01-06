@@ -7,6 +7,9 @@
 
 #define DEFAULT_DEPOSITING_TYPE 0
 
+using namespace dataframe;
+using namespace dataframe::utils;
+
 //  (1)  |  (2)  |  (3)  |  (4)  |  (5)  |  (6)  |
 //       |       |       |       |       | o     |
 //       |   o   | o   o | o     | o o   | o o   |

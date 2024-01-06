@@ -3,7 +3,7 @@ import os
 import shutil
 import json
 
-from dataframe import write_config
+from dataframe import write_config, parse_config
 
 def save_config(config, filename):
     config = json.loads(config)
@@ -14,7 +14,7 @@ def save_config(config, filename):
         file.write(config)
 
 def submit_jobs(
-        params, 
+        config, 
         job_name,
         cleanup=True,
         memory="5gb", 
@@ -27,8 +27,9 @@ def submit_jobs(
         atol=1e-5,
         rtol=1e-5,
         average_congruent_runs=True,
-        record_error=True,
-        parallelization_type=1
+        parallelization_type=1,
+        ext="eve",
+        batch_size=1024
     ):
 
     metaparams = {
@@ -41,7 +42,7 @@ def submit_jobs(
         "average_congruent_runs": average_congruent_runs,
         "parallelization_type": parallelization_type,
         
-        "record_error": record_error
+        "batch_size": batch_size,
     }
     
     
@@ -50,14 +51,6 @@ def submit_jobs(
             partition = "exclusive"
         else:
             partition = "shared"
-
-    if isinstance(params, str):
-        config = params
-    else:
-        config = write_config(params)
-    
-    
-    config = "".join(config.split())
     
     # Setup
     cwd = os.getcwd()
@@ -77,9 +70,9 @@ def submit_jobs(
             subprocess.run(script)
         
 
-        combine_script = ["python", combine_data_file, job_name, str(record_error)]
+        combine_script = ["python", combine_data_file, job_name, ext]
         subprocess.run(combine_script)
-        subprocess.run(["mv", "-f", f"{job_name}.json", data_dir])
+        subprocess.run(["mv", "-f", f"{job_name}.{ext}", data_dir])
         if cleanup:
             shutil.rmtree(case_dir)
     else:
@@ -124,8 +117,8 @@ def submit_jobs(
             f"conda activate test",
             f"cd {case_dir}",
             
-            f"python {combine_data_file} {job_name} {record_error}",
-            f"mv -f {os.path.join(case_dir, job_name + '.json')} {data_dir}",
+            f"python {combine_data_file} {job_name} {ext}",
+            f"mv -f {os.path.join(case_dir, job_name + '.' + ext)} {data_dir}",
         ]
         
         if cleanup:

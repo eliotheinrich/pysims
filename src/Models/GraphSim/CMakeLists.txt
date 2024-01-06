@@ -1,5 +1,5 @@
 add_library(graphsim
     GraphCliffordSimulator.cpp
 )
-target_link_libraries(graphsim clifford_state random_clifford quantum_automaton)
-target_include_directories(graphsim PUBLIC ${RC_DIR} ${QA_DIR} ${CLIFFORD_DIR})
+target_link_libraries(graphsim PRIVATE random_clifford quantum_automaton clifford_state graph)
+target_include_directories(graphsim PRIVATE ${RC_DIR} ${QA_DIR})

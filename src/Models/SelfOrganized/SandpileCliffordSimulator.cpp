@@ -1,8 +1,5 @@
 #include "SandpileCliffordSimulator.h"
-
-#include <RandomCliffordSimulator.h>
-#include <QuantumCHPState.hpp>
-#include <QuantumGraphState.h>
+#include "RandomCliffordSimulator.h"
 
 #define DEFAULT_BOUNDARY_CONDITIONS "pbc"
 #define DEFAULT_FEEDBACK_MODE 22
@@ -13,6 +10,9 @@
 
 #define SUBSTRATE 0
 #define PYRAMID 1 
+
+using namespace dataframe;
+using namespace dataframe::utils;
 
 SandpileCliffordSimulator::SandpileCliffordSimulator(Params &params, uint32_t) : Simulator(params), interface_sampler(params), entropy_sampler(params) {
 	system_size = get<int>(params, "system_size");

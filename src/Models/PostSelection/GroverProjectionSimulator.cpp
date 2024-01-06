@@ -1,10 +1,12 @@
 #include "GroverProjectionSimulator.h"
-#include <math.h>
 
 #define DEFAULT_NMAX 500
 #define DEFAULT_PROJECTION_TYPE "single"
 
 #define DEFAULT_EPS 0.0
+
+using namespace dataframe;
+using namespace dataframe::utils;
 
 GroverProjectionSimulator::GroverProjectionSimulator(Params &params, uint32_t num_threads) : Simulator(params), sampler(params) {
 	system_size = get<int>(params, "system_size");

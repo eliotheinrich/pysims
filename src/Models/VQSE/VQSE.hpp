@@ -1,7 +1,6 @@
 #pragma once
 
 #include <ADAMOptimizer.hpp>
-#include <QuantumCircuit.h>
 #include <QuantumState.h>
 
 #include <functional>

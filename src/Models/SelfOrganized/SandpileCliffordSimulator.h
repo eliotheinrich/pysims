@@ -1,11 +1,10 @@
 #pragma once
 
 #include <Simulator.hpp>
-#include <InterfaceSampler.hpp>
-#include <CliffordState.hpp>
-#include <QuantumGraphState.h>
+#include <CliffordState.h>
+#include <Samplers.h>
 
-class SandpileCliffordSimulator : public Simulator {
+class SandpileCliffordSimulator : public dataframe::Simulator {
 	private:
 		std::shared_ptr<QuantumCHPState> state;
 		uint32_t system_size;
@@ -46,7 +45,7 @@ class SandpileCliffordSimulator : public Simulator {
 		uint32_t get_shape(uint32_t s0, uint32_t s1, uint32_t s2) const;
 
 	public:
-		SandpileCliffordSimulator(Params &params, uint32_t);
+		SandpileCliffordSimulator(dataframe::Params &params, uint32_t);
 
 		virtual void equilibration_timesteps(uint32_t num_steps) override {
 			start_sampling = false;
@@ -56,5 +55,5 @@ class SandpileCliffordSimulator : public Simulator {
 
 		virtual void timesteps(uint32_t num_steps) override;
 
-		virtual data_t take_samples() override;
+		virtual dataframe::data_t take_samples() override;
 };

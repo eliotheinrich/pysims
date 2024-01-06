@@ -1,7 +1,7 @@
 #pragma once
 
 #include "VQSE.hpp"
-#include "Frame.h"
+#include <Frame.h>
 #include <cstdint>
 #include <random>
 
@@ -22,10 +22,10 @@
 #define RANDOM_PARAMS 1
 #define DEFAULT_PARAMS_INIT RANDOM_PARAMS
 
-class VQSECircuitConfig : public Config {
+class VQSECircuitConfig : public dataframe::Config {
   public:
-    VQSECircuitConfig(Params &params) : Config(params) {
-      seed = get<int>(params, "seed", -1);
+    VQSECircuitConfig(dataframe::Params &params) : dataframe::Config(params) {
+      seed = dataframe::utils::get<int>(params, "seed", -1);
       if (seed == -1) {
         thread_local std::random_device rd;
         seed = rd();
@@ -34,39 +34,39 @@ class VQSECircuitConfig : public Config {
       rng = std::mt19937(seed);
 
       // VQSE configuration
-      num_qubits = get<int>(params, "num_qubits");			
+      num_qubits = dataframe::utils::get<int>(params, "num_qubits");			
 
-      hamiltonian_type = get<int>(params, "hamiltonian_type", VQSE_ADAPTIVE_HAMILTONIAN);
-      num_iterations_per_layer = get<int>(params, "num_iterations_per_layer");
-      update_frequency = get<int>(params, "update_frequency", 20);
-      sampling_type = get<int>(params, "sampling_type", VQSE_EXACT_SAMPLING);
-      num_shots = get<int>(params, "num_shots", 1024);
-      params_init = get<int>(params, "params_init", RANDOM_PARAMS);
+      hamiltonian_type = dataframe::utils::get<int>(params, "hamiltonian_type", VQSE_ADAPTIVE_HAMILTONIAN);
+      num_iterations_per_layer = dataframe::utils::get<int>(params, "num_iterations_per_layer");
+      update_frequency = dataframe::utils::get<int>(params, "update_frequency", 20);
+      sampling_type = dataframe::utils::get<int>(params, "sampling_type", VQSE_EXACT_SAMPLING);
+      num_shots = dataframe::utils::get<int>(params, "num_shots", 1024);
+      params_init = dataframe::utils::get<int>(params, "params_init", RANDOM_PARAMS);
 
       // Gradient configuration	
-      gradient_type = get<int>(params, "gradient_type", FINITE_DIFFERENCE_GRADIENT);
-      noisy_gradients = get<int>(params, "noisy_gradients", false);
-      gradient_noise = get<double>(params, "gradient_noise", 1e-5);
+      gradient_type = dataframe::utils::get<int>(params, "gradient_type", FINITE_DIFFERENCE_GRADIENT);
+      noisy_gradients = dataframe::utils::get<int>(params, "noisy_gradients", false);
+      gradient_noise = dataframe::utils::get<double>(params, "gradient_noise", 1e-5);
 
       // Target configuration
-      mzr_prob = get<double>(params, "mzr_prob");	
-      target_depth = get<int>(params, "target_depth", 1);
+      mzr_prob = dataframe::utils::get<double>(params, "mzr_prob");	
+      target_depth = dataframe::utils::get<int>(params, "target_depth", 1);
 
       // Ansatz configuration
-      entangling_gate = get<std::string>(params, "entangling_gate", "cz");
-      rotation_gates = parse_rotation_gates(get<std::string>(params, "rotation_gates", "Rx, Ry, Rz"));
+      entangling_gate = dataframe::utils::get<std::string>(params, "entangling_gate", "cz");
+      rotation_gates = parse_rotation_gates(dataframe::utils::get<std::string>(params, "rotation_gates", "Rx, Ry, Rz"));
 
       // Data collection
-      record_err = get<int>(params, "record_err", true);
-      record_fidelity = get<int>(params, "record_fidelity", true);
+      record_err = dataframe::utils::get<int>(params, "record_err", true);
+      record_fidelity = dataframe::utils::get<int>(params, "record_fidelity", true);
     }
 
-    virtual DataSlide compute(uint32_t num_threads) override {
+    virtual dataframe::DataSlide compute(uint32_t num_threads) override {
       Eigen::setNbThreads(num_threads);
 
       auto start = std::chrono::high_resolution_clock::now();
 
-      DataSlide slide;
+      dataframe::DataSlide slide;
 
       if (record_err) {
         slide.add_data("rel_err");
@@ -187,7 +187,7 @@ class VQSECircuitConfig : public Config {
       std::string token;
 
       while (std::getline(ss, token, ',')) {
-        gates.push_back(strip(token));
+        gates.push_back(dataframe::utils::strip(token));
       }
 
       return gates;

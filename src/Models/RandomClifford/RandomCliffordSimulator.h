@@ -1,8 +1,8 @@
 #pragma once
 
 #include <Simulator.hpp>
-#include <CliffordState.hpp>
-#include <InterfaceSampler.hpp>
+#include <CliffordState.h>
+#include <Samplers.h>
 
 inline static void rc_timestep(std::shared_ptr<CliffordState> state, uint32_t gate_width, bool offset_layer, bool periodic_bc = true) {
 	uint32_t system_size = state->system_size();
@@ -31,7 +31,11 @@ inline static void rc_timestep(std::shared_ptr<CliffordState> state, uint32_t ga
 	}
 }
 
-class RandomCliffordSimulator : public Simulator {
+static inline double rc_power_law(double x0, double x1, double n, double r) {
+	return std::pow(((std::pow(x1, n + 1.0) - std::pow(x0, n + 1.0))*r + std::pow(x0, n + 1.0)), 1.0/(n + 1.0));
+}
+
+class RandomCliffordSimulator : public dataframe::Simulator {
 	private:
 		std::shared_ptr<CliffordState> state;
 		int seed;
@@ -39,10 +43,12 @@ class RandomCliffordSimulator : public Simulator {
 		uint32_t system_size;
 		double mzr_prob;
 		uint32_t gate_width;
+    uint32_t timestep_type;
+    double alpha;
 
 		std::string simulator_type;
 		
-		bool initial_offset;
+		bool offset;
 		bool pbc;
 
 		bool sample_sparsity;
@@ -52,8 +58,16 @@ class RandomCliffordSimulator : public Simulator {
 		InterfaceSampler interface_sampler;
 		bool start_sampling;
 
+    uint32_t randpl();
+
+    void timestep_random_local();
+    void timestep_random_nonlocal();
+    void timestep_powerlaw();
+    void timestep_brickwork(uint32_t);
+    void mzr(uint32_t);
+
 	public:
-		RandomCliffordSimulator(Params &params, uint32_t num_threads);
+		RandomCliffordSimulator(dataframe::Params &params, uint32_t num_threads);
 
 		virtual void equilibration_timesteps(uint32_t num_steps) override {
 			start_sampling = false;
@@ -62,5 +76,5 @@ class RandomCliffordSimulator : public Simulator {
 		}
 		virtual void timesteps(uint32_t num_steps) override;
 
-		virtual data_t take_samples() override;
+		virtual dataframe::data_t take_samples() override;
 };

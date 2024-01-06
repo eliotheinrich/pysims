@@ -1,9 +1,10 @@
 #pragma once
 
 #include <Simulator.hpp>
-#include <QuantumCHPState.hpp>
+#include <CliffordState.h>
+#include <Samplers.h>
 
-class PostSelectionCliffordSimulator : public Simulator {
+class PostSelectionCliffordSimulator : public dataframe::Simulator {
 	private:
 		std::shared_ptr<QuantumCHPState> state;
 
@@ -16,9 +17,9 @@ class PostSelectionCliffordSimulator : public Simulator {
 		void mzr(uint32_t i);
 
 	public:
-		PostSelectionCliffordSimulator(Params &params, uint32_t);
+		PostSelectionCliffordSimulator(dataframe::Params &params, uint32_t);
 
 		virtual void timesteps(uint32_t num_steps) override;
 
-		virtual data_t take_samples() override;
+		virtual dataframe::data_t take_samples() override;
 };

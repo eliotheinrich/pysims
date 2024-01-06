@@ -1,5 +1,9 @@
 [build-system]
-requires = ["scikit-build-core>=0.4.3", "nanobind>=1.5.0"]
+requires = [
+	"scikit-build-core>=0.4.3", 
+	"nanobind>=1.3.2",
+	"cmake>=3.27"
+]
 build-backend = "scikit_build_core.build"
 
 [project]
@@ -19,6 +23,7 @@ cmake.verbose = true
 
 [tool.scikit-build.cmake.define]
 PS_BUILDING_PYTHON = "ON"
+UTILS_SOURCE = "/data/heinriea/utils"
 
 [tool.cibuildwheel]
 build-verbosity = 1

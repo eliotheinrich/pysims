@@ -4,6 +4,9 @@
 #define BRICKWORK_HAAR 1
 #define RANDOM_HAAR 2
 
+using namespace dataframe;
+using namespace dataframe::utils;
+
 RandomCircuitSamplingSimulator::RandomCircuitSamplingSimulator(Params &params, uint32_t num_threads) : Simulator(params), entropy_sampler(params), prob_sampler(params) {
   system_size = get<int>(params, "system_size");
 

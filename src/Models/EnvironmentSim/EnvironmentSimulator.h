@@ -1,9 +1,10 @@
 #pragma once
 
 #include <Simulator.hpp>
-#include <QuantumCHPState.hpp>
+#include <CliffordState.h>
+#include <Samplers.h>
 
-class EnvironmentSimulator : public Simulator {
+class EnvironmentSimulator : public dataframe::Simulator {
 	private:
 		uint32_t system_size;
 
@@ -19,11 +20,11 @@ class EnvironmentSimulator : public Simulator {
 		EntropySampler sampler;
 
 	public:
-		EnvironmentSimulator(Params& params, uint32_t);
+		EnvironmentSimulator(dataframe::Params& params, uint32_t);
 
 		void one_dimensional_interactions();
 		void two_dimensional_interactions();
 		virtual void timesteps(uint32_t num_steps) override;
 
-		virtual data_t take_samples() override;
+		virtual dataframe::data_t take_samples() override;
 };

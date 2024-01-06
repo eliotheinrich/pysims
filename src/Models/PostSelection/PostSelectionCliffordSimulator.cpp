@@ -1,8 +1,10 @@
 #include "PostSelectionCliffordSimulator.h"
 #include <RandomCliffordSimulator.h>
-#include <iostream>
 
 #define DEFAULT_CLIFFORD_TYPE "chp"
+
+using namespace dataframe;
+using namespace dataframe::utils;
 
 PostSelectionCliffordSimulator::PostSelectionCliffordSimulator(Params &params, uint32_t) : Simulator(params), sampler(params) {
 	system_size = get<int>(params, "system_size");

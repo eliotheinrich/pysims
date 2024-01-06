@@ -1,7 +1,7 @@
 #pragma once
 
 #include <Frame.h>
-#include <Graph.h>
+#include <Graph.hpp>
 
 #include <climits>
 

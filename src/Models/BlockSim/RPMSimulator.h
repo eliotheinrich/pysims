@@ -1,18 +1,9 @@
 #pragma once
 
 #include <Simulator.hpp>
-#include <InterfaceSampler.hpp>
+#include <Samplers.h>
 
-namespace RPM_utils {
-
-  static inline uint32_t mod(int a, int b) {
-    int c = a % b;
-    return (c < 0) ? c + b : c;
-  }
-
-}
-
-class RPMSimulator : public Simulator {
+class RPMSimulator : public dataframe::Simulator {
   private:
     uint32_t system_size;
     uint32_t num_sites;
@@ -32,7 +23,7 @@ class RPMSimulator : public Simulator {
     int slope(uint32_t i) const;
 
   public:
-    RPMSimulator(Params &params, uint32_t);
+    RPMSimulator(dataframe::Params &params, uint32_t);
 
     virtual void timesteps(uint32_t num_steps) override;
     virtual void equilibration_timesteps(uint32_t num_steps) override {
@@ -43,5 +34,5 @@ class RPMSimulator : public Simulator {
 
     std::string to_string() const;
 
-    virtual data_t take_samples() override;
+    virtual dataframe::data_t take_samples() override;
 };

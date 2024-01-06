@@ -1,10 +1,11 @@
 import numpy as np
 
+from dataframe import parse_config
 from job_controller import config_to_string, submit_jobs, save_config
 from pysims.pysimulators import *
 
 
-def rcs_config(num_qubits, evolution_type, mzr_probs, sampling_timesteps, entropy_sampling=False, nruns=1000):
+def rcs_config(num_qubits, evolution_type, mzr_probs, sampling_timesteps, measurement_freq=1, entropy_sampling=False, nruns=1000):
     config = {"circuit_type": "random_circuit_sampling"}
     
     config["num_runs"] = nruns
@@ -25,7 +26,7 @@ def rcs_config(num_qubits, evolution_type, mzr_probs, sampling_timesteps, entrop
             "x1": 0,
             "x2": 1,
             "x3": n//2,
-            "x4": n//2 + 1    
+            "x4": n//2 + 1
         })
     config["zparams_mi"] = zparams_mi
 
@@ -34,14 +35,17 @@ def rcs_config(num_qubits, evolution_type, mzr_probs, sampling_timesteps, entrop
     
     config["equilibration_timesteps"] = 0
     config["sampling_timesteps"] = sampling_timesteps
-    config["measurement_freq"] = 1
+    config["measurement_freq"] = measurement_freq
     config["temporal_avg"] = False
     
-    return config_to_string(config)
+    return config
 
 mzr_probs = list(np.linspace(0.0, 0.5, 20))
-config = rcs_config([12], 2, mzr_probs, sampling_timesteps=120, nruns=1250)
-submit_jobs(config, "rcs_dist48_12", ncores=48, nodes=4, memory="250gb", time="24:00:00")
+#config = rcs_config([12], 2, mzr_probs, sampling_timesteps=120, nruns=1250)
+#submit_jobs(config, "rcs_dist48_12", ncores=48, nodes=4, memory="250gb", time="24:00:00")
+
+config = rcs_config([6, 8, 10], 2, mzr_probs, sampling_timesteps=120, nruns=250, measurement_freq=2, entropy_sampling=True)
+submit_jobs(config, "rcs_dist_10", ncores=48, nodes=10, memory="250gb", time="24:00:00")
 
 #mzr_probs = [0.0]
 #config = rcs_config([14], 1, mzr_probs, sampling_timesteps=28, nruns=1000)

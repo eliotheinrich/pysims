@@ -1,9 +1,8 @@
 #pragma once
 
-#include <Graph.h>
-#include <EntropySampler.hpp>
+#include <Graph.hpp>
 #include <Simulator.hpp>
-#include <nlohmann/json.hpp>
+#include <Samplers.h>
 
 class GraphEntropyState : public EntropyState {
 	public:
@@ -15,7 +14,7 @@ class GraphEntropyState : public EntropyState {
 		}
 };
 
-class MinCutSimulator : public Simulator {
+class MinCutSimulator : public dataframe::Simulator {
 	private:
 		std::shared_ptr<GraphEntropyState> state;
 
@@ -27,11 +26,11 @@ class MinCutSimulator : public Simulator {
 		EntropySampler sampler;
 
 	public:
-		MinCutSimulator(Params &params, uint32_t);
+		MinCutSimulator(dataframe::Params &params, uint32_t);
 
 		std::string to_string() const;
 
 		virtual void timesteps(uint32_t num_steps) override;
 
-		virtual data_t take_samples() override;
+		virtual dataframe::data_t take_samples() override;
 };

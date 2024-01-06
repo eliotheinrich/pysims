@@ -1,6 +1,8 @@
 #include "RandomHamiltonianSimulator.h"
 #include <unsupported/Eigen/MatrixFunctions>
 
+using namespace dataframe;
+using namespace dataframe::utils;
 
 RandomHamiltonianSimulator::RandomHamiltonianSimulator(Params &params, uint32_t num_threads) : Simulator(params), entropy_sampler(params), prob_sampler(params) {
   system_size = get<int>(params, "system_size");
