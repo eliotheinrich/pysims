@@ -93,7 +93,7 @@ FetchContent_MakeAvailable(${EXTERNALS})
 
 include_directories(
     ${dataframe_SOURCE_DIR}/src
-    ${utils_SOURCE_DIR}/include
+    ${utils_SOURCE_DIR}/src
     ${eigen_SOURCE_DIR}
 )
 

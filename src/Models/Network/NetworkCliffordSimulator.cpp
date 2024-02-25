@@ -16,7 +16,7 @@ NetworkCliffordSimulator::NetworkCliffordSimulator(Params &params, uint32_t) : S
 	num_partitions = get<int>(params, "num_partition", DEFAULT_NUM_PARTITIONS);
 
 	state = std::make_shared<QuantumCHPState>(system_size);
-	network = Graph::scale_free_graph(system_size, alpha);
+	network = Graph<>::scale_free_graph(system_size, alpha);
 }
 
 void NetworkCliffordSimulator::timesteps(uint32_t num_steps) {

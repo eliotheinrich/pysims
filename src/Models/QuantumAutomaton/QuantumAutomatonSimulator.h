@@ -15,9 +15,9 @@ inline static void qa_layer(std::shared_ptr<CliffordState> state, bool offset, b
 		}
 
 		if (gate_type) {
-			state->cz_gate(qubit1, qubit2);
+			state->cz(qubit1, qubit2);
 		} else {
-			state->cx_gate(qubit1, qubit2);
+			state->cx(qubit1, qubit2);
 		}
 	}
 }
@@ -29,19 +29,30 @@ inline static void qa_timestep(std::shared_ptr<CliffordState> state) {
 	qa_layer(state, true, true);   // offset,    cz
 }
 
+static inline double qa_power_law(double x0, double x1, double n, double r) {
+	return std::pow(((std::pow(x1, n + 1.0) - std::pow(x0, n + 1.0))*r + std::pow(x0, n + 1.0)), 1.0/(n + 1.0));
+}
+
 class QuantumAutomatonSimulator : public dataframe::Simulator {
 	private:
 		uint32_t system_size;
 
 		std::shared_ptr<CliffordState> state;
 		CliffordType clifford_type;
-		float mzr_prob;
+		double mzr_prob;
+
+		uint32_t timestep_type;
+		double alpha;
 
 		bool sample_surface;
 
-		int vsample_idx;
+		EntropySampler entropy_sampler;
+		InterfaceSampler interface_sampler;
 
-		EntropySampler sampler;
+		uint32_t randpl();
+
+		void timesteps_powerlaw(uint32_t);
+		void timesteps_brickwork(uint32_t);
 
 	public:
 		QuantumAutomatonSimulator(dataframe::Params &params, uint32_t);

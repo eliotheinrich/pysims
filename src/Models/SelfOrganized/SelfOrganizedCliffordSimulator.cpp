@@ -54,14 +54,16 @@ SelfOrganizedCliffordSimulator::SelfOrganizedCliffordSimulator(Params &params, u
 
 	state = std::make_shared<QuantumGraphState>(system_size);
 	if (evolution_type == EvolutionType::QuantumAutomaton) { // quantum automaton circuit must be polarized
-		for (uint32_t i = 0; i < system_size; i++) state->h_gate(i);
+		for (uint32_t i = 0; i < system_size; i++) {
+			state->h(i);
+		}
 	}
 }
 
 void SelfOrganizedCliffordSimulator::mzr(uint32_t q) {
 	state->mzr(q);
 	if (evolution_type == EvolutionType::QuantumAutomaton) {
-		state->h_gate(q);
+		state->h(q);
 	}
 }
 
@@ -147,9 +149,9 @@ void SelfOrganizedCliffordSimulator::qa_timestep(bool offset, bool gate_type) {
 		}
 
 		if (gate_type) {
-			state->cz_gate(qubit1, qubit2);
+			state->cz(qubit1, qubit2);
 		} else {
-			state->cx_gate(qubit1, qubit2);
+			state->cx(qubit1, qubit2);
 		}
 	}
 }

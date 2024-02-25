@@ -43,8 +43,8 @@ class RandomCliffordSimulator : public dataframe::Simulator {
 		uint32_t system_size;
 		double mzr_prob;
 		uint32_t gate_width;
-    uint32_t timestep_type;
-    double alpha;
+		uint32_t timestep_type;
+		double alpha;
 
 		std::string simulator_type;
 		

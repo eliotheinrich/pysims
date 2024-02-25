@@ -26,18 +26,18 @@ PhaselessSimulator::PhaselessSimulator(Params &params, uint32_t) : Simulator(par
 	std::iota(q.begin(), q.end(), 0);
 	std::shuffle(q.begin(), q.end(), rng);
 	for (uint32_t i = 0; i < num_x_eigenstates; i++) {
-		state->h_gate(q[i]);
+		state->h(q[i]);
 	}
 }
 
 void PhaselessSimulator::apply_gate(uint32_t q1, uint32_t q2) {
 	if (rand() % 2) {
-		state->swap_gate(q1, q2);
+		state->swap(q1, q2);
 	} else {
 		if (rand() % 2) {
-			state->cx_gate(q1, q2);
+			state->cx(q1, q2);
 		} else {
-			state->cx_gate(q2, q1);
+			state->cx(q2, q1);
 		}
 	}
 }

@@ -30,16 +30,16 @@ NB_MODULE(pysimulators, m) {
   EXPORT_SIMULATOR_DRIVER(BlockSimulator);
   EXPORT_SIMULATOR_DRIVER(RPMSimulator);
 
-  nanobind::class_<Graph>(m, "Graph")
+  nanobind::class_<Graph<>>(m, "Graph")
     .def(nanobind::init<uint32_t>())
     .def(nanobind::init<>())
-    .def("__str__", &Graph::to_string)
-    .def("remove_edge", &Graph::remove_edge)
-    .def("add_edge", &Graph::add_edge);
+    .def("__str__", &Graph<>::to_string)
+    .def("remove_edge", &Graph<>::remove_edge)
+    .def("add_edge", &Graph<>::add_edge);
   
 
   m.def("graph_state_entropy", 
-      [](Graph &graph, const std::vector<uint32_t>& sites) { 
+      [](Graph<> &graph, const std::vector<uint32_t>& sites) { 
         return QuantumGraphState::graph_state_entropy(sites, graph); 
       });
 

@@ -24,9 +24,9 @@ PartneringSimulator::PartneringSimulator(Params &params, uint32_t) : Simulator(p
 	counts = std::vector<std::vector<uint32_t>>(num_nodes, std::vector<uint32_t>(num_nodes, 0));
 
 
-	partner_graph = Graph(2*num_nodes);
-	affinity_graph = Graph(2*num_nodes);
-	augmented_graph = Graph(2*num_nodes);
+	partner_graph = Graph<>(2*num_nodes);
+	affinity_graph = Graph<>(2*num_nodes);
+	augmented_graph = Graph<>(2*num_nodes);
 
 	for (uint32_t i = 0; i < num_nodes; i++) {
 		for (uint32_t j = num_nodes; j < 2*num_nodes; j++) {

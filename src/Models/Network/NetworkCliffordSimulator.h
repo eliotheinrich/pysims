@@ -17,7 +17,7 @@ class NetworkCliffordSimulator : public dataframe::Simulator {
 		uint32_t num_partitions;
 
 		std::shared_ptr<QuantumCHPState> state;
-		Graph network;
+		Graph<> network;
 
 		EntropySampler sampler;
 

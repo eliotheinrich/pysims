@@ -37,7 +37,7 @@ GraphCliffordSimulator::GraphCliffordSimulator(Params &params, uint32_t) : Simul
 
 	if (evolution_type == QUANTUM_AUTOMATON) { // quantum automaton circuit must be polarized
 		for (uint32_t i = 0; i < system_size; i++) {
-			state->h_gate(i);
+			state->h(i);
 		}
 	}
 }
@@ -45,7 +45,7 @@ GraphCliffordSimulator::GraphCliffordSimulator(Params &params, uint32_t) : Simul
 void GraphCliffordSimulator::mzr(uint32_t q) {
 	state->mzr(q);
 	if (evolution_type == QUANTUM_AUTOMATON) {
-		state->h_gate(q);
+		state->h(q);
 	}
 }
 
