@@ -7,6 +7,7 @@
 #include <PhaselessSimulator.h>
 #include <NetworkCliffordSimulator.h>
 #include <EnvironmentSimulator.h>
+#include <BulkMeasurementSimulator.h>
 #include <MinCutSimulator.h>
 #include <GraphCliffordSimulator.h>
 
@@ -23,4 +24,5 @@
 #include <PartneringSimulator.h>
 #include <BlockSimulator.h>
 #include <RPMSimulator.h>
+#include <HQCircuitConfig.hpp>
 

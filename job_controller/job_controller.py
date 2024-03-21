@@ -29,7 +29,8 @@ def submit_jobs(
         average_congruent_runs=True,
         parallelization_type=1,
         ext="eve",
-        batch_size=1024
+        batch_size=1024,
+        verbose=True,
     ):
 
     metaparams = {
@@ -43,6 +44,7 @@ def submit_jobs(
         "parallelization_type": parallelization_type,
         
         "batch_size": batch_size,
+        "verbose": verbose,
     }
     
     

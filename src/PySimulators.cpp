@@ -13,6 +13,7 @@ NB_MODULE(pysimulators, m) {
   EXPORT_SIMULATOR_DRIVER(PhaselessSimulator);
   EXPORT_SIMULATOR_DRIVER(NetworkCliffordSimulator);
   EXPORT_SIMULATOR_DRIVER(EnvironmentSimulator);
+  EXPORT_SIMULATOR_DRIVER(BulkMeasurementSimulator);
   EXPORT_SIMULATOR_DRIVER(MinCutSimulator);
   EXPORT_SIMULATOR_DRIVER(GraphCliffordSimulator);
 
@@ -29,6 +30,7 @@ NB_MODULE(pysimulators, m) {
   EXPORT_SIMULATOR_DRIVER(PartneringSimulator);
   EXPORT_SIMULATOR_DRIVER(BlockSimulator);
   EXPORT_SIMULATOR_DRIVER(RPMSimulator);
+  EXPORT_CONFIG(HQCircuitConfig);
 
   nanobind::class_<Graph<>>(m, "Graph")
     .def(nanobind::init<uint32_t>())

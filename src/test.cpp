@@ -320,68 +320,68 @@ void small_chp_test() {
     state1.random_clifford(qbits);
     state2.random_clifford(qbits);
 
-    //state1.h_gate(1);
-    //state1.cx_gate(0, 1);
-    //state1.cx_gate(1, 0);
-    //state1.cx_gate(0, 1);
-    //state1.s_gate(0);
-    //state1.s_gate(0);
-    //state1.h_gate(0);
-    //state1.s_gate(0);
-    //state1.s_gate(0);
-    //state1.h_gate(0);
-    //state1.h_gate(1);
-    //state1.cx_gate(0, 1);
-    //state1.cx_gate(1, 0);
-    //state1.cx_gate(0, 1);
-    //state1.s_gate(0);
-    //state1.s_gate(0);
-    //state1.h_gate(0);
-    //state1.s_gate(0);
-    //state1.s_gate(0);
-    //state1.h_gate(0);
-    //state1.h_gate(0);
-    //state1.cx_gate(0, 1);
-    //state1.h_gate(0);
+    //state1.h(1);
+    //state1.cx(0, 1);
+    //state1.cx(1, 0);
+    //state1.cx(0, 1);
+    //state1.s(0);
+    //state1.s(0);
+    //state1.h(0);
+    //state1.s(0);
+    //state1.s(0);
+    //state1.h(0);
+    //state1.h(1);
+    //state1.cx(0, 1);
+    //state1.cx(1, 0);
+    //state1.cx(0, 1);
+    //state1.s(0);
+    //state1.s(0);
+    //state1.h(0);
+    //state1.s(0);
+    //state1.s(0);
+    //state1.h(0);
+    //state1.h(0);
+    //state1.cx(0, 1);
+    //state1.h(0);
     
-    //state1.h_gate(1);
-    //state1.s_gate(1);
+    //state1.h(1);
+    //state1.s(1);
     //state1.y_gate(1);
 
-    //state2.h_gate(1);
-    //state2.cx_gate(0, 1);
-    //state2.cx_gate(1, 0);
-    //state2.cx_gate(0, 1);
-    //state2.s_gate(0);
-    //state2.s_gate(0);
-    //state2.h_gate(0);
-    //state2.s_gate(0);
-    //state2.s_gate(0);
-    //state2.h_gate(0);
-    //state2.h_gate(1);
-    //state2.cx_gate(0, 1);
-    //state2.cx_gate(1, 0);
-    //state2.cx_gate(0, 1);
-    //state2.s_gate(0);
-    //state2.s_gate(0);
-    //state2.h_gate(0);
-    //state2.s_gate(0);
-    //state2.s_gate(0);
-    //state2.h_gate(0);
-    //state2.h_gate(0);
-    //state2.cx_gate(0, 1);
-    //state2.h_gate(0);
-    //state2.h_gate(1);
-    //state2.s_gate(1);
+    //state2.h(1);
+    //state2.cx(0, 1);
+    //state2.cx(1, 0);
+    //state2.cx(0, 1);
+    //state2.s(0);
+    //state2.s(0);
+    //state2.h(0);
+    //state2.s(0);
+    //state2.s(0);
+    //state2.h(0);
+    //state2.h(1);
+    //state2.cx(0, 1);
+    //state2.cx(1, 0);
+    //state2.cx(0, 1);
+    //state2.s(0);
+    //state2.s(0);
+    //state2.h(0);
+    //state2.s(0);
+    //state2.s(0);
+    //state2.h(0);
+    //state2.h(0);
+    //state2.cx(0, 1);
+    //state2.h(0);
+    //state2.h(1);
+    //state2.s(1);
     //state2.y_gate(1);
 
 
 
-    //state1.h_gate(0);
-    //state1.cx_gate(0, 1);
+    //state1.h(0);
+    //state1.cx(0, 1);
 
-    //state2.h_gate(0);
-    //state2.cx_gate(0, 1);
+    //state2.h(0);
+    //state2.cx(0, 1);
 
 
     auto state3 = state2.to_chp();
@@ -417,15 +417,15 @@ struct state_evolver {
     state_evolver(std::shared_ptr<CliffordState> state) : state(state) {}
 
     void operator()(sgate g) {
-        state->s_gate(g.q);
+        state->s(g.q);
     }
 
     void operator()(hgate g) {
-        state->h_gate(g.q);
+        state->h(g.q);
     }
 
     void operator()(cxgate g) {
-        state->cx_gate(g.q1, g.q2);
+        state->cx(g.q1, g.q2);
     }
 };
 

@@ -112,22 +112,17 @@ set(GROVERSAT_DIR ${CMAKE_SOURCE_DIR}/src/Models/GroverSAT)
 set(PHASELESS_DIR ${CMAKE_SOURCE_DIR}/src/Models/Phaseless)
 set(NETWORK_CLIFFORD_DIR ${CMAKE_SOURCE_DIR}/src/Models/Network)
 set(ENV_SIM_DIR ${CMAKE_SOURCE_DIR}/src/Models/EnvironmentSim)
+set(BULK_SIM_DIR ${CMAKE_SOURCE_DIR}/src/Models/BulkMeasurement)
 set(RCS_DIR ${CMAKE_SOURCE_DIR}/src/Models/RandomCircuitSampling)
 set(RH_DIR ${CMAKE_SOURCE_DIR}/src/Models/RandomHamiltonian)
+set(HQ_DIR ${CMAKE_SOURCE_DIR}/src/Models/HQAmplitude)
 
-set(MODEL_DIRS ${RH_DIR} ${RCS_DIR} ${VQSE_DIR} ${QA_DIR} ${RC_DIR} ${MC_DIR} ${BS_DIR} ${SOC_DIR} ${GS_DIR} ${PS_DIR} ${BW_DIR} ${PARTNER_DIR} ${GROVERSAT_DIR} ${PHASELESS_DIR} ${NETWORK_CLIFFORD_DIR} ${ENV_SIM_DIR})
-set(SIMULATOR_LIBS quantum_automaton random_clifford random_hamiltonian random_circuit_sampling mincut blocksim self_organized graphsim post_selection brickwork_circuit vqse partnersim groversat phaseless network_clifford env_sim)
+set(MODEL_DIRS ${RH_DIR} ${RCS_DIR} ${VQSE_DIR} ${QA_DIR} ${RC_DIR} ${MC_DIR} ${BS_DIR} ${SOC_DIR} ${GS_DIR} ${PS_DIR} ${BW_DIR} ${PARTNER_DIR} ${GROVERSAT_DIR} ${PHASELESS_DIR} ${NETWORK_CLIFFORD_DIR} ${ENV_SIM_DIR} ${BULK_SIM_DIR} ${HQ_DIR})
+set(SIMULATOR_LIBS quantum_automaton random_clifford random_hamiltonian random_circuit_sampling mincut blocksim self_organized graphsim post_selection brickwork_circuit vqse partnersim groversat phaseless network_clifford env_sim bulk_sim)
 
 foreach(DIR IN LISTS MODEL_DIRS) 
     add_subdirectory(${DIR})
 endforeach()
-
-#foreach(LIB IN LISTS SIMULATOR_LIBS)
-#    message(${LIB})
-#    target_link_libraries(${LIB} samplers graph quantum_state clifford_state)
-#endforeach()
-
-
 
 add_library(sim_utils STATIC src/Models.h)
 target_include_directories(sim_utils PRIVATE ${MODEL_DIRS})
@@ -159,7 +154,7 @@ else()
 
     set(CMAKE_DEBUG_POSTFIX "d")
     set_target_properties(main PROPERTIES DEBUG_POSTFIX ${CMAKE_DEBUG_POSTFIX})
-    target_link_libraries(main PUBLIC ${SIMULATOR_LIBS})
+    target_link_libraries(main PUBLIC ${SIMULATOR_LIBS} dataframe)
 
     # --- TEST --- #
     add_executable(test src/test.cpp)
