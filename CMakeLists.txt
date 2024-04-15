@@ -69,7 +69,7 @@ if (DEFINED UTILS_SOURCE)
 else()
     FetchContent_Declare(
         utils
-        GIT_REPOSITORY https://github.com/eliotheinrich/utils
+        GIT_REPOSITORY https://github.com/eliotheinrich/utils.git
         GIT_TAG main
         GIT_SHALLOW TRUE
     )

@@ -26,7 +26,6 @@ def submit_jobs(
         run_local=False,
         atol=1e-5,
         rtol=1e-5,
-        average_congruent_runs=True,
         parallelization_type=1,
         ext="eve",
         batch_size=1024,
@@ -40,7 +39,6 @@ def submit_jobs(
         "atol": atol,
         "rtol": rtol,
          
-        "average_congruent_runs": average_congruent_runs,
         "parallelization_type": parallelization_type,
         
         "batch_size": batch_size,
@@ -80,7 +78,7 @@ def submit_jobs(
     else:
         for i in range(nodes):
             script = [
-                f"#!/usr/bin/tcsh",
+                f"#!/usr/bin/bash",
                 f"#SBATCH --partition={partition}",
                 f"#SBATCH --job-name={job_name}",
                 f"#SBATCH --output=slurm.{job_name}.%j.out",
@@ -89,12 +87,13 @@ def submit_jobs(
                 f"#SBATCH --mem={memory}",
                 f"#SBATCH --time={time}",
                 
-                f"module load anaconda/2021.11-p3.9",
+                f"module load miniconda3/miniconda",
                 f"conda activate test",
                 f"cd {case_dir}",
                 
                 f"python {do_run_file} {job_name}_{i} '{json.dumps(metaparams)}' '{json.dumps(config)}'",
             ]
+
 
             script = '\n'.join(script)
             job_name_str = os.path.join(case_dir, f'{job_name}_{i}.sl')
@@ -106,7 +105,7 @@ def submit_jobs(
             subprocess.run(["rm", job_name_str])
 
         combine_script = [
-            f"#!/usr/bin/tcsh",
+            f"#!/usr/bin/bash",
             f"#SBATCH --partition=shared",
             f"#SBATCH --job-name={job_name}",
             f"#SBATCH --output=slurm.{job_name}.%j.out"
@@ -115,7 +114,7 @@ def submit_jobs(
             f"#SBATCH --mem=50gb",
             f"#SBATCH --time=00:30:00",
 
-            f"module load anaconda/2021.11-p3.9",
+            f"module load miniconda3/miniconda",
             f"conda activate test",
             f"cd {case_dir}",
             
@@ -131,6 +130,7 @@ def submit_jobs(
         with open(job_name_str, 'w') as f:
             f.write(combine_script)
         subprocess.run(["sbatch", f"--dependency=singleton", job_name_str])
+    os.chdir(cwd)
 
 def field_to_string(field) -> str:
     if isinstance(field, str):

@@ -10,6 +10,7 @@
 
 #define SUBSTRATE 0
 #define PYRAMID 1 
+#define RANDOM 2
 
 using namespace dataframe;
 using namespace dataframe::utils;
@@ -82,6 +83,10 @@ SandpileCliffordSimulator::SandpileCliffordSimulator(Params &params, uint32_t) :
 			rc_timestep(state, 2, offset, true);
 			offset = !offset;
 		}
+	} else if (initial_state == RANDOM) {
+		std::vector<uint32_t> all_sites(system_size);
+		std::iota(all_sites.begin(), all_sites.end(), 0);
+		state->random_clifford(all_sites);
 	}
 }
 

@@ -54,14 +54,14 @@ void NetworkCliffordSimulator::add_spatially_averaged_entropy(data_t& samples) {
 	std::iota(all_qubits.begin(), all_qubits.end(), 0);
 
 	uint32_t num_partitions = 10;
-	Sample s;
+  std::vector<double> s(num_partitions);
 
 	thread_local std::mt19937 gen(rand());
 	for (uint32_t i = 0; i < num_partitions; i++) {
 		std::shuffle(all_qubits.begin(), all_qubits.end(), gen);
 
 		std::vector<uint32_t> qubits(all_qubits.begin(), all_qubits.begin() + system_size/2);
-		s = s.combine(state->entropy(qubits, 2));
+    s[i] = state->entropy(qubits, 2);
 	}
 
 	samples.emplace("entropy", s);

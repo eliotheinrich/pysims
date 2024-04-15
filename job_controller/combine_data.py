@@ -26,7 +26,9 @@ if __name__ == "__main__":
 			with open(file, 'r') as f:
 				data.append(load_data(file))
 
-	df = sum(data, start = DataFrame())
+	df = DataFrame()
+    df = sum(data, start = DataFrame())
+
 	df.add_metadata('total_time', max([d['total_time'] for d in data]))
 	df.add_metadata('num_jobs', sum([d['num_jobs'] for d in data]))
 	df.add_metadata('num_threads', sum([d['num_threads'] for d in data]))
