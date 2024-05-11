@@ -81,13 +81,13 @@ class VQSECircuitConfig : public dataframe::Config {
       auto callback = [this, &slide, &target_state](const std::vector<double>& params) {
         if (record_err) {
           auto [rel_err, abs_err] = vqse.error(target_state);
-          slide.push_data("rel_err", rel_err);
-          slide.push_data("abs_err", abs_err);
+          slide.push_samples_to_data("rel_err", rel_err);
+          slide.push_samples_to_data("abs_err", abs_err);
         }
 
         if (record_fidelity) {
           auto fidelity = vqse.fidelity(target_state, params);
-          slide.push_data("fidelity", vqse.fidelity(target_state, params));
+          slide.push_samples_to_data("fidelity", vqse.fidelity(target_state, params));
         }
       };
 
@@ -122,10 +122,10 @@ class VQSECircuitConfig : public dataframe::Config {
       auto stop = std::chrono::high_resolution_clock::now();
       auto duration = std::chrono::duration_cast<std::chrono::seconds>(stop - start);
       slide.add_data("time");
-      slide.push_data("time", duration.count());
+      slide.push_samples_to_data("time", duration.count());
   
       slide.add_data("circuit_depth");
-      slide.push_data("circuit_depth", (target.length() - target_depth)/(num_qubits/2));
+      slide.push_samples_to_data("circuit_depth", (target.length() - target_depth)/(num_qubits/2));
 
       return slide;
     }

@@ -6,8 +6,6 @@ import json
 from dataframe import write_config, parse_config
 
 def save_config(config, filename):
-    config = json.loads(config)
-    config["filename"] = 'default_data.json'
     config = json.dumps(config, indent=1)
     config.replace('\\', '') 
     with open(filename, 'w') as file:

@@ -116,9 +116,10 @@ set(BULK_SIM_DIR ${CMAKE_SOURCE_DIR}/src/Models/BulkMeasurement)
 set(RCS_DIR ${CMAKE_SOURCE_DIR}/src/Models/RandomCircuitSampling)
 set(RH_DIR ${CMAKE_SOURCE_DIR}/src/Models/RandomHamiltonian)
 set(HQ_DIR ${CMAKE_SOURCE_DIR}/src/Models/HQAmplitude)
+set(CLIFFORD_CLUSTERING_DIR ${CMAKE_SOURCE_DIR}/src/Models/CliffordClustering)
 
-set(MODEL_DIRS ${RH_DIR} ${RCS_DIR} ${VQSE_DIR} ${QA_DIR} ${RC_DIR} ${MC_DIR} ${BS_DIR} ${SOC_DIR} ${GS_DIR} ${PS_DIR} ${BW_DIR} ${PARTNER_DIR} ${GROVERSAT_DIR} ${PHASELESS_DIR} ${NETWORK_CLIFFORD_DIR} ${ENV_SIM_DIR} ${BULK_SIM_DIR} ${HQ_DIR})
-set(SIMULATOR_LIBS quantum_automaton random_clifford random_hamiltonian random_circuit_sampling mincut blocksim self_organized graphsim post_selection brickwork_circuit vqse partnersim groversat phaseless network_clifford env_sim bulk_sim)
+set(MODEL_DIRS ${CLIFFORD_CLUSTERING_DIR} ${RH_DIR} ${RCS_DIR} ${VQSE_DIR} ${QA_DIR} ${RC_DIR} ${MC_DIR} ${BS_DIR} ${SOC_DIR} ${GS_DIR} ${PS_DIR} ${BW_DIR} ${PARTNER_DIR} ${GROVERSAT_DIR} ${PHASELESS_DIR} ${NETWORK_CLIFFORD_DIR} ${ENV_SIM_DIR} ${BULK_SIM_DIR} ${HQ_DIR})
+set(SIMULATOR_LIBS quantum_automaton random_clifford random_hamiltonian random_circuit_sampling mincut blocksim self_organized graphsim post_selection brickwork_circuit partnersim groversat phaseless network_clifford env_sim bulk_sim)
 
 foreach(DIR IN LISTS MODEL_DIRS) 
     add_subdirectory(${DIR})

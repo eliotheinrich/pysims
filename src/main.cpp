@@ -62,7 +62,7 @@ DataSlide execute_simulation(Params& params, uint32_t num_threads) {
 }
 
 
-void simulation(int argc, char* argv[]) {
+DataSlide simulation(int argc, char* argv[]) {
   if (argc != 3) {
     throw std::invalid_argument("Must provide a number of threads and config filename.");
   }
@@ -71,9 +71,9 @@ void simulation(int argc, char* argv[]) {
   std::string filename = argv[1];
   auto params = load_config_file(filename);
   
+  DataSlide slide;
   for (auto param : params) {
     std::string circuit_type = get<std::string>(param, "circuit_type");
-    DataSlide slide;
     if (circuit_type == "random_clifford") {
       slide = execute_simulation<RandomCliffordSimulator>(param, num_threads);
     } else if (circuit_type == "quantum_automaton") {
@@ -115,19 +115,19 @@ void simulation(int argc, char* argv[]) {
       throw std::invalid_argument("Invalid circuit type passed.");
     }
   }
+
+  return slide;
 }
 
 int main(int argc, char* argv[]) {
-  Params params;
-  params.emplace("k", 1.0);
-  params.emplace("num_samples", 0.0);
-  params.emplace("p1", 1.0);
-  params.emplace("p2", 0.5);
-  params.emplace("p3", 1.0);
-  params.emplace("calculation_type", 1.0);
-
-  HQCircuitConfig hq(params);
-  DataSlide slide = hq.compute(1);
-
+  auto slide = simulation(argc, argv);
   std::cout << slide.to_string() << std::endl;
+  
+  //Params params;
+
+
+  //HQCircuitConfig hq(params);
+  //DataSlide slide = hq.compute(1);
+
+  //std::cout << slide.to_string() << std::endl;
 }

@@ -10,6 +10,7 @@
 #include <BulkMeasurementSimulator.h>
 #include <MinCutSimulator.h>
 #include <GraphCliffordSimulator.h>
+#include <CliffordClusteringConfig.hpp>
 
 // General quantum models
 #include <RandomCircuitSamplingSimulator.h>

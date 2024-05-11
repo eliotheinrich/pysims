@@ -16,6 +16,7 @@ NB_MODULE(pysimulators, m) {
   EXPORT_SIMULATOR_DRIVER(BulkMeasurementSimulator);
   EXPORT_SIMULATOR_DRIVER(MinCutSimulator);
   EXPORT_SIMULATOR_DRIVER(GraphCliffordSimulator);
+  EXPORT_CONFIG(CliffordClusteringConfig);
 
   // General quantum models
   EXPORT_SIMULATOR_DRIVER(RandomCircuitSamplingSimulator);

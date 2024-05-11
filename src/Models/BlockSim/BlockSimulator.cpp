@@ -7,11 +7,13 @@
 
 #define DEFAULT_DEPOSITING_TYPE 0
 
+#define BLOCKSIM_PEEL_AVALANCHE 0
+#define BLOCKSIM_POWERLAW_AVALANCHE 1
+
 //  (1)  |  (2)  |  (3)  |  (4)  |  (5)  |  (6)  |
 //       |       |       |       |       | o     |
 //       |   o   | o   o | o     | o o   | o o   |
 // o o o | o o o | o o o | o o o | o o o | o o o |
-
 using namespace dataframe;
 using namespace dataframe::utils;
 
@@ -29,6 +31,14 @@ BlockSimulator::BlockSimulator(Params &params, uint32_t) : Simulator(params), sa
 
   feedback_mode = get<int>(params, "feedback_mode");
   depositing_type = get<int>(params, "depositing_type", DEFAULT_DEPOSITING_TYPE);
+  avalanche_type = get<int>(params, "avalanche_type", BLOCKSIM_PEEL_AVALANCHE);
+  if (avalanche_type == BLOCKSIM_POWERLAW_AVALANCHE) {
+    delta = get<double>(params, "delta", 2.0);
+    normalization = 0.0;
+    for (size_t i = 1; i < system_size-1; i++) {
+      normalization += std::pow(i, -delta);
+    }
+  }
 
   if      (feedback_mode == 0)  feedback_strategy = std::vector<uint32_t>{1};
   else if (feedback_mode == 1)  feedback_strategy = std::vector<uint32_t>{1, 2};
@@ -105,32 +115,81 @@ uint32_t BlockSimulator::get_shape(uint32_t s0, uint32_t s1, uint32_t s2) const 
   }
 }
 
+double BlockSimulator::powerlaw(double d) const {
+  double p = std::pow(d, -delta)/normalization;
+  if (p < 0.0 || p > 1.0) {
+    std::string error_message = "Power-law failed! p = " + std::to_string(p) + ", d = " + std::to_string(d) + ", delta = " + std::to_string(delta) + ", L = " + std::to_string(system_size) + ".";
+    throw std::invalid_argument(error_message);
+  }
+
+  return p;
+}
+
 void BlockSimulator::avalanche(uint32_t i) {
-  if (precut && surface[i] > 0) {
-    surface[i]--;
+  size_t size;
+  if (avalanche_type == BLOCKSIM_PEEL_AVALANCHE) {
+    if (precut && surface[i] > 0) {
+      surface[i]--;
+    }
+
+    uint32_t left = i;
+    while (surface[left-1] > surface[i]) {
+      left--;
+    }
+
+    uint32_t right = i;
+    while (surface[right+1] > surface[i]) {
+      right++;
+    }
+
+    for (uint32_t j = left; j < i; j++) {
+      surface[j]--;
+    }
+    for (uint32_t j = i+1; j < right+1; j++) {
+      surface[j]--;
+    }
+
+    size = right - left;
+  } else if (avalanche_type == BLOCKSIM_POWERLAW_AVALANCHE) {
+    size = 0;
+    for (size_t j = 1; j < system_size-1; j++) {
+      if (can_desorb(j)) {
+        double p;
+        if (i == j) {
+          p = 1.0;
+        } else {
+          double distance = std::abs(int(i) - int(j));
+          p = powerlaw(distance);
+        }
+
+        if (randf() < p) {
+          surface[j]--;
+          size++;
+        }
+      }
+    }
   }
 
-  uint32_t left = i;
-  while (surface[left-1] > surface[i]) {
-    left--;
-  }
 
-  uint32_t right = i;
-  while (surface[right+1] > surface[i]) {
-    right++;
-  }
-
-  for (uint32_t j = left; j < i; j++) {
-    surface[j]--;
-  }
-  for (uint32_t j = i+1; j < right+1; j++) {
-    surface[j]--;
-  }
-
-  uint32_t size = right - left;
   if (size > 0 && start_sampling) {
     sampler.record_size(size);
   }
+}
+
+bool BlockSimulator::can_desorb(uint32_t i) const {
+  if (i == 0 || i == system_size - 1) {
+    return false;
+  }
+
+  if (surface[i] == 0) {
+    return false;
+  }
+
+  uint32_t shape = get_shape(surface[i-1], surface[i], surface[i+1]);
+
+
+  //             (a)           (b)           (e)
+  return shape == 1 || shape == 2 || shape == 5;
 }
 
 bool BlockSimulator::can_deposit(uint32_t i) const {

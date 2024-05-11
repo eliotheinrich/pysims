@@ -23,6 +23,8 @@ class SandpileCliffordSimulator : public dataframe::Simulator {
 
 		bool start_sampling;
 		bool sample_avalanche_sizes;
+
+    bool sample_reduced_surface;
 		
 		uint32_t initial_state;
 		uint32_t scrambling_steps;
@@ -43,6 +45,8 @@ class SandpileCliffordSimulator : public dataframe::Simulator {
 		void timestep();
 
 		uint32_t get_shape(uint32_t s0, uint32_t s1, uint32_t s2) const;
+
+    void add_reduced_substrate_height_samples(dataframe::data_t& samples, const std::vector<int>& surface) const;
 
 	public:
 		SandpileCliffordSimulator(dataframe::Params &params, uint32_t);

@@ -81,12 +81,12 @@ class VQSEConfig : public dataframe::Config {
     void add_est_eigenvalues(dataframe::DataSlide& slide) {	
       slide.add_data("est_eigenvalues");
       for (auto const &e : vqse.eigenvalue_estimates) {
-        slide.push_data("est_eigenvalues", e);
+        slide.push_samples_to_data("est_eigenvalues", e);
       }
 
       slide.add_data("bitstrings");
       for (auto const &b : vqse.bitstring_estimates) {
-        slide.push_data("bitstrings", b);
+        slide.push_samples_to_data("bitstrings", b);
       }
     }
 
@@ -95,7 +95,7 @@ class VQSEConfig : public dataframe::Config {
 
       slide.add_data("true_eigenvalues");
       for (auto const &e : eigenvalues) {
-        slide.push_data("true_eigenvalues", e);
+        slide.push_samples_to_data("true_eigenvalues", e);
       }
 
       for (uint32_t i = 0; i < m ; i++) {
@@ -106,8 +106,8 @@ class VQSEConfig : public dataframe::Config {
 
         uint32_t s = (1u << num_qubits);
         for (uint32_t j = 0; j < s; j++) {
-          slide.push_data(state_real, eigenvectors(i, j).real());
-          slide.push_data(state_imag, eigenvectors(i, j).imag());
+          slide.push_samples_to_data(state_real, eigenvectors(i, j).real());
+          slide.push_samples_to_data(state_imag, eigenvectors(i, j).imag());
         }
       }
 
@@ -161,18 +161,18 @@ class VQSEConfig : public dataframe::Config {
       auto callback = [this, &slide](const std::vector<double>& params) {
         if (record_err) {
           auto [rel_err, abs_err] = vqse.error(target);
-          slide.push_data("rel_err", rel_err);
-          slide.push_data("abs_err", abs_err);
+          slide.push_samples_to_data("rel_err", rel_err);
+          slide.push_samples_to_data("abs_err", abs_err);
         }
 
         if (record_fidelity) {
-          slide.push_data("fidelity", vqse.fidelity(target, params));
+          slide.push_samples_to_data("fidelity", vqse.fidelity(target, params));
         }
 
         if (record_energy_levels) {
-          slide.push_data("local_energy", vqse.get_local_energy_levels(num_energy_levels));
-          slide.push_data("global_energy", vqse.get_global_energy_levels(num_energy_levels));
-          slide.push_data("total_energy", vqse.get_energy_levels(num_energy_levels));
+          slide.push_samples_to_data("local_energy", vqse.get_local_energy_levels(num_energy_levels));
+          slide.push_samples_to_data("global_energy", vqse.get_global_energy_levels(num_energy_levels));
+          slide.push_samples_to_data("total_energy", vqse.get_energy_levels(num_energy_levels));
         }
       };
 
@@ -182,7 +182,7 @@ class VQSEConfig : public dataframe::Config {
 
       // Optimization done; add results
       slide.add_data("final_parameters");
-      slide.push_data("final_parameters", vqse.params);
+      slide.push_samples_to_data("final_parameters", vqse.params);
 
       add_true_eigensystem(slide);
       add_est_eigenvalues(slide);
@@ -190,7 +190,7 @@ class VQSEConfig : public dataframe::Config {
       auto stop = std::chrono::high_resolution_clock::now();
       auto duration = std::chrono::duration_cast<std::chrono::seconds>(stop - start);
       slide.add_data("time");
-      slide.push_data("time", duration.count());
+      slide.push_samples_to_data("time", duration.count());
 
       return slide;
     }

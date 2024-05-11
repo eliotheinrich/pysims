@@ -1,6 +1,114 @@
 from job_controller import config_to_string, submit_jobs, save_config
 import numpy as np
 
+def blocksim_samples_config(
+        feedback_mode, 
+        us, 
+        nruns=25, 
+        system_sizes=[128], 
+        equilibration_timesteps=1000,
+        sampling_timesteps=2000,
+        measurement_freq=5,
+        sample_surface=False
+    ):
+
+    config = {}
+    config["circuit_type"] = "blocksim"
+    config["num_runs"] = nruns
+
+    config["system_size"] = system_sizes
+
+    config["save_samples"] = True
+
+    config["feedback_mode"] = feedback_mode
+    
+    config["random_sites"] = True
+    config["precut"] = [True]
+    config["depositing_type"] = [1]
+
+    config["sample_surface"] = sample_surface
+    config["sample_surface_avg"] = False
+    config["sample_rugosity"] = False
+    config["sample_roughness"] = False
+    config["sample_avalanche_sizes"] = False
+    config["sample_structure_function"] = False
+    config["sample_edges"] = True
+
+    probs = []
+    for u in us:
+        probs_u = {}
+        if u < 1.0:
+            probs_u['pu'] = u
+            probs_u['pm'] = 1.0
+        else:
+            probs_u['pu'] = 1.0
+            probs_u['pm'] = 1.0/u
+        probs.append(probs_u)
+    
+    config["zparams"] = probs
+
+    config["temporal_avg"] = False
+    config["sampling_timesteps"] = sampling_timesteps
+    config["equilibration_timesteps"] = equilibration_timesteps
+    config["measurement_freq"] = measurement_freq
+
+    return config
+
+def blocksim_time_evolution(
+        feedback_mode, 
+        us, 
+        nruns=25, 
+        system_sizes=[128], 
+        avalanche_type=0,
+        delta=2.0,
+        equilibration_timesteps=1000,
+        sampling_timesteps=2000,
+        measurement_freq=5,
+        sample_surface=False,
+    ):
+
+    config = {}
+    config["circuit_type"] = "blocksim"
+    config["num_runs"] = nruns
+
+    config["system_size"] = system_sizes
+
+    config["feedback_mode"] = feedback_mode
+    
+    config["random_sites"] = True
+    config["precut"] = [True]
+    config["depositing_type"] = [1]
+    config["avalanche_type"] = avalanche_type
+    config["delta"] = delta
+
+    config["sample_surface"] = sample_surface
+    config["sample_surface_avg"] = False
+    config["sample_rugosity"] = False
+    config["sample_roughness"] = False
+    config["sample_avalanche_sizes"] = True 
+    config["sample_structure_function"] = False
+    config["sample_edges"] = True
+
+    probs = []
+    for u in us:
+        probs_u = {}
+        if u < 1.0:
+            probs_u['pu'] = u
+            probs_u['pm'] = 1.0
+        else:
+            probs_u['pu'] = 1.0
+            probs_u['pm'] = 1.0/u
+        probs.append(probs_u)
+    
+    config["zparams"] = probs
+
+    config["temporal_avg"] = False
+    config["sampling_timesteps"] = sampling_timesteps
+    config["equilibration_timesteps"] = equilibration_timesteps
+    config["measurement_freq"] = measurement_freq
+
+    return config
+
 def blocksim_high_fidelity(
         system_size, 
         us, 
@@ -10,6 +118,8 @@ def blocksim_high_fidelity(
         temporal_avg=True,
         measurement_freq=10,
         nruns=250,
+        avalanche_type=0,
+        delta=2.0,
         sample_surface=True,
         sample_surface_avg=True,
         sample_avalanche_sizes=False,
@@ -39,6 +149,8 @@ def blocksim_high_fidelity(
     config["random_sites"] = True
     config["precut"] = [True]
     config["depositing_type"] = [1]
+    config["avalanche_type"] = avalanche_type
+    config["delta"] = delta
     
     config["sample_surface_avg"] = sample_surface_avg
     config["sample_surface"] = sample_surface
@@ -79,8 +191,18 @@ for mode in [28]:
 us = np.linspace(0.01, 2.0, 40)
 system_size = [128]
 config = blocksim_high_fidelity(system_size, us=us, feedback_mode=28, eq_steps=0, sampling_timesteps=1000, measurement_freq=1, temporal_avg=False, nruns=250, sample_surface=True, sample_avalanche_sizes=False, sample_structure_function=False, sample_rugosity=False, sample_staircases=True)
-submit_jobs(config, f"blocksim_28_stairs3", memory="150gb", time="24:00:00", ncores=48, nodes=4, record_error=True)
+#submit_jobs(config, f"blocksim_28_stairs3", memory="150gb", time="24:00:00", ncores=48, nodes=4, record_error=True)
  
+
+us = np.linspace(0.1, 0.2, 20)
+system_sizes = [256]
+for L in system_sizes:
+    for mode in [21]:
+        config = blocksim_time_evolution(mode, us, nruns=100, system_sizes=L, equilibration_timesteps=0, sampling_timesteps=50000, measurement_freq=10, avalanche_type=1, delta=2.0, sample_surface=False)
+        submit_jobs(config, f"blocksim_{mode}_{L}_t", ncores=4, nodes=1, memory="10gb", run_local=True, cleanup=False)
+
+
+
  
     
 def rpm_high_fidelity(

@@ -235,7 +235,7 @@ class HQCircuitConfig : public dataframe::Config {
       dataframe::DataSlide slide;
       slide.add_data("amplitudes");
       for (auto const& a : all_amplitudes) {
-        slide.push_data("amplitudes", a);
+        slide.push_samples_to_data("amplitudes", a);
       }
 
       return slide;
