@@ -20,6 +20,7 @@ simulators = {
     "bulk_sim": BulkMeasurementSimulator,
     "random_circuit_sampling": RandomCircuitSamplingSimulator,
     "random_hamiltonian": RandomHamiltonianSimulator,
+    "xz_circuit": XZCircuitSimulator,
 }
 
 from pyev import EvolutionModel
@@ -35,13 +36,14 @@ config_types = {
     "clifford_clustering": CliffordClusteringConfig,
 }
 
-from pyxorsat import XORSATConfig, GraphXORSATConfig, LDPCConfig, CliffordCodeSimulator, GraphClusteringSimulator, RXPMDualConfig, SlantedCheckerboardConfig
+from pyxorsat import XORSATConfig, GraphXORSATConfig, LDPCConfig, CliffordCodeSimulator, GraphClusteringSimulator, RXPMDualConfig, RPMCAConfig, SlantedCheckerboardConfig
 simulators["clifford_code"] = CliffordCodeSimulator
 simulators["graph_clustering"] = GraphClusteringSimulator
 config_types["graph_xorsat"] = GraphXORSATConfig
 config_types["xorsat"] = XORSATConfig
 config_types["ldpc"] = LDPCConfig
 config_types["rxpm"] = RXPMDualConfig
+config_types["rpmca"] = RPMCAConfig
 config_types["slanted_checkerboard"] = SlantedCheckerboardConfig
 
 from pywsdc import ScoreSheetConfig

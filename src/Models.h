@@ -11,6 +11,7 @@
 #include <MinCutSimulator.h>
 #include <GraphCliffordSimulator.h>
 #include <CliffordClusteringConfig.hpp>
+#include <XZCircuitSimulator.hpp>
 
 // General quantum models
 #include <RandomCircuitSamplingSimulator.h>

@@ -46,7 +46,7 @@ def regular_ldpc_config(system_size, pr, k, single_site=True, include_isolated_i
     
     return config
 
-def lattice_ldpc_config(system_size, pr, obc, single_site=True, include_isolated_in_core=True, model_type=2, nruns=1):
+def lattice_ldpc_config(system_size, pr, obc, single_site=True, include_isolated_in_core=True, model_type=2, sample_all_locality=False, sample_boundary=False, nruns=1):
     config = {"circuit_type": "ldpc"}
     
     config["model_type"] = model_type
@@ -59,9 +59,11 @@ def lattice_ldpc_config(system_size, pr, obc, single_site=True, include_isolated
     config["single_site"] = single_site
     config["include_isolated_in_core"] = include_isolated_in_core
 
-    config["sample_leaf_removal"] = True
+    config["sample_boundary"] = sample_boundary
+    config["sample_leaf_removal"] = False
     config["sample_rank"] = True
     config["sample_solveable"] = True
+    config["sample_all_locality"] = sample_all_locality
 
 
     config["max_size"] = 20
@@ -88,4 +90,15 @@ config = regular_ldpc_config(system_size=system_size, pr=p, k=k, single_site=[0,
 system_size = [8, 16, 32, 64]
 p = list(np.linspace(0.0, 1.0, 25))
 config = lattice_ldpc_config(system_size=system_size, pr=p, obc=[False], single_site=[1], include_isolated_in_core=[0, 1], model_type=ldpc_4body, nruns=10)
-submit_jobs(config, f"ldpc_lattice_4body", ncores=48, nodes=5, memory="50gb", time="24:00:00")
+#submit_jobs(config, f"ldpc_lattice_4body", ncores=48, nodes=5, memory="50gb", time="24:00:00")
+
+system_size = [8, 16, 32]
+p = list(np.linspace(0.0, 1.0, 25))
+config = lattice_ldpc_config(system_size=system_size, pr=p, obc=[False, True], single_site=[1], include_isolated_in_core=[0], model_type=ldpc_5body, nruns=10, sample_boundary=True, sample_all_locality=True)
+submit_jobs(config, f"ldpc_lattice_5body", ncores=64, nodes=5, memory="50gb", time="24:00:00")
+
+system_size = [8]
+p = list(np.linspace(0.0, 1.0, 25))
+p = [0.7]
+config = lattice_ldpc_config(system_size=system_size, pr=p, obc=[False, True], single_site=[1], include_isolated_in_core=[0], model_type=ldpc_5body, nruns=10, sample_boundary=True, sample_all_locality=True)
+#submit_jobs(config, f"_ldpc_lattice_5body", ncores=1, nodes=1, memory="50gb", time="24:00:00", run_local=True)

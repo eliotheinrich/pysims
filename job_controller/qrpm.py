@@ -279,12 +279,19 @@ if __name__ == "__main__":
         #28: (0.1, 1.0, 3000),
     }
 
-    # For rep_mode Fig.
+    # For critical exponent calculations
     modes = {
-        10: (1.1, 1.3, 3000),
+        #10: (1.1, 1.3, 3000),
         20: (0.4, 1.2, 3000),
-        21: (0.7, 1.0, 3000),
+        #21: (0.7, 1.0, 3000),
     }
+
+    # For MI figure
+    #modes = {
+        #10: (0.6, 1.8, 3000),
+        #20: (0.4, 1.5, 3000),
+        #21: (0.3, 1.1, 3000)
+    #}
    
 
     # ALL MODES
@@ -310,19 +317,19 @@ if __name__ == "__main__":
             initial_state = 0
         system_sizes = [32, 64, 128, 256]
         config = generate_config_very_high_fidelity(mode, us, system_sizes=system_sizes, nruns=1, sample_avalanches=False, equilibration_timesteps=eq_timesteps, initial_state=initial_state)
-        submit_jobs(config, f"qrpm_{mode}_s1_c", ncores=64, memory="100gb", time="96:00:00", nodes=5, cleanup=False)
+        submit_jobs(config, f"qrpm_{mode}_s1", ncores=64, memory="100gb", time="96:00:00", nodes=20, cleanup=False)
 
         system_sizes = [512]
         config = generate_config_very_high_fidelity(mode, us, system_sizes=system_sizes, nruns=1, sample_avalanches=False, equilibration_timesteps=eq_timesteps, initial_state=initial_state)
-        submit_jobs(config, f"qrpm_{mode}_s2_c", ncores=64, memory="100gb", time="96:00:00", nodes=5)
+        submit_jobs(config, f"qrpm_{mode}_s2", ncores=64, memory="100gb", time="96:00:00", nodes=20)
 
         system_sizes = [16, 64, 128, 256]
-        config = generate_config_very_high_fidelity_temporal(mode, us, num_runs=50, system_sizes=system_sizes, sampling_timesteps=100)
-        submit_jobs(config, f"qrpm_{mode}_t1_c", ncores=64, memory="100gb", time="96:00:00", nodes=10, cleanup=False)
+        config = generate_config_very_high_fidelity_temporal(mode, us, num_runs=500, system_sizes=system_sizes, sampling_timesteps=100)
+        submit_jobs(config, f"qrpm_{mode}_t1_c", ncores=64, memory="100gb", time="96:00:00", nodes=30, cleanup=False)
 
         system_sizes = [512]
-        config = generate_config_very_high_fidelity_temporal(mode, us, num_runs=50, system_sizes=system_sizes, sampling_timesteps=100)
-        submit_jobs(config, f"qrpm_{mode}_t2_c", ncores=64, memory="100gb", time="96:00:00", nodes=10, cleanup=False)
+        config = generate_config_very_high_fidelity_temporal(mode, us, num_runs=500, system_sizes=system_sizes, sampling_timesteps=100)
+        submit_jobs(config, f"qrpm_{mode}_t2_c", ncores=64, memory="100gb", time="96:00:00", nodes=30, cleanup=False)
     
     modes = {
         #15: (0.001, 0.02, 1000),

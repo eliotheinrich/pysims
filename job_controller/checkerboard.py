@@ -20,12 +20,13 @@ def checkerboard_ldpc_config(system_size, p4, delete_plaquettes=True, single_sit
     config["sample_rank"] = True
     config["sample_solveable"] = True
 
+    config["sample_all_locality"] = True
 
     config["max_size"] = 20
     
     return config
 
 system_size = [8, 16, 32]
-p = list(np.linspace(0.0, 1.0, 25))
-config = checkerboard_ldpc_config(system_size=system_size, p4=p, single_site=[0,1], delete_plaquettes=[0,1], nruns=10)
-submit_jobs(config, f"checkboard_test", ncores=48, nodes=5, memory="50gb", time="24:00:00")
+p = list(np.linspace(0., 1.0, 25))
+config = checkerboard_ldpc_config(system_size=system_size, p4=p, single_site=[0, 1], delete_plaquettes=[0, 1], nruns=100)
+submit_jobs(config, f"checkerboard_locality", ncores=4, nodes=5, memory="50gb", time="24:00:00", run_local=True)
