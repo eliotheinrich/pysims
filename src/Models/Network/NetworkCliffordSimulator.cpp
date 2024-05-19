@@ -45,7 +45,8 @@ void NetworkCliffordSimulator::add_degree_distribution(data_t& samples) const {
 	}
 
 	for (uint32_t i = 0; i < system_size; i++) {
-		samples.emplace("dist_" + std::to_string(i), dist[i]/sum);
+    std::string key = "dist_" + std::to_string(i);
+    emplace(samples, key, dist[i]/sum);
 	}
 }
 
@@ -64,7 +65,7 @@ void NetworkCliffordSimulator::add_spatially_averaged_entropy(data_t& samples) {
     s[i] = state->entropy(qubits, 2);
 	}
 
-	samples.emplace("entropy", s);
+  emplace(samples, "entropy", s);
 }
 
 data_t NetworkCliffordSimulator::take_samples() {

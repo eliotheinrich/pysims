@@ -238,7 +238,7 @@ void SandpileCliffordSimulator::add_reduced_substrate_height_samples(dataframe::
     reduced_substrate[i - e1] = static_cast<double>(entropy_surface[i]);
   }
 
-  samples.emplace("reduced_surface", reduced_substrate);
+  emplace(samples, "reduced_surface", reduced_substrate);
 }
 
 data_t SandpileCliffordSimulator::take_samples() {

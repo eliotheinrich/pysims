@@ -84,8 +84,8 @@ data_t BulkMeasurementSimulator::take_samples() {
 
     entropy[q] = state->entropy(qubits, 2);
   }
-  
-  samples.emplace("surface", entropy);
+
+  emplace(samples, "surface", entropy);
 
   //sampler.add_samples(samples, state);
 	return samples;

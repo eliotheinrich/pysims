@@ -23,11 +23,24 @@ simulators = {
     "xz_circuit": XZCircuitSimulator,
 }
 
-from pyev import EvolutionModel
-simulators["evolution"] = EvolutionModel
+try:
+    from pyev import EvolutionModel
+    print("imported pyev")
+    simulators["evolution"] = EvolutionModel
+except ModuleNotFoundError:
+    pass
+except Exception as e:
+    raise e
 
-from pyfe import DuplicateSimulator
-simulators["duplicate_sim"] = DuplicateSimulator
+try:
+    from pyfe import DuplicateSimulator
+    print("imported pyfe")
+    simulators["duplicate_sim"] = DuplicateSimulator
+except ModuleNotFoundError:
+    pass
+except Exception as e:
+    raise e
+
 
 config_types = {
     "vqse": VQSEConfig,
@@ -36,27 +49,45 @@ config_types = {
     "clifford_clustering": CliffordClusteringConfig,
 }
 
-from pyxorsat import XORSATConfig, GraphXORSATConfig, LDPCConfig, CliffordCodeSimulator, GraphClusteringSimulator, RXPMDualConfig, RPMCAConfig, SlantedCheckerboardConfig
-simulators["clifford_code"] = CliffordCodeSimulator
-simulators["graph_clustering"] = GraphClusteringSimulator
-config_types["graph_xorsat"] = GraphXORSATConfig
-config_types["xorsat"] = XORSATConfig
-config_types["ldpc"] = LDPCConfig
-config_types["rxpm"] = RXPMDualConfig
-config_types["rpmca"] = RPMCAConfig
-config_types["slanted_checkerboard"] = SlantedCheckerboardConfig
+try:
+    from pyxorsat import XORSATConfig, GraphXORSATConfig, LDPCConfig, CliffordCodeSimulator, GraphClusteringSimulator, RXPMDualConfig, RPMCAConfig, SlantedCheckerboardConfig
+    print("imported pyxorsat")
+    simulators["clifford_code"] = CliffordCodeSimulator
+    simulators["graph_clustering"] = GraphClusteringSimulator
+    config_types["graph_xorsat"] = GraphXORSATConfig
+    config_types["xorsat"] = XORSATConfig
+    config_types["ldpc"] = LDPCConfig
+    config_types["rxpm"] = RXPMDualConfig
+    config_types["rpmca"] = RPMCAConfig
+    config_types["slanted_checkerboard"] = SlantedCheckerboardConfig
+except ModuleNotFoundError:
+    pass
+except Exception as e:
+    raise e
 
-from pywsdc import ScoreSheetConfig
-config_types["wsdc_score"] = ScoreSheetConfig
+try:
+    from pywsdc import ScoreSheetConfig
+    print("imported pywsdc")
+    config_types["wsdc_score"] = ScoreSheetConfig
+except ModuleNotFoundError:
+    pass
+except Exception as e:
+    raise e
 
-from pymc import SimpleGraphModel, SquareIsingModel, SquareXYModel, TrigonalXYModel, XXZHeis, TrigonalModel, LDPCIsingModel
-simulators["simple_graph"] = SimpleGraphModel
-simulators["square_ising"] = SquareIsingModel
-simulators["square_xy"] = SquareXYModel
-simulators["trigonal_xy"] = TrigonalXYModel
-simulators["trigonal_heis"] = TrigonalModel
-simulators["xxz_heis"] = XXZHeis
-simulators["ldpc_ising"] = LDPCIsingModel
+try:
+    from pymc import SimpleGraphModel, SquareIsingModel, SquareXYModel, TrigonalXYModel, XXZHeis, TrigonalModel, LDPCIsingModel
+    print("imported pymc")
+    simulators["simple_graph"] = SimpleGraphModel
+    simulators["square_ising"] = SquareIsingModel
+    simulators["square_xy"] = SquareXYModel
+    simulators["trigonal_xy"] = TrigonalXYModel
+    simulators["trigonal_heis"] = TrigonalModel
+    simulators["xxz_heis"] = XXZHeis
+    simulators["ldpc_ising"] = LDPCIsingModel
+except ModuleNotFoundError:
+    pass
+except Exception as e:
+    raise e
 
 def prepare_config(params):
     circuit_type = params["circuit_type"]

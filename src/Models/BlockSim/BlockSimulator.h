@@ -36,6 +36,7 @@ class BlockSimulator : public dataframe::Simulator {
 
   public:
     BlockSimulator(dataframe::Params &params, uint32_t);
+    ~BlockSimulator()=default;
 
     virtual void timesteps(uint32_t num_steps) override;
     virtual void equilibration_timesteps(uint32_t num_steps) override {

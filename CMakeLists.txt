@@ -16,7 +16,7 @@ message("Compiler: " ${CMAKE_CXX_COMPILER})
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 
 #set(CMAKE_DEBUG_POSTFIX "d")
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wno-unused-function -Wno-deprecated-declarations -pthread -fopenmp")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-all -Wno-unused-function -Wno-deprecated-declarations -pthread")
 
 # Ignore annoying Intel warnings
 if (${CMAKE_CXX_COMPILER_ID} STREQUAL "Intel")
@@ -126,11 +126,6 @@ foreach(DIR IN LISTS MODEL_DIRS)
     add_subdirectory(${DIR})
 endforeach()
 
-add_library(sim_utils STATIC src/Models.h)
-target_include_directories(sim_utils PRIVATE ${MODEL_DIRS})
-target_link_libraries(sim_utils PRIVATE ${SIMULATOR_LIBS})
-
-
 if (PS_BUILDING_PYTHON)
     nanobind_add_module(
         pysimulators 
@@ -140,7 +135,7 @@ if (PS_BUILDING_PYTHON)
     )
     set_target_properties(pysimulators PROPERTIES POSITION_INDEPENDENT_CODE ON)
     target_include_directories(pysimulators PRIVATE src ${MODEL_DIRS})
-    target_link_libraries(pysimulators PRIVATE ${SIMULATOR_LIBS})
+    target_link_libraries(pysimulators PRIVATE ${SIMULATOR_LIBS} dataframe)
 
     install(
         TARGETS pysimulators
@@ -159,12 +154,14 @@ else()
     target_link_libraries(main PUBLIC ${SIMULATOR_LIBS} dataframe)
 
     # --- TEST --- #
-    add_executable(test src/test.cpp)
-    target_include_directories(test PRIVATE
+    add_executable(test_sim src/test.cpp)
+    target_link_libraries(test_sim ${Python_LIBRARIES})
+    target_include_directories(test_sim PRIVATE
         src
         ${MODEL_DIRS}
+        ${NB_DIR}/include
     )
 
-    set_target_properties(test PROPERTIES DEBUG_POSTFIX ${CMAKE_DEBUG_POSTFIX})
-    target_link_libraries(test PUBLIC quantum_state clifford_state ${SIMULATOR_LIBS})
+    set_target_properties(test_sim PROPERTIES DEBUG_POSTFIX ${CMAKE_DEBUG_POSTFIX})
+    target_link_libraries(test_sim PUBLIC quantum_state clifford_state ${SIMULATOR_LIBS} dataframe)
 endif()

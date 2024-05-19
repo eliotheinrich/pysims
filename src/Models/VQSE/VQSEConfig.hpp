@@ -79,36 +79,31 @@ class VQSEConfig : public dataframe::Config {
     }
 
     void add_est_eigenvalues(dataframe::DataSlide& slide) {	
-      slide.add_data("est_eigenvalues");
-      for (auto const &e : vqse.eigenvalue_estimates) {
-        slide.push_samples_to_data("est_eigenvalues", e);
-      }
+      slide.add_data("est_eigenvalues", vqse.eigenvalue_estimates.size());
+      slide.push_samples_to_data("est_eigenvalues", vqse.eigenvalue_estimates);
 
-      slide.add_data("bitstrings");
-      for (auto const &b : vqse.bitstring_estimates) {
-        slide.push_samples_to_data("bitstrings", b);
-      }
+      //slide.add_data("bitstrings", vqse.bitstring_estimates.size());
+      //slide.push_samples_to_data("bitstrings", vqse.bitstring_estimates);
     }
 
     void add_true_eigensystem(dataframe::DataSlide &slide) {
       auto [eigenvalues, eigenvectors] = vqse.true_eigensystem(target);
 
-      slide.add_data("true_eigenvalues");
-      for (auto const &e : eigenvalues) {
-        slide.push_samples_to_data("true_eigenvalues", e);
-      }
+      //slide.add_data("true_eigenvalues", eigenvalues.size());
+      //slide.push_samples_to_data("true_eigenvalues", eigenvalues);
 
       for (uint32_t i = 0; i < m ; i++) {
-        std::string state_real = "state_" + std::to_string(i) + "r";
-        std::string state_imag = "state_" + std::to_string(i) + "i";
-        slide.add_data(state_real);
-        slide.add_data(state_imag);
+        // TODO add back in
+        //std::string state_real = "state_" + std::to_string(i) + "r";
+        //std::string state_imag = "state_" + std::to_string(i) + "i";
+        //slide.add_data(state_real);
+        //slide.add_data(state_imag);
 
-        uint32_t s = (1u << num_qubits);
-        for (uint32_t j = 0; j < s; j++) {
-          slide.push_samples_to_data(state_real, eigenvectors(i, j).real());
-          slide.push_samples_to_data(state_imag, eigenvectors(i, j).imag());
-        }
+        //uint32_t s = (1u << num_qubits);
+        //for (uint32_t j = 0; j < s; j++) {
+        //  slide.push_samples_to_data(state_real, eigenvectors(i, j).real());
+        //  slide.push_samples_to_data(state_imag, eigenvectors(i, j).imag());
+        //}
       }
 
 
@@ -181,7 +176,7 @@ class VQSEConfig : public dataframe::Config {
 
 
       // Optimization done; add results
-      slide.add_data("final_parameters");
+      slide.add_data("final_parameters", vqse.params.size());
       slide.push_samples_to_data("final_parameters", vqse.params);
 
       add_true_eigensystem(slide);
