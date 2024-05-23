@@ -1,4 +1,5 @@
-from dataframe import TimeConfig
+from dataframe import TimeConfig, ParallelCompute, DataFrame, DataSlide
+import pickle as pkl
 
 from pysims.pysimulators import *
 simulators = {
@@ -89,6 +90,7 @@ except ModuleNotFoundError:
 except Exception as e:
     raise e
 
+
 def prepare_config(params):
     circuit_type = params["circuit_type"]
     if circuit_type in simulators:
@@ -97,4 +99,15 @@ def prepare_config(params):
     else:
         config_generator = config_types[circuit_type]
         return config_generator(params)
+
+def resume_run(frame):
+    configs = []
+    for slide in frame.slides:
+        params = {**frame.params, **slide.params}
+        config = prepare_config(params)
+        config.store_serialized_simulator(slide._get_buffer())
+        configs.append(config)
+
+    pc = ParallelCompute(configs, **frame.metadata)
+    return pc
 

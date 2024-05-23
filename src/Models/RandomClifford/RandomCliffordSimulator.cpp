@@ -1,5 +1,6 @@
 #include "RandomCliffordSimulator.h"
 #include <cstdint>
+#include <glaze/glaze.hpp>
 
 #define DEFAULT_GATE_WIDTH 2
 
@@ -40,11 +41,7 @@ RandomCliffordSimulator::RandomCliffordSimulator(Params &params, uint32_t) : Sim
 	start_sampling = false;
 
 
-	if (simulator_type == "chp") {
-		state = std::make_shared<QuantumCHPState>(system_size, seed);
-	} else if (simulator_type == "graph") {
-		state = std::make_shared<QuantumGraphState>(system_size, seed);
-	}
+  state = std::make_shared<QuantumCHPState>(system_size, seed);
 }
 
 void RandomCliffordSimulator::mzr(uint32_t q) {
@@ -155,4 +152,26 @@ data_t RandomCliffordSimulator::take_samples() {
 	}
 
 	return samples;
+}
+
+
+template<>
+struct glz::meta<RandomCliffordSimulator> {
+  static constexpr auto value = glz::object(
+    "state", &RandomCliffordSimulator::state
+  );
+};
+
+void RandomCliffordSimulator::deserialize(const std::vector<byte_t>& bytes) {
+  auto pe = glz::read_binary(*this, bytes);
+  if (pe) {
+    std::string error_message = "Error parsing RandomCliffordSimluator from binary.";
+    throw std::invalid_argument(error_message);
+  }
+}
+
+std::vector<byte_t> RandomCliffordSimulator::serialize() const {
+  std::vector<byte_t> data;
+  glz::write_binary(*this, data);
+  return data;
 }

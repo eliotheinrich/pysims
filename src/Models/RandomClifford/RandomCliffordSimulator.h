@@ -37,7 +37,6 @@ static inline double rc_power_law(double x0, double x1, double n, double r) {
 
 class RandomCliffordSimulator : public dataframe::Simulator {
 	private:
-		std::shared_ptr<CliffordState> state;
 		int seed;
 
 		uint32_t system_size;
@@ -67,6 +66,7 @@ class RandomCliffordSimulator : public dataframe::Simulator {
     void mzr(uint32_t);
 
 	public:
+		std::shared_ptr<QuantumCHPState> state;
 		RandomCliffordSimulator(dataframe::Params &params, uint32_t num_threads);
 
 		virtual void equilibration_timesteps(uint32_t num_steps) override {
@@ -75,6 +75,9 @@ class RandomCliffordSimulator : public dataframe::Simulator {
 			start_sampling = true;
 		}
 		virtual void timesteps(uint32_t num_steps) override;
+
+    virtual std::vector<dataframe::byte_t> serialize() const override;
+    virtual void deserialize(const std::vector<dataframe::byte_t>& data) override;
 
 		virtual dataframe::data_t take_samples() override;
 };

@@ -77,6 +77,13 @@ else()
 endif()
 
 FetchContent_Declare(
+  glaze
+  GIT_REPOSITORY https://github.com/stephenberry/glaze.git
+  GIT_TAG d907f9cfb7197a29fa7cbefab310895593f5b105
+)
+list(APPEND EXTERNALS glaze)
+
+FetchContent_Declare(
     eigen
     GIT_REPOSITORY https://gitlab.com/libeigen/eigen
     GIT_TAG master
@@ -94,6 +101,7 @@ FetchContent_MakeAvailable(${EXTERNALS})
 include_directories(
     ${dataframe_SOURCE_DIR}/src
     ${utils_SOURCE_DIR}/src
+    ${glaze_SOURCE_DIR}/include
     ${eigen_SOURCE_DIR}
 )
 
