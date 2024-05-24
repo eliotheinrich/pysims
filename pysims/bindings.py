@@ -26,7 +26,6 @@ simulators = {
 
 try:
     from pyev import EvolutionModel
-    print("imported pyev")
     simulators["evolution"] = EvolutionModel
 except ModuleNotFoundError:
     pass
@@ -35,7 +34,6 @@ except Exception as e:
 
 try:
     from pyfe import DuplicateSimulator
-    print("imported pyfe")
     simulators["duplicate_sim"] = DuplicateSimulator
 except ModuleNotFoundError:
     pass
@@ -52,7 +50,6 @@ config_types = {
 
 try:
     from pyxorsat import XORSATConfig, GraphXORSATConfig, LDPCConfig, CliffordCodeSimulator, GraphClusteringSimulator, RXPMDualConfig, RPMCAConfig, SlantedCheckerboardConfig
-    print("imported pyxorsat")
     simulators["clifford_code"] = CliffordCodeSimulator
     simulators["graph_clustering"] = GraphClusteringSimulator
     config_types["graph_xorsat"] = GraphXORSATConfig
@@ -68,7 +65,6 @@ except Exception as e:
 
 try:
     from pywsdc import ScoreSheetConfig
-    print("imported pywsdc")
     config_types["wsdc_score"] = ScoreSheetConfig
 except ModuleNotFoundError:
     pass
@@ -77,7 +73,6 @@ except Exception as e:
 
 try:
     from pymc import SimpleGraphModel, SquareIsingModel, SquareXYModel, TrigonalXYModel, XXZHeis, TrigonalModel, LDPCIsingModel
-    print("imported pymc")
     simulators["simple_graph"] = SimpleGraphModel
     simulators["square_ising"] = SquareIsingModel
     simulators["square_xy"] = SquareXYModel
