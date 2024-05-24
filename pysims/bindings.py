@@ -100,11 +100,16 @@ def prepare_config(params):
         config_generator = config_types[circuit_type]
         return config_generator(params)
 
-def resume_run(frame):
+def resume_run(frame, callback=None):
+    if callback is None:
+        def callback(x):
+            return x
+
     configs = []
     for slide in frame.slides:
         params = {**frame.params, **slide.params}
         config = prepare_config(params)
+        callback(config.params)
         config.store_serialized_simulator(slide._get_buffer())
         configs.append(config)
 

@@ -6,7 +6,6 @@
 
 class SandpileCliffordSimulator : public dataframe::Simulator {
 	private:
-		std::shared_ptr<QuantumCHPState> state;
 		uint32_t system_size;
 
 		double unitary_prob;
@@ -29,8 +28,6 @@ class SandpileCliffordSimulator : public dataframe::Simulator {
 		uint32_t initial_state;
 		uint32_t scrambling_steps;
 
-		std::vector<int> entropy_surface;
-
 		InterfaceSampler interface_sampler;
 		EntropySampler entropy_sampler;
 
@@ -49,6 +46,8 @@ class SandpileCliffordSimulator : public dataframe::Simulator {
     void add_reduced_substrate_height_samples(dataframe::data_t& samples, const std::vector<int>& surface) const;
 
 	public:
+		std::shared_ptr<QuantumCHPState> state;
+
 		SandpileCliffordSimulator(dataframe::Params &params, uint32_t);
 
 		virtual void equilibration_timesteps(uint32_t num_steps) override {
@@ -58,6 +57,9 @@ class SandpileCliffordSimulator : public dataframe::Simulator {
 		}
 
 		virtual void timesteps(uint32_t num_steps) override;
+
+    virtual std::vector<dataframe::byte_t> serialize() const override;
+    virtual void deserialize(const std::vector<dataframe::byte_t>& data) override;
 
 		virtual dataframe::data_t take_samples() override;
 };
