@@ -1,0 +1,4 @@
+scancel -u heinriea
+rm ../data/_qrpm_test.eve
+rm ../slurm*
+python qrpm_test.py

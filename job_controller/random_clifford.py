@@ -1,4 +1,4 @@
-from job_controller import config_to_string, submit_jobs, save_config
+from job_controller import submit_jobs, save_config
 import numpy as np
 
 def generate_config_very_high_fidelity(
@@ -117,10 +117,11 @@ def generate_config_very_high_fidelity_temporal(system_sizes=[128], simulator_ty
     return config
 
 if __name__ == "__main__":
-    #mzr_probs = [0.0]
-    #alphas = 2.0
-    #config = generate_config_very_high_fidelity_temporal(system_sizes=system_sizes, mzr_probs=mzr_probs, timestep_type=3, alpha=alphas, nruns=1000, sampling_timesteps=1024)
-    #submit_jobs(config, f"rc_clean_pl_2", ncores=48, nodes=6, memory="50gb", time="48:00:00", run_local=False)
+    mzr_probs = [0.0]
+    alphas = 2.0
+    system_sizes = [128]
+    config = generate_config_very_high_fidelity_temporal(system_sizes=system_sizes, mzr_probs=mzr_probs, timestep_type=3, alpha=alphas, nruns=1000, sampling_timesteps=1024)
+    submit_jobs(f"rc_clean_pl", param_bundle=config, ncores=48, nodes=6, memory="50gb", time="48:00:00", run_local=False)
 
     #mzr_probs = [0.0]
     #config = generate_config_very_high_fidelity_temporal(system_sizes=system_sizes, mzr_probs=mzr_probs, timestep_type=2, nruns=500, sampling_timesteps=2048)
@@ -130,8 +131,8 @@ if __name__ == "__main__":
     #config = generate_config_very_high_fidelity_temporal(system_sizes=system_sizes, mzr_probs=mzr_probs, timestep_type=1, nruns=500, sampling_timesteps=2048)
     #submit_jobs(config, f"rc_clean_l", ncores=48, nodes=1, memory="50gb", time="48:00:00", run_local=False)
 
-    system_sizes = [16, 32, 64]
-    mzr_probs = list(np.linspace(0.0, 0.8, 80)) 
-    config = generate_config_very_high_fidelity(system_sizes=system_sizes, mzr_probs=mzr_probs, timestep_type=0, nruns=10, sample_structure_function=False, sample_correlation_distance=True, interface_sample=False, sample_fixed_mutual_information=False)
-    submit_jobs(config, f"rc_cd", ncores=16, nodes=10, memory="20gb", time="05:00:00", run_local=False)
+    #system_sizes = [16, 32, 64]
+    #mzr_probs = list(np.linspace(0.0, 0.8, 80)) 
+    #config = generate_config_very_high_fidelity(system_sizes=system_sizes, mzr_probs=mzr_probs, timestep_type=0, nruns=10, sample_structure_function=False, sample_correlation_distance=True, interface_sample=False, sample_fixed_mutual_information=False)
+    #submit_jobs(config, f"rc_cd", ncores=16, nodes=10, memory="20gb", time="05:00:00", run_local=False)
 

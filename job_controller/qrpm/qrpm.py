@@ -1,4 +1,4 @@
-from job_controller import submit_jobs, save_config
+from ..job_controller import submit_jobs, save_config
 import numpy as np
 
 def generate_samples_config(
@@ -21,9 +21,9 @@ def generate_samples_config(
     config["save_samples"] = True 
 
     config["feedback_mode"] = feedback_mode
-    
+
     config["initial_state"] = initial_state
-    
+
     config["random_sites"] = True
     config["boundary_conditions"] = "obc1"
     config["unitary_qubits"] = 4
@@ -32,7 +32,7 @@ def generate_samples_config(
     config["initial_state"] = initial_state
 
     config["spatial_avg"] = False
-    
+
     # EntropySampler configuration
     config["sample_entropy"] = sample_entropy
     config["sample_all_partition_sizes"] = False
@@ -40,7 +40,7 @@ def generate_samples_config(
     config["sample_fixed_mutual_information"] = False
 
     config["zparams1"] = [{"system_size": L, "partition_size": L//2} for L in system_sizes]
-    
+
     config["sample_surface"] = sample_surface
     config["sample_surface_avg"] = False
     config["sample_rugosity"] = False
@@ -59,7 +59,7 @@ def generate_samples_config(
             probs_u['unitary_prob'] = 1.0
             probs_u['mzr_prob'] = 1.0/u
         probs.append(probs_u)
-    
+
     config["zparams2"] = probs
 
     config["temporal_avg"] = False
@@ -94,7 +94,7 @@ def generate_config_very_high_fidelity(
     config["circuit_type"] = "sandpile_clifford"
     config["num_runs"] = nruns
     config["simulator_type"] = simulator_type
-    
+
     config["random_sites"] = True
     config["boundary_conditions"] = "obc1"
     config["unitary_qubits"] = unitary_qubits
@@ -104,7 +104,7 @@ def generate_config_very_high_fidelity(
     config["scrambling_steps"] = scrambling_steps
 
     config["spatial_avg"] = False
-    
+
     # EntropySampler configuration
     config["sample_entropy"] = False
     config["sample_all_partition_sizes"] = False
@@ -124,11 +124,11 @@ def generate_config_very_high_fidelity(
             "max_av": 2*L,
             "min_av": 1
         }
-            
+
         mutual_information_zparams.append(params)
-    
+
     config["zparams1"] = mutual_information_zparams
-    
+
     config["pbc"] = True
     config["sample_variable_mutual_information"] = sample_variable_mutual_information
 
@@ -152,7 +152,7 @@ def generate_config_very_high_fidelity(
             probs_u['unitary_prob'] = 1.0
             probs_u['mzr_prob'] = 1.0/u
         probs.append(probs_u)
-    
+
     config["zparams2"] = probs
 
     config["save_samples"] = False
@@ -181,19 +181,19 @@ def generate_config_very_high_fidelity_temporal(
 
     if scrambling_steps is None:
         scrambling_steps = max(system_sizes)
-        
+
     config = {}
     config["circuit_type"] = "sandpile_clifford"
     config["num_runs"] = num_runs
     config["simulator_type"] = simulator_type
 
     config["system_size"] = system_sizes
-    
+
     config["random_sites"] = True
     config["boundary_conditions"] = "obc1"
     config["unitary_qubits"] = 4
     config["mzr_mode"] = 1
-    
+
     config["initial_state"] = initial_state
     config["scrambling_steps"] = scrambling_steps
 
@@ -204,7 +204,7 @@ def generate_config_very_high_fidelity_temporal(
     config["sample_all_partition_sizes"] = False
     config["sample_mutual_information"] = False
     config["sample_fixed_mutual_information"] = False
-    
+
     # Sample surface using InterfaceSampler
     config["sample_surface"] = True
     config["sample_surface_avg"] = True
@@ -225,7 +225,7 @@ def generate_config_very_high_fidelity_temporal(
             probs_u['unitary_prob'] = 1.0
             probs_u['mzr_prob'] = 1.0/u
         probs.append(probs_u)
-    
+
     config["zparams2"] = probs
 
     config["save_samples"] = False
@@ -271,18 +271,18 @@ if __name__ == "__main__":
         #20: (0.4, 1.5, 3000),
         #21: (0.3, 1.1, 3000),
         #30: (0.01, 1.0, 3000),
-        
+
         #23: (0.5, 1.0, 3000),
         #24: (0.1, 1.0, 3000),
-        
+
         #27: (0.4, 0.9, 3000),
         #28: (0.1, 1.0, 3000),
     }
 
     # For critical exponent calculations
     modes = {
-        #10: (1.1, 1.3, 3000),
-        20: (0.4, 1.2, 3000),
+        10: (1.1, 1.3, 3000),
+        20: (0.4, 0.9, 3000),
         #21: (0.7, 1.0, 3000),
     }
 
@@ -292,7 +292,7 @@ if __name__ == "__main__":
         #20: (0.4, 1.5, 3000),
         #21: (0.3, 1.1, 3000)
     #}
-   
+
 
     # ALL MODES
     #us = list(np.linspace(0.05, 2.0, 120))
@@ -310,18 +310,18 @@ if __name__ == "__main__":
         if mode == 30:
             res = 10
         us = list(np.linspace(umin, umax, res))
-        
+
         if mode == 30:
             initial_state = 2
         else:
             initial_state = 0
         system_sizes = [32, 64, 128, 256]
         config = generate_config_very_high_fidelity(mode, us, system_sizes=system_sizes, nruns=1, sample_avalanches=False, equilibration_timesteps=eq_timesteps, initial_state=initial_state)
-        submit_jobs(config, f"qrpm_{mode}_s1", ncores=64, memory="100gb", time="96:00:00", nodes=20, cleanup=False)
+        submit_jobs(config, f"qrpm_{mode}_s1_c", ncores=64, memory="100gb", time="96:00:00", nodes=20, cleanup=False)
 
         system_sizes = [512]
         config = generate_config_very_high_fidelity(mode, us, system_sizes=system_sizes, nruns=1, sample_avalanches=False, equilibration_timesteps=eq_timesteps, initial_state=initial_state)
-        submit_jobs(config, f"qrpm_{mode}_s2", ncores=64, memory="100gb", time="96:00:00", nodes=20)
+        submit_jobs(config, f"qrpm_{mode}_s2_c", ncores=48, memory="100gb", time="96:00:00", nodes=20)
 
         system_sizes = [16, 64, 128, 256]
         config = generate_config_very_high_fidelity_temporal(mode, us, num_runs=500, system_sizes=system_sizes, sampling_timesteps=100)
@@ -330,7 +330,7 @@ if __name__ == "__main__":
         system_sizes = [512]
         config = generate_config_very_high_fidelity_temporal(mode, us, num_runs=500, system_sizes=system_sizes, sampling_timesteps=100)
         submit_jobs(config, f"qrpm_{mode}_t2_c", ncores=64, memory="100gb", time="96:00:00", nodes=30, cleanup=False)
-    
+
     modes = {
         #15: (0.001, 0.02, 1000),
         #19: (0.001, 1.0, 1000),
@@ -345,7 +345,7 @@ if __name__ == "__main__":
     for mode, (umin, umax, eq_timesteps) in modes.items():
         res = 40
         us = list(np.linspace(umin, umax, res))
-        
+
         system_sizes = [128]
         config = generate_config_very_high_fidelity(
             mode, 
@@ -357,7 +357,7 @@ if __name__ == "__main__":
             initial_state=1, 
             scrambling_steps=512
         )
-        
+
         # DESCRAMBLING
         #submit_jobs(config, f"qrpm_{mode}_s_sc", ncores=64, memory="250gb", time="96:00:00", nodes=1)
 
@@ -374,16 +374,16 @@ if __name__ == "__main__":
         #19: (0.25, 0.5),
         #26: (0.08, 0.3)
     }
-    
+
     # Avalanche distribution. 
     # Smaller system size, far away from criticality
     for mode, (umin, umax, eq_timesteps) in modes_broad.items():
         us = list(np.linspace(umin, umax, 40))
-        
+
         system_sizes = [32, 64, 128, 256]
         config = generate_config_very_high_fidelity(mode, us, system_sizes=system_sizes, sample_avalanches=False, equilibration_timesteps=eq_timesteps)
         #submit_jobs(config, f"qrpm_{mode}_s2", ncores=64, memory="150gb", time="72:00:00", nodes=4)
-        
+
         system_sizes = [32, 64, 128]
         config = generate_config_very_high_fidelity(mode, us, system_sizes=system_sizes, sample_avalanches=True, sample_variable_mutual_information=True, equilibration_timesteps=eq_timesteps)
         #submit_jobs(config, f"qrpm_{mode}_av_test", ncores=64, memory="150gb", time="24:00:00", nodes=1, cleanup=False)
@@ -413,15 +413,35 @@ if __name__ == "__main__":
         system_sizes = [128]
         config = generate_config_very_high_fidelity(mode, us, system_sizes=system_sizes, nruns=25, sample_avalanches=True, simulator_type="chp", equilibration_timesteps=eq_timesteps)
         #submit_jobs(config, f"qrpm_{mode}_av", ncores=64, memory="150gb", time="72:00:00", nodes=8)
-        
+
         system_sizes = [32, 64, 128, 256]
         config = generate_config_very_high_fidelity(mode, us, system_sizes=system_sizes, sample_avalanches=False, equilibration_timesteps=eq_timesteps)
         #submit_jobs(config, f"qrpm_{mode}_s3", ncores=64, memory="150gb", time="72:00:00", nodes=4)
 
         system_sizes = [32, 64, 256]
         config = generate_config_very_high_fidelity_temporal(mode, us, num_runs=1250, system_sizes=system_sizes, sampling_timesteps=100)
-        #submit_jobs(config, f"qrpm_{mode}_tkpz", ncores=48, memory="150gb", time="72:00:00", nodes=4)
-        
+        #submit_jobs(config, f"qrpm_{mode}_tkpz1", ncores=48, memory="150gb", time="72:00:00", nodes=4)
+
+        system_sizes = [512]
+        config = generate_config_very_high_fidelity_temporal(mode, us, num_runs=1250, system_sizes=system_sizes, sampling_timesteps=100)
+        #submit_jobs(config, f"qrpm_{mode}_tkpz2", ncores=48, memory="150gb", time="72:00:00", nodes=4)
+
+    mode_us = {
+        10: [1.8],
+        20: [0.89]
+
+    }
+
+
+    for mode, us in mode_us.items():
+        system_sizes = [32, 64, 128, 256]
+        config = generate_config_very_high_fidelity_temporal(mode, us, num_runs=1250, system_sizes=system_sizes, sampling_timesteps=100)
+        #submit_jobs(config, f"qrpm_{mode}_tkpz1", ncores=48, memory="150gb", time="72:00:00", nodes=4)
+
+        system_sizes = [512]
+        config = generate_config_very_high_fidelity_temporal(mode, us, num_runs=1250, system_sizes=system_sizes, sampling_timesteps=100)
+        #submit_jobs(config, f"qrpm_{mode}_tkpz2", ncores=48, memory="150gb", time="72:00:00", nodes=4)
+
     us = np.linspace(0.001, 0.2, 40)
     config = generate_config_very_high_fidelity(30, us, system_sizes=[32, 64, 128], equilibration_timesteps=[50, 100, 200, 300, 400, 500, 600, 700, 800, 900, 1000], sampling_timesteps=[50], nruns=10)
     #submit_jobs(config, f"qrpm_30_s_eq", ncores=64, memory="250gb", time="48:00:00", nodes=8)

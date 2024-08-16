@@ -85,29 +85,48 @@ except ModuleNotFoundError:
 except Exception as e:
     raise e
 
+try:
+    from pyneural import LatticeNeuralSimulator, NoisyNeuralSimulator, NonlocalNeuralSimulator
+    simulators["noisy_neural"] = NoisyNeuralSimulator
+    simulators["lattice_neural"] = LatticeNeuralSimulator
+    simulators["nonlocal_neural"] = NonlocalNeuralSimulator
+except ModuleNotFoundError:
+    pass
+except Exception as e:
+    raise e
 
-def prepare_config(params):
+
+def prepare_config(params, serialize):
     circuit_type = params["circuit_type"]
     if circuit_type in simulators:
         simulator_generator = simulators[circuit_type]
-        return TimeConfig(params, simulator_generator)
+        return TimeConfig(params, simulator_generator, serialize)
     else:
         config_generator = config_types[circuit_type]
         return config_generator(params)
 
-def resume_run(frame, callback=None):
+def resume_run(frame, callback=None, metaparams=None, serialize=False):
     if callback is None:
         def callback(x):
-            return x
+            return
 
     configs = []
     for slide in frame.slides:
         params = {**frame.params, **slide.params}
-        config = prepare_config(params)
+        config = prepare_config(params, serialize)
         callback(config.params)
-        config.store_serialized_simulator(slide._get_buffer())
+        buffer = slide._get_buffer()
+        config.store_serialized_simulator(buffer)
         configs.append(config)
 
-    pc = ParallelCompute(configs, **frame.metadata)
-    return pc
+    if metaparams is None:
+        metaparams = frame.metadata
+    pc = ParallelCompute(configs, **metaparams)
 
+    new_frame = pc.compute()
+
+    num_slides = len(frame.slides)
+    for n in range(num_slides):
+        new_frame.slides[n].params = frame.slides[n].params
+        new_frame.slides[n].combine_data(frame.slides[n])
+    return new_frame

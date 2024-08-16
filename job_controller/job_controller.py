@@ -2,18 +2,168 @@ import subprocess
 import os
 import shutil
 import json
+import dill
+from collections.abc import Iterable
 
-from dataframe import write_config, parse_config
+from combine_data import combine_data
+from do_run import JobContext
+
+from dataframe import DataFrame, unbundle_params
+
+
+WORKING_DIR = "/data/heinriea/cliffordsim/job_controller"
+DO_RUN_FILE = os.path.join(WORKING_DIR, "do_run.py")
+COMBINE_DATA_FILE = os.path.join(WORKING_DIR, "combine_data.py")
+DATA_DIR = os.path.join(WORKING_DIR, "data")
+
 
 def save_config(config, filename):
     config = json.dumps(config, indent=1)
-    config.replace('\\', '') 
+    config.replace('\\', '')
     with open(filename, 'w') as file:
         file.write(config)
 
+
+def verify_callbacks(params, callbacks):
+    _params = [p.copy() for p in params]
+    for p in _params:
+        for callback in callbacks:
+            try:
+                callback(p)
+            except:
+                raise RuntimeError("There was an error with the provided callback function.")
+                raise
+
+
+def do_run_locally(context, job_data, job_args, metaparams, num_nodes, checkpoint_callbacks):
+    for i in range(num_nodes):
+        data = context.execute(job_data, job_args)
+
+        for callback in checkpoint_callbacks:
+            data = context.execute(data, callback)
+
+        data_filename = os.path.join(context.dir, f"{context.name}_{i}.{context.ext}")
+        data.write(data_filename)
+
+    data = combine_data(context.name, context.dir)
+    data_filename = os.path.join(context.dir, f"{context.name}.{context.ext}")
+    data.write(data_filename)
+    subprocess.run(["mv", "-f", data_filename, DATA_DIR])
+
+    if context.cleanup:
+        shutil.rmtree(context.dir)
+
+
+def submit_and_get_id(script_path, dependency=None):
+    try:
+        command = ['sbatch']
+        if dependency is not None:
+            if isinstance(dependency, str) or isinstance(dependency, int):
+                dependency = [dependency]
+            dependency = ':'.join(dependency)
+            command.append(f'--dependency=afterok:{dependency}')
+        command.append(script_path)
+        result = subprocess.run(command, capture_output=True, text=True, check=True)
+
+        output = result.stdout.split()
+        job_id = output[-1]
+
+        return job_id
+    except subprocess.CalledProcessError as e:
+        print(f"Error submitting job: {e.stderr}")
+        return None
+
+
+def create_arg_file(job_name, context, job_data, job_args):
+    args = (context, job_data, job_args)
+    filename = os.path.join(context.dir, f"{job_name}.pkl")
+    with open(filename, "wb") as file:
+        dill.dump(args, file)
+    return filename
+
+
+def generate_run_script(job_name, context, arg_file):
+    output_path = os.path.join(WORKING_DIR, f"slurm.{job_name}.%j.out")
+    script = [
+        f"#!/usr/bin/bash",
+        f"#SBATCH --partition={context.partition}",
+        f"#SBATCH --job-name={job_name}",
+        f"#SBATCH --output={output_path}",
+        f"#SBATCH --cpus-per-task={context.ncores}",
+        f"#SBATCH --nodes=1 --ntasks=1",
+        f"#SBATCH --mem={context.memory}",
+        f"#SBATCH --time={context.time}",
+        f"module load miniconda3/miniconda",
+        f"conda activate test",
+        f"cd {context.dir}",
+        f"python {DO_RUN_FILE} {job_name} {arg_file}"
+    ]
+
+    return '\n'.join(script)
+
+def do_run_slurm(context, job_data, job_args, metaparams, num_nodes, checkpoint_callbacks):
+    ids = [0]*num_nodes
+    for i in range(num_nodes):
+        # Create scripts
+        job_name_str = f"{context.name}_{i}_0"
+        arg_file = create_arg_file(job_name_str, context, job_data, job_args)
+        script = generate_run_script(job_name_str, context, arg_file)
+
+        # Write scripts to files
+        batch_script_filename = os.path.join(context.dir, f"{job_name_str}.sl")
+        with open(batch_script_filename, 'w') as f:
+            f.write(script)
+
+        # Run script
+        ids[i] = submit_and_get_id(batch_script_filename)
+
+        for j, callback in enumerate(checkpoint_callbacks, start=1):
+            job_name_str = f'{context.name}_{i}_{j}'
+            checkpoint_file = os.path.join(context.dir, f'{context.name}_{i}_{j-1}.eve')
+            arg_file = create_arg_file(job_name_str, context, checkpoint_file, callback)
+            script = generate_run_script(job_name_str, context, arg_file)
+
+            batch_script_filename = os.path.join(context.dir, f"{job_name_str}.sl")
+            with open(batch_script_filename, 'w') as f:
+                f.write(script)
+
+            ids[i] = submit_and_get_id(batch_script_filename, dependency=ids[i])
+
+    output_path = os.path.join(WORKING_DIR, f"slurm.{context.name}.%j.out")
+    num_checkpoints = len(checkpoint_callbacks)
+    combine_script = [
+        f"#!/usr/bin/bash",
+        f"#SBATCH --partition=shared",
+        f"#SBATCH --job-name={context.name}",
+        f"#SBATCH --output={output_path}"
+        f"#SBATCH --cpus-per-task=1",
+        f"#SBATCH --nodes=1 --ntasks=1",
+        f"#SBATCH --mem=50gb",
+        f"#SBATCH --time=00:30:00",
+
+        f"module load miniconda3/miniconda",
+        f"conda activate test",
+
+        f"python {COMBINE_DATA_FILE} {context.name} {context.dir} {context.ext} {num_checkpoints}",
+        f"mv -f {os.path.join(context.dir, context.name + '.' + context.ext)} {DATA_DIR}",
+    ]
+
+    if context.cleanup:
+        combine_script.append(f"rm -r {context.dir}")
+
+    combine_script = '\n'.join(combine_script)
+    combine_script_batch = os.path.join(context.dir, f'{context.name}_combine.sl')
+    with open(combine_script_batch, 'w') as file:
+        file.write(combine_script)
+
+    submit_and_get_id(combine_script_batch, dependency=ids)
+
+
 def submit_jobs(
-        config, 
         job_name,
+        param_bundle=None,
+        checkpoint_file=None,
+        init_callback=None,
         cleanup=True,
         memory="5gb", 
         time="24:00:00", 
@@ -27,132 +177,55 @@ def submit_jobs(
         parallelization_type=1,
         ext="eve",
         batch_size=1024,
+        checkpoint_callbacks=None,
         verbose=True,
     ):
+
+    if checkpoint_callbacks is None:
+        checkpoint_callbacks = []
+    num_checkpoints = len(checkpoint_callbacks)
+
+    serialize = num_checkpoints > 0
 
     metaparams = {
         "num_threads": ncores,
         "num_threads_per_task": ncores_per_task,
-        
+
         "atol": atol,
         "rtol": rtol,
-         
+
         "parallelization_type": parallelization_type,
-        
+
+        "serialize": serialize,
+
         "batch_size": batch_size,
         "verbose": verbose,
     }
-    
-    
+
     if partition == "default":
         if int(ncores) >= 48:
             partition = "exclusive"
         else:
             partition = "shared"
-    
-    # Setup
-    cwd = os.getcwd()
-    do_run_file = os.path.join(cwd, "do_run.py")
-    combine_data_file = os.path.join(cwd, "combine_data.py")
-    
-    data_dir = os.path.join(cwd, 'data')
-    case_dir = os.path.join(cwd, f'cases/{job_name}_case')
-    if os.path.exists(case_dir):
-        shutil.rmtree(case_dir)
-    os.mkdir(case_dir)
-    
-    if run_local:
-        os.chdir(f'{case_dir}')
-        for i in range(nodes):
-            script = ["python", do_run_file, f"{job_name}_{i}", f"{json.dumps(metaparams)}", f"{json.dumps(config)}"]
-            subprocess.run(script)
-        
 
-        combine_script = ["python", combine_data_file, job_name, ext]
-        subprocess.run(combine_script)
-        subprocess.run(["mv", "-f", f"{job_name}.{ext}", data_dir])
-        if cleanup:
+    case_dir = os.path.join(WORKING_DIR, f"cases/{job_name}_case")
+    if checkpoint_file is None:
+        if os.path.exists(case_dir):
             shutil.rmtree(case_dir)
+        os.mkdir(case_dir)
+
+    context = JobContext(job_name, case_dir, ext, partition, nodes, ncores, memory, time, cleanup, serialize, metaparams)
+
+    if checkpoint_file is None:
+        params = unbundle_params(param_bundle)
+        verify_callbacks(params, checkpoint_callbacks)
+        job_data = params
+        job_args = None
+    elif param_bundle is None:
+        job_data = checkpoint_file
+        job_args = init_callback
+
+    if run_local:
+        do_run_locally(context, job_data, job_args, metaparams, nodes, checkpoint_callbacks)
     else:
-        for i in range(nodes):
-            script = [
-                f"#!/usr/bin/bash",
-                f"#SBATCH --partition={partition}",
-                f"#SBATCH --job-name={job_name}",
-                f"#SBATCH --output=slurm.{job_name}.%j.out",
-                f"#SBATCH --cpus-per-task={ncores}",
-                f"#SBATCH --nodes=1 --ntasks=1",
-                f"#SBATCH --mem={memory}",
-                f"#SBATCH --time={time}",
-                
-                f"module load miniconda3/miniconda",
-                f"conda activate test",
-                f"cd {case_dir}",
-                
-                f"python {do_run_file} {job_name}_{i} '{json.dumps(metaparams)}' '{json.dumps(config)}'",
-            ]
-
-
-            script = '\n'.join(script)
-            job_name_str = os.path.join(case_dir, f'{job_name}_{i}.sl')
-            with open(job_name_str, 'w') as f:
-                f.write(script)
-
-            # Replace s
-            subprocess.run(["sbatch", job_name_str], text=True)
-            subprocess.run(["rm", job_name_str])
-
-        combine_script = [
-            f"#!/usr/bin/bash",
-            f"#SBATCH --partition=shared",
-            f"#SBATCH --job-name={job_name}",
-            f"#SBATCH --output=slurm.{job_name}.%j.out"
-            f"#SBATCH --cpus-per-task=1",
-            f"#SBATCH --nodes=1 --ntasks=1",
-            f"#SBATCH --mem=50gb",
-            f"#SBATCH --time=00:30:00",
-
-            f"module load miniconda3/miniconda",
-            f"conda activate test",
-            f"cd {case_dir}",
-            
-            f"python {combine_data_file} {job_name} {ext}",
-            f"mv -f {os.path.join(case_dir, job_name + '.' + ext)} {data_dir}",
-        ]
-        
-        if cleanup:
-            combine_script.append(f"rm -r {case_dir}")
-        
-        combine_script = '\n'.join(combine_script)
-        job_name_str = os.path.join(case_dir, f'{job_name}.sl')
-        with open(job_name_str, 'w') as f:
-            f.write(combine_script)
-        subprocess.run(["sbatch", f"--dependency=singleton", job_name_str])
-    os.chdir(cwd)
-
-def field_to_string(field) -> str:
-    if isinstance(field, str):
-        return f'"{field}"'
-    elif isinstance(field, bool):
-        return 'true' if field else 'false'
-    else:
-        try:
-            iterator = iter(field)
-            return '[' + ', '.join([field_to_string(i) for i in iterator]) + ']'
-        except TypeError:
-            pass
-        
-        return str(field)
-
-def config_to_string(config: dict) -> str:
-    s = "{\n"
-    lines = []
-    for key, val in config.items():
-        if key[:7] == 'zparams':
-            v = '[' + ', '.join([config_to_string(p).replace('\n', '').replace('\t', '').replace(',', ', ').replace('\'', '"') for p in val]) + ']'
-        else:
-            v = field_to_string(val)
-        lines.append(f"\t\"{key}\": {v}")
-    s += ',\n'.join(lines) + '\n}'
-    
-    return s.replace('\'', '"')
+        do_run_slurm(context, job_data, job_args, metaparams, nodes, checkpoint_callbacks)
