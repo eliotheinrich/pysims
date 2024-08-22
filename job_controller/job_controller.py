@@ -11,7 +11,7 @@ from do_run import JobContext
 from dataframe import DataFrame, unbundle_params
 
 
-WORKING_DIR = "/data/heinriea/cliffordsim/job_controller"
+WORKING_DIR = "/Users/eliotheinrich/Projects/cliffordsim/job_controller"
 DO_RUN_FILE = os.path.join(WORKING_DIR, "do_run.py")
 COMBINE_DATA_FILE = os.path.join(WORKING_DIR, "combine_data.py")
 DATA_DIR = os.path.join(WORKING_DIR, "data")
@@ -49,6 +49,7 @@ def do_run_locally(context, job_data, job_args, metaparams, num_nodes, checkpoin
     data_filename = os.path.join(context.dir, f"{context.name}.{context.ext}")
     data.write(data_filename)
     subprocess.run(["mv", "-f", data_filename, DATA_DIR])
+    mv_script = ["mv", "-f", data_filename, DATA_DIR]
 
     if context.cleanup:
         shutil.rmtree(context.dir)
