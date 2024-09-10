@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.27)
 
 project(cliffordsim LANGUAGES CXX)
 
-set(CMAKE_CXX_STANDARD 20)
+set(CMAKE_CXX_STANDARD 23)
 if (NOT CMAKE_BUILD_TYPE)
     set(CMAKE_BUILD_TYPE Release)
 endif()
@@ -171,5 +171,5 @@ else()
     )
 
     set_target_properties(test_sim PROPERTIES DEBUG_POSTFIX ${CMAKE_DEBUG_POSTFIX})
-    target_link_libraries(test_sim PUBLIC quantum_state clifford_state ${SIMULATOR_LIBS} dataframe)
+    target_link_libraries(test_sim PUBLIC quantum_state clifford_state ${SIMULATOR_LIBS} dataframe blas lapack)
 endif()
