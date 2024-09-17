@@ -1,4 +1,9 @@
-from ..job_controller import submit_jobs, save_config
+import sys
+import os
+sys.path.insert(1, os.path.join(sys.path[0], '..'))
+
+
+from job_controller import submit_jobs, save_config
 import numpy as np
 
 def generate_samples_config(
@@ -317,19 +322,19 @@ if __name__ == "__main__":
             initial_state = 0
         system_sizes = [32, 64, 128, 256]
         config = generate_config_very_high_fidelity(mode, us, system_sizes=system_sizes, nruns=1, sample_avalanches=False, equilibration_timesteps=eq_timesteps, initial_state=initial_state)
-        submit_jobs(config, f"qrpm_{mode}_s1_c", ncores=64, memory="100gb", time="96:00:00", nodes=20, cleanup=False)
+        #submit_jobs(config, f"qrpm_{mode}_s1_c", ncores=64, memory="100gb", time="96:00:00", nodes=20, cleanup=False)
 
         system_sizes = [512]
         config = generate_config_very_high_fidelity(mode, us, system_sizes=system_sizes, nruns=1, sample_avalanches=False, equilibration_timesteps=eq_timesteps, initial_state=initial_state)
-        submit_jobs(config, f"qrpm_{mode}_s2_c", ncores=48, memory="100gb", time="96:00:00", nodes=20)
+        #submit_jobs(config, f"qrpm_{mode}_s2_c", ncores=48, memory="100gb", time="96:00:00", nodes=20)
 
         system_sizes = [16, 64, 128, 256]
         config = generate_config_very_high_fidelity_temporal(mode, us, num_runs=500, system_sizes=system_sizes, sampling_timesteps=100)
-        submit_jobs(config, f"qrpm_{mode}_t1_c", ncores=64, memory="100gb", time="96:00:00", nodes=30, cleanup=False)
+        #submit_jobs(config, f"qrpm_{mode}_t1_c", ncores=64, memory="100gb", time="96:00:00", nodes=30, cleanup=False)
 
         system_sizes = [512]
         config = generate_config_very_high_fidelity_temporal(mode, us, num_runs=500, system_sizes=system_sizes, sampling_timesteps=100)
-        submit_jobs(config, f"qrpm_{mode}_t2_c", ncores=64, memory="100gb", time="96:00:00", nodes=30, cleanup=False)
+        #submit_jobs(config, f"qrpm_{mode}_t2_c", ncores=64, memory="100gb", time="96:00:00", nodes=30, cleanup=False)
 
     modes = {
         #15: (0.001, 0.02, 1000),
@@ -386,7 +391,8 @@ if __name__ == "__main__":
 
         system_sizes = [32, 64, 128]
         config = generate_config_very_high_fidelity(mode, us, system_sizes=system_sizes, sample_avalanches=True, sample_variable_mutual_information=True, equilibration_timesteps=eq_timesteps)
-        #submit_jobs(config, f"qrpm_{mode}_av_test", ncores=64, memory="150gb", time="24:00:00", nodes=1, cleanup=False)
+        print(config)
+        submit_jobs(f"qrpm_{mode}_av_test", param_bundle=config, ncores=64, memory="150gb", time="24:00:00", nodes=1, cleanup=False)
 
     system_sizes = []
 
