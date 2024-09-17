@@ -117,11 +117,36 @@ def generate_config_very_high_fidelity_temporal(system_sizes=[128], simulator_ty
     return config
 
 if __name__ == "__main__":
-    mzr_probs = [0.0]
-    alphas = 2.0
-    system_sizes = [128]
-    config = generate_config_very_high_fidelity_temporal(system_sizes=system_sizes, mzr_probs=mzr_probs, timestep_type=3, alpha=alphas, nruns=1000, sampling_timesteps=1024)
-    submit_jobs(f"rc_clean_pl", param_bundle=config, ncores=48, nodes=6, memory="50gb", time="48:00:00", run_local=False)
+
+    mzr_probs = np.linspace(0.0, 0.4, 10)
+    mzr_probs = [0.16]
+    system_sizes = [16, 32, 64]
+
+    config = generate_config_very_high_fidelity(system_sizes=system_sizes, mzr_probs=mzr_probs, sample_structure_function=False, sample_fixed_mutual_information=False)
+    submit_jobs(f"rc_c", param_bundle=config, ncores=4, nodes=1, memory="10gb", time="48:00:00", run_local=True)
+
+
+    #def generate_config_very_high_fidelity(
+    #        system_sizes=[128], 
+    #        simulator_type="chp", 
+    #        mzr_probs=None, 
+    #        nruns=500,
+    #        timestep_type=0, 
+    #        alpha=2.0, 
+    #        sampling_timesteps=None, 
+    #        equilibration_timesteps=None, 
+    #        interface_sample=True,
+    #        sample_structure_function=True, 
+    #        sample_fixed_mutual_information=True,
+    #        sample_variable_mutual_information=False,
+    #        sample_correlation_distance=False
+    #):
+
+    #mzr_probs = [0.0]
+    #alphas = 2.0
+    #system_sizes = [32]
+    #config = generate_config_very_high_fidelity_temporal(system_sizes=system_sizes, mzr_probs=mzr_probs, timestep_type=3, alpha=alphas, nruns=1000, sampling_timesteps=1024)
+    #submit_jobs(f"rc_clean_pl", param_bundle=config, ncores=48, nodes=6, memory="50gb", time="48:00:00", run_local=False)
 
     #mzr_probs = [0.0]
     #config = generate_config_very_high_fidelity_temporal(system_sizes=system_sizes, mzr_probs=mzr_probs, timestep_type=2, nruns=500, sampling_timesteps=2048)
