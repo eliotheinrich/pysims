@@ -28,4 +28,4 @@ if __name__ == "__main__":
     system_sizes = [16, 32, 64]
     eta = list(np.linspace(0.0, 0.25, 50))
     param_bundle = generate_config(system_sizes, 1.0, eta, num_runs=5, obc=1, equilibration_timesteps=0, sampling_timesteps=1000000, measurement_freq=100, temporal_avg=False)
-    submit_jobs(f"lattice_neural_obc", param_bundle=param_bundle, ncores=48, memory="10gb", time="6:00:00", nodes=10, cleanup=False)
+    submit_jobs(f"lattice_neural_obc", param_bundle=param_bundle, ncores=48, memory="10gb", time="6:00:00", nodes=10, cleanup=False, run_local=True)

@@ -739,21 +739,6 @@ void large_chp_test_singlequbit() {
   }
 }
 
-using namespace dataframe;
-using namespace dataframe::utils;
-
-//#include <nanobind/nanobind.h>
-//nanobind::bytes convert_bytes(const std::vector<dataframe::byte_t>& bytes) {
-//  nanobind::bytes nb_bytes(bytes.data(), bytes.size());
-//  return nb_bytes;
-//}
-//
-//std::vector<dataframe::byte_t> convert_bytes(const nanobind::bytes& bytes) {
-//  std::vector<dataframe::byte_t> bytes_vec(bytes.c_str(), bytes.c_str() + bytes.size());
-//  bytes_vec.push_back('\0');
-//  return bytes_vec;
-//}
-
 bool test_serialization() {
   std::string filename = "/Users/eliotheinrich/Projects/hypergraph/config.json";
   Params p = load_params(filename);
@@ -761,18 +746,81 @@ bool test_serialization() {
   std::cout << "running test_serialization\n";
   for (int i = 0; i < 1; i++) {
     TimeSamplingDriver<BlockSimulator> sampler(p);
+    sampler.init_simulator(1);
     DataSlide s1 = sampler.generate_dataslide(1);
 
     std::vector<byte_t> bytes = s1.to_bytes();
 
     DataSlide s2(bytes);
-    std::cout << s1.to_string() << std::endl;
-    std::cout << s2.to_string() << std::endl;
+    std::cout << s1.to_json() << std::endl;
+    std::cout << s2.to_json() << std::endl;
   }
 
   return true;
 }
 
+
+bool test_random_clifford() {
+  Params params;
+  params["system_size"] = 50.0;
+  params["mzr_prob"] = 0.1;
+
+  params["equilibration_timesteps"] = 1000.0;
+  
+
+  TimeSamplingDriver<RandomCliffordSimulator> ts(params);
+  ts.init_simulator(1);
+  auto slide = ts.generate_dataslide(1);
+  std::cout << slide.to_json() << "\n";
+
+  return true;
+}
+
+bool test_magic() {
+  Params params;
+  params["system_size"] = 32.0;
+  params["bond_dimension"] = 16.0;
+  params["phi"] = 0.5;
+  params["quantum_state_type"] = 1.0;
+  params["sample_stabilizer_renyi_entropy"] = 1.0;
+  params["sre_method"] = "virtual";
+  params["equilibration_timesteps"] = 10000000000.0;
+
+  params["sample_probabilities"] = 0.0;
+  params["sample_bitstring_distribution"] = 0.0;
+
+
+  MagicTestConfig cfg(params);
+  DataSlide slide = cfg.compute(1);
+
+  //std::cout << slide.to_json() << "\n";
+  return true;
+}
+
+bool test_quantum_ising() {
+  Params params;
+  params["system_size"] = 8.0;
+  params["bond_dimension"] = 16.0;
+  params["h"] = 1.0;
+
+  params["sample_stabilizer_renyi_entropy"] = 1.0;
+  params["sre_method"] = "virtual";
+
+  params["sample_probabilities"] = 0.0;
+  params["sample_bitstring_distribution"] = 0.0;
+
+  params["sample_surface"] = 1.0;
+
+  QuantumIsingTestConfig cfg(params);
+  auto slide = cfg.compute(1);
+
+  //std::cout << slide.to_json() << "\n";
+
+  return true;
+}
+
 int main() {
-  assert(test_serialization());
+  //assert(test_random_clifford());
+  //assert(test_magic());
+  assert(test_quantum_ising());
 }

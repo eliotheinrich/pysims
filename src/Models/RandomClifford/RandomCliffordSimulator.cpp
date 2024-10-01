@@ -163,7 +163,7 @@ struct glz::meta<RandomCliffordSimulator> {
 };
 
 void RandomCliffordSimulator::deserialize(const std::vector<byte_t>& bytes) {
-  auto pe = glz::read_binary(*this, bytes);
+  auto pe = glz::read_beve(*this, bytes);
   if (pe) {
     std::string error_message = "Error parsing RandomCliffordSimluator from binary.";
     throw std::invalid_argument(error_message);
@@ -172,6 +172,6 @@ void RandomCliffordSimulator::deserialize(const std::vector<byte_t>& bytes) {
 
 std::vector<byte_t> RandomCliffordSimulator::serialize() const {
   std::vector<byte_t> data;
-  glz::write_binary(*this, data);
+  glz::write_beve(*this, data);
   return data;
 }

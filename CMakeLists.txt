@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.27)
 
 project(cliffordsim LANGUAGES CXX)
 
-set(CMAKE_CXX_STANDARD 20)
+set(CMAKE_CXX_STANDARD 23)
 if (NOT CMAKE_BUILD_TYPE)
     set(CMAKE_BUILD_TYPE Release)
 endif()
@@ -28,6 +28,8 @@ set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/lib)
 
 set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS} -g -DDEBUG -DSERIAL")
 set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS} -O3")
+
+link_directories("$ENV{BLAS_DIR}" "$ENV{ITENSOR_DIR}/lib")
 
 
 # -------------------------------- #
@@ -107,6 +109,7 @@ include_directories(
 
 
 set(VQSE_DIR ${CMAKE_SOURCE_DIR}/src/Models/VQSE)
+set(MAGIC_DIR ${CMAKE_SOURCE_DIR}/src/Models/Magic)
 set(XZCIRCUIT_DIR ${CMAKE_SOURCE_DIR}/src/Models/XZCircuit)
 set(QA_DIR ${CMAKE_SOURCE_DIR}/src/Models/QuantumAutomaton)
 set(RC_DIR ${CMAKE_SOURCE_DIR}/src/Models/RandomClifford)
@@ -127,7 +130,7 @@ set(RH_DIR ${CMAKE_SOURCE_DIR}/src/Models/RandomHamiltonian)
 set(HQ_DIR ${CMAKE_SOURCE_DIR}/src/Models/HQAmplitude)
 set(CLIFFORD_CLUSTERING_DIR ${CMAKE_SOURCE_DIR}/src/Models/CliffordClustering)
 
-set(MODEL_DIRS ${CLIFFORD_CLUSTERING_DIR} ${RH_DIR} ${RCS_DIR} ${VQSE_DIR} ${XZCIRCUIT_DIR} ${QA_DIR} ${RC_DIR} ${MC_DIR} ${BS_DIR} ${SOC_DIR} ${GS_DIR} ${PS_DIR} ${BW_DIR} ${PARTNER_DIR} ${GROVERSAT_DIR} ${PHASELESS_DIR} ${NETWORK_CLIFFORD_DIR} ${ENV_SIM_DIR} ${BULK_SIM_DIR} ${HQ_DIR})
+set(MODEL_DIRS ${CLIFFORD_CLUSTERING_DIR} ${RH_DIR} ${RCS_DIR} ${VQSE_DIR} ${MAGIC_DIR} ${XZCIRCUIT_DIR} ${QA_DIR} ${RC_DIR} ${MC_DIR} ${BS_DIR} ${SOC_DIR} ${GS_DIR} ${PS_DIR} ${BW_DIR} ${PARTNER_DIR} ${GROVERSAT_DIR} ${PHASELESS_DIR} ${NETWORK_CLIFFORD_DIR} ${ENV_SIM_DIR} ${BULK_SIM_DIR} ${HQ_DIR})
 set(SIMULATOR_LIBS quantum_automaton random_clifford random_hamiltonian random_circuit_sampling mincut blocksim self_organized graphsim post_selection brickwork_circuit partnersim groversat phaseless network_clifford env_sim bulk_sim)
 
 foreach(DIR IN LISTS MODEL_DIRS) 
@@ -143,7 +146,7 @@ if (PS_BUILDING_PYTHON)
     )
     set_target_properties(pysimulators PROPERTIES POSITION_INDEPENDENT_CODE ON)
     target_include_directories(pysimulators PRIVATE src ${MODEL_DIRS})
-    target_link_libraries(pysimulators PRIVATE ${SIMULATOR_LIBS} dataframe)
+    target_link_libraries(pysimulators PRIVATE ${SIMULATOR_LIBS} dataframe quantum_state quantum_circuit)
 
     install(
         TARGETS pysimulators
@@ -171,5 +174,5 @@ else()
     )
 
     set_target_properties(test_sim PROPERTIES DEBUG_POSTFIX ${CMAKE_DEBUG_POSTFIX})
-    target_link_libraries(test_sim PUBLIC quantum_state clifford_state ${SIMULATOR_LIBS} dataframe)
+    target_link_libraries(test_sim PUBLIC quantum_state clifford_state ${SIMULATOR_LIBS} dataframe blas lapack)
 endif()

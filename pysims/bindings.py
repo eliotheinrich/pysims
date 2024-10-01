@@ -24,77 +24,86 @@ simulators = {
     "xz_circuit": XZCircuitSimulator,
 }
 
-try:
-    from pyev import EvolutionModel
-    simulators["evolution"] = EvolutionModel
-except ModuleNotFoundError:
-    pass
-except Exception as e:
-    raise e
-
-try:
-    from pyfe import DuplicateSimulator
-    simulators["duplicate_sim"] = DuplicateSimulator
-except ModuleNotFoundError:
-    pass
-except Exception as e:
-    raise e
-
-
 config_types = {
     "vqse": VQSEConfig,
     "vqse_circuit": VQSECircuitConfig,
+    "magic_test": MagicTestConfig,
+    "quantum_ising": QuantumIsingTestConfig,
     "hq_circuit": HQCircuitConfig,
     "clifford_clustering": CliffordClusteringConfig,
 }
 
-try:
-    from pyxorsat import XORSATConfig, GraphXORSATConfig, LDPCConfig, CliffordCodeSimulator, GraphClusteringSimulator, RXPMDualConfig, RPMCAConfig, SlantedCheckerboardConfig
-    simulators["clifford_code"] = CliffordCodeSimulator
-    simulators["graph_clustering"] = GraphClusteringSimulator
-    config_types["graph_xorsat"] = GraphXORSATConfig
-    config_types["xorsat"] = XORSATConfig
-    config_types["ldpc"] = LDPCConfig
-    config_types["rxpm"] = RXPMDualConfig
-    config_types["rpmca"] = RPMCAConfig
-    config_types["slanted_checkerboard"] = SlantedCheckerboardConfig
-except ModuleNotFoundError:
-    pass
-except Exception as e:
-    raise e
+# Register external configs and simulators
+def register(module_name, simulators=None, configs=None):
+    if simulators is None:
+        simulators = {}
 
-try:
-    from pywsdc import ScoreSheetConfig
-    config_types["wsdc_score"] = ScoreSheetConfig
-except ModuleNotFoundError:
-    pass
-except Exception as e:
-    raise e
+    if configs is None:
+        configs = {}
 
-try:
-    from pymc import SimpleGraphModel, SquareIsingModel, SquareXYModel, TrigonalXYModel, XXZHeis, TrigonalModel, LDPCIsingModel
-    simulators["simple_graph"] = SimpleGraphModel
-    simulators["square_ising"] = SquareIsingModel
-    simulators["square_xy"] = SquareXYModel
-    simulators["trigonal_xy"] = TrigonalXYModel
-    simulators["trigonal_heis"] = TrigonalModel
-    simulators["xxz_heis"] = XXZHeis
-    simulators["ldpc_ising"] = LDPCIsingModel
-except ModuleNotFoundError:
-    pass
-except Exception as e:
-    raise e
 
-try:
-    from pyneural import LatticeNeuralSimulator, NoisyNeuralSimulator, NonlocalNeuralSimulator
-    simulators["noisy_neural"] = NoisyNeuralSimulator
-    simulators["lattice_neural"] = LatticeNeuralSimulator
-    simulators["nonlocal_neural"] = NonlocalNeuralSimulator
-except ModuleNotFoundError:
-    pass
-except Exception as e:
-    raise e
+    simulator_names = ", ".join(list(simulators.values()) + list(configs.values()))
+    simulator_lines = "\n    ".join([f"simulators[\"{label}\"] = {name}" for label, name in simulators.items()])
+    config_lines = "\n    ".join([f"config_types[\"{label}\"] = {name}" for label, name in configs.items()])
 
+    code = [
+        f"try:",
+        f"    from {module_name} import {simulator_names}",
+        f"    {simulator_lines}",
+        f"    {config_lines}",
+        f"except ModuleNotFoundError:",
+        f"    pass",
+        f"except Exception as e:",
+        f"    raise e",
+    ]
+
+    code = "\n".join(code)
+
+    exec(code, globals())
+
+register("pyev", {"evolution": "EvolutionModel"})
+
+register("pyfe", {"duplicate_sim": "DuplicateSimulator"})
+
+pyxorsat_simulators = {
+    "clifford_code": "CliffordCodeSimulator",
+    "graph_clustering": "GraphClusteringSimulator"
+}
+
+pyxorsat_configs = {
+    "graph_xorsat": "GraphXORSATConfig",
+    "xorsat": "XORSATConfig",
+    "ldpc": "LDPCConfig",
+    "rxpm": "RXPMDualConfig",
+    "rpmca": "RPMCAConfig",
+    "slanted_checkerboard": "SlantedCheckerboardConfig"
+}
+
+register("pyxorsat", pyxorsat_simulators, pyxorsat_configs)
+
+register("pywsdc", None, {"wsdc_score": "ScoreSheetConfig"})
+
+pymc_simulators = {
+    "simple_graph": "SimpleGraphModel",
+    "square_ising": "SquareIsingModel",
+    "square_xy": "SquareXYModel",
+    "trigonal_xy": "TrigonalXYModel",
+    "trigonal_heis": "TrigonalModel",
+    "xxz_heis": "XXZHeis",
+    "ldpc_ising": "LDPCIsingModel"
+}
+
+register("pymc", pymc_simulators)
+
+pyneural_simulators = {
+    "noisy_neural": "NoisyNeuralSimulator",
+    "lattice_neural": "LatticeNeuralSimulator",
+    "nonlocal_neural": "NonlocalNeuralSimulator"
+}
+
+register("pyneural", pyneural_simulators)
+
+register("pyfermion", {"chain_fermion": "ChainSimulator", "adaptive_fermion": "AdaptiveFermionSimulator"})
 
 def prepare_config(params, serialize):
     circuit_type = params["circuit_type"]

@@ -265,7 +265,7 @@ struct glz::meta<SandpileCliffordSimulator> {
 };
 
 void SandpileCliffordSimulator::deserialize(const std::vector<byte_t>& bytes) {
-  auto pe = glz::read_binary(*this, bytes);
+  auto pe = glz::read_beve(*this, bytes);
   if (pe) {
     std::string error_message = "Error parsing SandpileCliffordSimluator from binary.";
     throw std::invalid_argument(error_message);
@@ -274,6 +274,6 @@ void SandpileCliffordSimulator::deserialize(const std::vector<byte_t>& bytes) {
 
 std::vector<byte_t> SandpileCliffordSimulator::serialize() const {
   std::vector<byte_t> data;
-  glz::write_binary(*this, data);
+  glz::write_beve(*this, data);
   return data;
 }
