@@ -1,4 +1,5 @@
 #include "Models.h"
+#include <Models/Magic/QuantumIsingTestConfig.hpp>
 #include <PyDataFrame.hpp>
 
 NB_MODULE(pysimulators, m) {
@@ -27,6 +28,8 @@ NB_MODULE(pysimulators, m) {
   EXPORT_SIMULATOR_DRIVER(BrickworkCircuitSimulator);
   EXPORT_CONFIG(VQSEConfig);
   EXPORT_CONFIG(VQSECircuitConfig);
+  EXPORT_CONFIG(MagicTestConfig);
+  EXPORT_CONFIG(QuantumIsingTestConfig);
 
   // Miscellaneous models
   EXPORT_SIMULATOR_DRIVER(PartneringSimulator);

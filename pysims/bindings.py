@@ -27,6 +27,8 @@ simulators = {
 config_types = {
     "vqse": VQSEConfig,
     "vqse_circuit": VQSECircuitConfig,
+    "magic_test": MagicTestConfig,
+    "quantum_ising": QuantumIsingTestConfig,
     "hq_circuit": HQCircuitConfig,
     "clifford_clustering": CliffordClusteringConfig,
 }

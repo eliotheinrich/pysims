@@ -121,7 +121,7 @@ DataSlide simulation(int argc, char* argv[]) {
 
 int main(int argc, char* argv[]) {
   auto slide = simulation(argc, argv);
-  std::cout << slide.to_string() << std::endl;
+  std::cout << slide.to_json() << std::endl;
   
   //Params params;
 

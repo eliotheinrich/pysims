@@ -13,6 +13,8 @@ class RandomCircuitSamplingSimulator : public dataframe::Simulator {
 
 		bool offset;
 
+    int state_type;
+
 		EntropySampler entropy_sampler;
 		QuantumStateSampler prob_sampler;
 
@@ -21,7 +23,7 @@ class RandomCircuitSamplingSimulator : public dataframe::Simulator {
     void random_haar();
 
 	public:
-		std::shared_ptr<Statevector> state;
+		std::shared_ptr<QuantumState> state;
 
 		RandomCircuitSamplingSimulator(dataframe::Params &params, uint32_t num_threads);
 

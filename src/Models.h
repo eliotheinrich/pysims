@@ -22,6 +22,9 @@
 #include <VQSEConfig.hpp>
 #include <VQSECircuitConfig.hpp>
 
+#include <MagicTestConfig.hpp>
+#include <QuantumIsingTestConfig.hpp>
+
 // Miscellaneous models
 #include <PartneringSimulator.h>
 #include <BlockSimulator.h>

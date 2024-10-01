@@ -15,7 +15,14 @@ RandomCircuitSamplingSimulator::RandomCircuitSamplingSimulator(Params &params, u
   offset = false;
 
   Eigen::setNbThreads(num_threads);
-  state = std::make_shared<Statevector>(system_size);
+  state_type = get<int>(params, "state_type", 0);
+  if (state_type == 0) {
+    state = std::make_shared<Statevector>(system_size);
+  } else if (state_type == 1) {
+    state = std::make_shared<MatrixProductState>(system_size, 64, 1e-8);
+  }
+
+  state->seed(rand());
 }
 
 void RandomCircuitSamplingSimulator::full_haar() {

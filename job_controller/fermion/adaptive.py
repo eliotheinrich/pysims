@@ -28,7 +28,7 @@ def generate_config(
 
     # EntropySampler settings
     config["sample_entropy"] = True 
-    config["renyi_indices"] = "1, 2"
+    config["renyi_indices"] = "1,2"
     config["sample_all_partition_sizes"] = True 
     config["sample_mutual_information"] = False
     config["sample_fixed_mutual_information"] = sample_fixed_mutual_information
@@ -63,5 +63,8 @@ if __name__ == "__main__":
     system_sizes = [64]
     p = 0.5
     r = 0.5
-    config = generate_config(system_sizes=system_sizes, p=p, r=r, nruns=5)
+    config = generate_config(system_sizes=system_sizes, p=p, r=r, nruns=4)
+    print(config)
     submit_jobs(f"adaptive_fermion", param_bundle=config, ncores=4, nodes=1, memory="50gb", time="48:00:00", run_local=True, cleanup=False)
+
+
