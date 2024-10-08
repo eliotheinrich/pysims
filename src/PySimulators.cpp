@@ -1,11 +1,10 @@
 #include "Models.h"
-#include <Models/Magic/QuantumIsingTestConfig.hpp>
 #include <PyDataFrame.hpp>
 
 NB_MODULE(pysimulators, m) {
   INIT_CONFIG();
 
-    // Clifford models
+  // Clifford models
   EXPORT_SIMULATOR_DRIVER(RandomCliffordSimulator);
   EXPORT_SIMULATOR_DRIVER(QuantumAutomatonSimulator);
   EXPORT_SIMULATOR_DRIVER(SandpileCliffordSimulator);
