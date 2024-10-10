@@ -799,12 +799,17 @@ bool test_magic() {
 
 bool test_quantum_ising() {
   Params params;
-  params["system_size"] = 8.0;
-  params["bond_dimension"] = 16.0;
+  params["system_size"] = 16.0;
+  params["bond_dimension"] = 50.0;
+  params["num_sweeps"] = 500.0;
   params["h"] = 1.0;
 
+  params["state_type"] = 0.0;
   params["sample_stabilizer_renyi_entropy"] = 1.0;
-  params["sre_method"] = "virtual";
+  params["sre_method"] = "exhaustive";
+  params["sample_magic_mutual_information"] = 1.0;
+  params["magic_mutual_information_subsystem_size"] = 2.0;
+  params["sre_num_samples"] = 5000.0;
 
   params["sample_probabilities"] = 0.0;
   params["sample_bitstring_distribution"] = 0.0;
