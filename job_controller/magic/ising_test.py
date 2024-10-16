@@ -2,6 +2,7 @@ import sys
 import os
 sys.path.insert(1, os.path.join(sys.path[0], '..'))
 
+from dataframe import *
 from job_controller import submit_jobs
 import numpy as np
 
@@ -23,7 +24,7 @@ def generate_config(system_size, h, state_type=0, delta=1.0, sample_magic=False,
     config["sample_bitstring_distribution"] = False
 
     config["stabilizer_renyi_indices"] = "2"
-    config["sre_mc_equilibration_timesteps"] = 500*0
+    config["sre_mc_equilibration_timesteps"] = 0
     config["sample_stabilizer_renyi_entropy"] = False
     config["sre_method"] = sre_type
     config["sre_num_samples"] = 50000
@@ -34,10 +35,11 @@ def generate_config(system_size, h, state_type=0, delta=1.0, sample_magic=False,
 
 
 if __name__ == "__main__":
-    L = [16]
+    L = [8, 16, 24]
     h = np.linspace(0.0, 2.0, 50)
-    param_matrix = generate_config(L, h, state_type=[0], sample_magic=True, sre_type=["virtual", "exhaustive"], num_runs=1)
-    submit_jobs(f"ising_test", param_bundle=param_matrix, ncores=4, memory="10gb", time="6:00:00", nodes=1, cleanup=False, run_local=True)
+    for Li in L:
+        param_matrix = generate_config([Li], h, state_type=[0], sample_magic=True, sre_type=["exhaustive", "virtual"], num_runs=1)
+        submit_jobs(f"ising_test{Li}", param_bundle=param_matrix, ncores=4, memory="10gb", time="6:00:00", nodes=1, cleanup=False, run_local=True)
 
     param_matrix = generate_config(L, h, sample_magic=True, sre_type=["virtual"], num_runs=1)
     #submit_jobs(f"xxz_test", param_bundle=param_matrix, ncores=64, memory="10gb", time="6:00:00", nodes=1, cleanup=False)

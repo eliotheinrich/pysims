@@ -61,7 +61,7 @@ class MagicTestConfig : public dataframe::Config {
       QuantumCircuit qc(system_size);
       if (state_type == MTC_T_DOPED_CLIFFORD) {
         qc.add_gate("h", {0});
-        qc.add_gate(T, {0});
+        qc.add_gate(T, 0);
       } else if (state_type == MTC_RANDOM_HAAR) {
         qc.append(generate_haar_circuit(system_size, system_size, false));
       } else if (state_type == MTC_T_GATES) {

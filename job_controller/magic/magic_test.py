@@ -35,7 +35,7 @@ def generate_config(system_size, phi, state_type=0, num_t_gates=1, sre_type="mon
 if __name__ == "__main__":
     L = [8, 16, 32, 64]
     phi = np.linspace(0, np.pi/2, 50)
-    phi_param_bundle = generate_config(L, phi, sre_type=["virtual", "montecarlo"], state_type=0, apply_random_clifford=[True], num_runs=1)
+    phi_param_bundle = generate_config(L, phi, sre_type=["montecarlo"], state_type=0, apply_random_clifford=[True], num_runs=1)
     #phi_param_bundle = generate_config(L, phi, sre_type=["virtual", "montecarlo", "exhaustive"], state_type=1, apply_random_clifford=[True], num_runs=1)
     submit_jobs(f"magic_test2", param_bundle=phi_param_bundle, ncores=4, memory="10gb", time="6:00:00", nodes=1, cleanup=False, run_local=True)
 

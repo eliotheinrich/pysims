@@ -816,6 +816,7 @@ bool test_quantum_ising() {
 
   params["sample_surface"] = 1.0;
 
+  std::cout << params_to_string(params) << "\n";
   QuantumIsingTestConfig cfg(params);
   auto slide = cfg.compute(1);
 

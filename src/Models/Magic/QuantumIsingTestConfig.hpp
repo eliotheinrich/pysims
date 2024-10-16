@@ -11,6 +11,10 @@
 #define QIT_STATEVECTOR 1
 
 static Eigen::MatrixXd make_gate(const Eigen::Matrix2d& g, size_t q, size_t num_qubits) {
+  if (num_qubits > 15) {
+    throw std::runtime_error("Cannot make_gate for num_qubits > 15.");
+  }
+
   size_t s1 = 1u << q;
   Eigen::MatrixXd I1 = Eigen::MatrixXd::Identity(s1, s1);
   size_t s2 = 1u << (num_qubits - q - 1);
