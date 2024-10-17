@@ -1,4 +1,4 @@
-from job_controller import submit_jobs, save_config
+from job_controller import submit_jobs, save_config, unbundle_params
 import numpy as np
 
 def generate_config_very_high_fidelity(
@@ -100,7 +100,7 @@ def generate_config_very_high_fidelity_temporal(system_sizes=[128], simulator_ty
             "x4": L//2 + L//8
         })
     config["zparams_mi"] = zparams_mi
-    
+
     config["sample_entropy"] = False
     config["sample_all_partition_sizes"] = True
 
@@ -117,14 +117,12 @@ def generate_config_very_high_fidelity_temporal(system_sizes=[128], simulator_ty
     return config
 
 if __name__ == "__main__":
-<<<<<<< HEAD
-
     mzr_probs = np.linspace(0.0, 0.4, 10)
     mzr_probs = [0.16]
-    system_sizes = [16, 32, 64]
+    system_sizes = [16, 32, 64, 128]
 
-    config = generate_config_very_high_fidelity(system_sizes=system_sizes, mzr_probs=mzr_probs, sample_structure_function=False, sample_fixed_mutual_information=False)
-    submit_jobs(f"rc_c", param_bundle=config, ncores=4, nodes=1, memory="10gb", time="48:00:00", run_local=True)
+    param_matrix = generate_config_very_high_fidelity(system_sizes=system_sizes, mzr_probs=mzr_probs, sample_structure_function=False, sample_fixed_mutual_information=False)
+    submit_jobs(f"rc_c", param_bundle=param_matrix, ncores=4, nodes=1, memory="10gb", time="48:00:00", run_local=True)
 
 
     #def generate_config_very_high_fidelity(
@@ -153,7 +151,7 @@ if __name__ == "__main__":
     alphas = 2.0
     system_sizes = [16]
     config = generate_config_very_high_fidelity_temporal(system_sizes=system_sizes, mzr_probs=mzr_probs, timestep_type=3, alpha=alphas, nruns=1000, sampling_timesteps=1024)
-    submit_jobs(f"rc_clean", param_bundle=config, ncores=48, nodes=6, memory="50gb", time="48:00:00", run_local=True)
+    #submit_jobs(f"rc_clean", param_bundle=config, ncores=4, nodes=6, memory="50gb", time="48:00:00", run_local=True)
 
     #mzr_probs = [0.0]
     #config = generate_config_very_high_fidelity_temporal(system_sizes=system_sizes, mzr_probs=mzr_probs, timestep_type=2, nruns=500, sampling_timesteps=2048)

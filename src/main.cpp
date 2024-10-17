@@ -53,6 +53,7 @@ void write_file(const std::string& filename, const std::string& content) {
 template <class T>
 DataSlide execute_simulation(Params& params, uint32_t num_threads) {
   TimeSamplingDriver<T> sim(params);
+  sim.init_simulator(num_threads);
   DataSlide slide = sim.generate_dataslide(num_threads);
   return slide;
 }
@@ -109,6 +110,9 @@ DataSlide simulation(int argc, char* argv[]) {
     slide = hq.compute(num_threads);
   } else if (circuit_type == "quantum_ising") {
     QuantumIsingTestConfig qi(param);
+    slide = qi.compute(num_threads);
+  } else if (circuit_type == "half_quantum_ising") {
+    HalfSystemQuantumIsingConfig qi(param);
     slide = qi.compute(num_threads);
   } else {
     throw std::invalid_argument("Invalid circuit type passed.");

@@ -24,6 +24,7 @@
 
 #include <MagicTestConfig.hpp>
 #include <QuantumIsingTestConfig.hpp>
+#include <HalfSystemQuantumIsingConfig.hpp>
 
 // Miscellaneous models
 #include <PartneringSimulator.h>
