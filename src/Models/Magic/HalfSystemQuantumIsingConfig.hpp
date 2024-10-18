@@ -114,7 +114,14 @@ class HalfSystemQuantumIsingConfig : public dataframe::Config {
       dataframe::utils::emplace(samples, "tA", tA);
       dataframe::utils::emplace(samples, "tB", tB);
       dataframe::utils::emplace(samples, "t0", t0);
+
       dataframe::utils::emplace(samples, "m", std::get<0>(magic_samples));
+      dataframe::utils::emplace(samples, "I1", std::get<1>(magic_samples));
+      dataframe::utils::emplace(samples, "I2", std::get<2>(magic_samples));
+      dataframe::utils::emplace(samples, "I3", std::get<3>(magic_samples));
+      dataframe::utils::emplace(samples, "W1", std::get<4>(magic_samples));
+      dataframe::utils::emplace(samples, "W2", std::get<5>(magic_samples));
+      dataframe::utils::emplace(samples, "W3", std::get<6>(magic_samples));
 
       dataframe::DataSlide slide;
       slide.add_data(samples);
