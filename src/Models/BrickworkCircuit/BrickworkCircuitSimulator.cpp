@@ -18,7 +18,7 @@ BrickworkCircuitSimulator::BrickworkCircuitSimulator(Params &params, uint32_t nu
 }
 
 void BrickworkCircuitSimulator::mzr(uint32_t q) {
-	state->measure(q);
+	state->mzr(q);
 }
 
 void BrickworkCircuitSimulator::timesteps(uint32_t num_steps) {
@@ -38,7 +38,7 @@ void BrickworkCircuitSimulator::timesteps(uint32_t num_steps) {
 
 		for (uint32_t q = 0; q < system_size; q++) {
 			if (randf() < mzr_prob) {
-				state->measure(q);
+				state->mzr(q);
 			}
 		}
 

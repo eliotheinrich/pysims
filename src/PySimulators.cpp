@@ -1,4 +1,5 @@
 #include "Models.h"
+#include <Models/Magic/MatrixProductSimulator.hpp>
 #include <PyDataFrame.hpp>
 
 NB_MODULE(pysimulators, m) {
@@ -28,8 +29,10 @@ NB_MODULE(pysimulators, m) {
   EXPORT_CONFIG(VQSEConfig);
   EXPORT_CONFIG(VQSECircuitConfig);
   EXPORT_CONFIG(MagicTestConfig);
+
   EXPORT_CONFIG(QuantumIsingTestConfig);
   EXPORT_CONFIG(HalfSystemQuantumIsingConfig);
+  EXPORT_SIMULATOR_DRIVER(MatrixProductSimulator);
 
   // Miscellaneous models
   EXPORT_SIMULATOR_DRIVER(PartneringSimulator);

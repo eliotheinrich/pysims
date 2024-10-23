@@ -14,11 +14,11 @@ def generate_config(system_size, h, sre_type="montecarlo", num_runs=1):
     system_size = list(system_size)
     config["system_size"] = system_size
     config["h"] = h
-    config["bond_dimension"] = 50
-    config["num_sweeps"] = 500
+    config["bond_dimension"] = 25
+    config["num_sweeps"] = 10
 
     config["sre_method"] = sre_type
-    config["num_samples"] = 5000
+    config["num_samples"] = 1000
     config["equilibration_timesteps"] = 500
 
     return config
@@ -28,5 +28,5 @@ if __name__ == "__main__":
     L = [8]
     h = np.linspace(0.0, 2.0, 50)
     for Li in L:
-        param_matrix = generate_config([Li], h, sre_type=["exhaustive", "montecarlo"], num_runs=1)
+        param_matrix = generate_config([Li], h, sre_type=["exhaustive", "exact", "montecarlo"], num_runs=1)
         submit_jobs(f"half_ising_test{Li}", param_bundle=param_matrix, ncores=4, memory="10gb", time="6:00:00", nodes=1, cleanup=False, run_local=True)

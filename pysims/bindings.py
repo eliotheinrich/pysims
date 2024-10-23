@@ -22,6 +22,7 @@ simulators = {
     "random_circuit_sampling": RandomCircuitSamplingSimulator,
     "random_hamiltonian": RandomHamiltonianSimulator,
     "xz_circuit": XZCircuitSimulator,
+    "mps_simulator": MatrixProductSimulator,
 }
 
 config_types = {

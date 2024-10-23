@@ -39,7 +39,7 @@ if __name__ == "__main__":
     h = np.linspace(0.0, 2.0, 50)
     for Li in L:
         param_matrix = generate_config([Li], h, state_type=[0], sample_magic=True, sre_type=["exhaustive", "montecarlo"], num_runs=1)
-        submit_jobs(f"ising_test{Li}", param_bundle=param_matrix, ncores=64, memory="10gb", time="6:00:00", nodes=1, cleanup=False, run_local=False)
+        submit_jobs(f"ising_test{Li}", param_bundle=param_matrix, ncores=4, memory="10gb", time="6:00:00", nodes=1, cleanup=False, run_local=True)
 
     param_matrix = generate_config(L, h, sample_magic=True, sre_type=["virtual"], num_runs=1)
     #submit_jobs(f"xxz_test", param_bundle=param_matrix, ncores=64, memory="10gb", time="6:00:00", nodes=1, cleanup=False)

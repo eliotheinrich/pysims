@@ -32,11 +32,13 @@ class HalfSystemQuantumIsingConfig : public dataframe::Config {
 
     std::vector<double> take_sre_samples(auto& state) {
       std::vector<PauliAmplitude> samples;
+      auto prob = [](double t) -> double { return t*t; };
       if (sre_method == "montecarlo") {
-        auto prob = [](double t) -> double { return t*t; };
         samples = state.sample_paulis_montecarlo(num_samples, equilibration_timesteps, prob);
       } else if (sre_method == "exhaustive") {
         samples = state.sample_paulis_exhaustive();
+      } else if (sre_method == "exact") {
+        samples = state.sample_paulis_exact(num_samples, prob);
       } else {
         samples = state.sample_paulis(num_samples);
       }
@@ -54,6 +56,8 @@ class HalfSystemQuantumIsingConfig : public dataframe::Config {
         return state.magic_mutual_information_montecarlo(qubitsA, qubitsB, num_samples, equilibration_timesteps);
       } else if (sre_method == "exhaustive") {
         return state.magic_mutual_information_exhaustive(qubitsA, qubitsB);
+      } else if (sre_method == "exact") {
+        return state.magic_mutual_information_exact(qubitsA, qubitsB, num_samples);
       } else {
         return state.magic_mutual_information(qubitsA, qubitsB, num_samples);
       }
@@ -98,7 +102,7 @@ class HalfSystemQuantumIsingConfig : public dataframe::Config {
       MatrixProductOperator mpoB = mps.partial_trace(vector_complement(qubitsA));
       MatrixProductOperator mpo0 = mps.partial_trace({});
 
-      auto t = take_sre_samples(mps);
+      //auto t = take_sre_samples(mps);
       auto t2 = take_sre_samples(mpo2);
       auto tAB = take_sre_samples(mpoAB);
       auto tA = take_sre_samples(mpoA);
@@ -108,20 +112,14 @@ class HalfSystemQuantumIsingConfig : public dataframe::Config {
       auto magic_samples = get_magic_samples(mps, qubitsA, qubitsB);
       
       dataframe::data_t samples;
-      dataframe::utils::emplace(samples, "t", t);
+      //dataframe::utils::emplace(samples, "t", t);
       dataframe::utils::emplace(samples, "t2", t2);
       dataframe::utils::emplace(samples, "tAB", tAB);
       dataframe::utils::emplace(samples, "tA", tA);
       dataframe::utils::emplace(samples, "tB", tB);
       dataframe::utils::emplace(samples, "t0", t0);
 
-      dataframe::utils::emplace(samples, "m", std::get<0>(magic_samples));
-      dataframe::utils::emplace(samples, "I1", std::get<1>(magic_samples));
-      dataframe::utils::emplace(samples, "I2", std::get<2>(magic_samples));
-      dataframe::utils::emplace(samples, "I3", std::get<3>(magic_samples));
-      dataframe::utils::emplace(samples, "W1", std::get<4>(magic_samples));
-      dataframe::utils::emplace(samples, "W2", std::get<5>(magic_samples));
-      dataframe::utils::emplace(samples, "W3", std::get<6>(magic_samples));
+      dataframe::utils::emplace(samples, "m", magic_samples);
 
       dataframe::DataSlide slide;
       slide.add_data(samples);
