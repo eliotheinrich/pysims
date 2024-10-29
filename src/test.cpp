@@ -38,7 +38,7 @@ bool test_Statevector() {
         0, 1, 0, 0;
 
   //state.evolve(H, std::vector<uint32_t>{0});
-  std::mt19937 rng;
+  std::minstd_rand rng;
   rng.seed(10);
   auto gate = haar_unitary(2, rng);
   std::cout << std::fixed << std::setprecision(12) << gate << std::endl << std::endl;
@@ -591,7 +591,7 @@ void large_chp_test_multiqubit() {
   QuantumCHPState state1(system_size, seed);
   QuantumGraphState state2(system_size, seed);
 
-  std::mt19937 rng(seed);
+  std::minstd_rand rng(seed);
 
   uint32_t num_iters = 1000;
   std::cout << "Initial state: \n" << state1.to_string() << std::endl << state1.to_string_ops() << std::endl;
@@ -665,7 +665,7 @@ void large_chp_test_singlequbit() {
   QuantumCHPState state1(system_size, seed);
   QuantumGraphState state2(system_size, seed);
 
-  std::mt19937 rng(seed);
+  std::minstd_rand rng(seed);
 
   uint32_t num_iters = 1000;
 

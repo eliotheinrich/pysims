@@ -31,7 +31,7 @@ class VQSECircuitConfig : public dataframe::Config {
         seed = rd();
       }
 
-      rng = std::mt19937(seed);
+      rng = std::minstd_rand(seed);
 
       // VQSE configuration
       num_qubits = dataframe::utils::get<int>(params, "num_qubits");			
@@ -138,7 +138,7 @@ class VQSECircuitConfig : public dataframe::Config {
     static bool printed_ompi_threads;
 
     int seed;
-    std::mt19937 rng;
+    std::minstd_rand rng;
 
     uint32_t num_qubits;
 

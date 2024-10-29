@@ -54,7 +54,7 @@ template <class T>
 DataSlide execute_simulation(Params& params, uint32_t num_threads) {
   TimeSamplingDriver<T> sim(params);
   sim.init_simulator(num_threads);
-  DataSlide slide = sim.generate_dataslide(num_threads);
+  DataSlide slide = sim.generate_dataslide();
   return slide;
 }
 
@@ -99,6 +99,8 @@ DataSlide simulation(int argc, char* argv[]) {
     slide = execute_simulation<GroverSATSimulator>(param, num_threads);
   } else if (circuit_type == "brickwork_circuit") {
     slide = execute_simulation<BrickworkCircuitSimulator>(param, num_threads);
+  } else if (circuit_type == "mps_simulator") {
+    slide = execute_simulation<MatrixProductSimulator>(param, num_threads);
   } else if (circuit_type == "vqse") {
     VQSEConfig vqse(param);
     slide = vqse.compute(num_threads);

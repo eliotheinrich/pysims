@@ -30,7 +30,7 @@ class MatrixProductSimulator : public dataframe::Simulator {
     }
 
     void unitary(size_t i, size_t j) {
-      Eigen::Matrix4cd gate = haar_unitary(2);
+      Eigen::Matrix4cd gate = haar_unitary(2, rng);
       state->evolve(gate, {static_cast<uint32_t>(i), static_cast<uint32_t>(j)});
     }
 
@@ -45,6 +45,7 @@ class MatrixProductSimulator : public dataframe::Simulator {
       offset = false;
 
       state = std::make_shared<MatrixProductState>(system_size, bond_dimension);
+      state->seed(rand());
     }
 
 		virtual void timesteps(uint32_t num_steps) override {
