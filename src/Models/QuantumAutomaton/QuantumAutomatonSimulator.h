@@ -5,7 +5,7 @@
 #include <Samplers.h>
 
 inline static void qa_layer(std::shared_ptr<CliffordState> state, bool offset, bool gate_type) {
-	uint32_t system_size = state->system_size();
+	uint32_t system_size = state->num_qubits;
 	for (uint32_t i = 0; i < system_size/2; i++) {
 		uint32_t qubit1 = offset ? (2*i + 1) % system_size : 2*i;
 		uint32_t qubit2 = offset ? (2*i + 2) % system_size : (2*i + 1) % system_size;

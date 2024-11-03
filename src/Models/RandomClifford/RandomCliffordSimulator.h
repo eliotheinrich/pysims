@@ -5,7 +5,7 @@
 #include <Samplers.h>
 
 inline static void rc_timestep(std::shared_ptr<CliffordState> state, uint32_t gate_width, bool offset_layer, bool periodic_bc = true) {
-	uint32_t system_size = state->system_size();
+	uint32_t system_size = state->num_qubits;
 	uint32_t num_gates = system_size / gate_width;
 
 	std::vector<uint32_t> qubits(gate_width);
