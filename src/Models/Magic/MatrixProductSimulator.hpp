@@ -6,6 +6,9 @@
 #define MPSS_PROJECTIVE 0
 #define MPSS_WEAK 1
 
+#define MPSS_HAAR 0
+#define MPSS_CLIFFORD 1
+
 class MatrixProductSimulator : public dataframe::Simulator {
 	private:
 		uint32_t system_size;
@@ -14,6 +17,7 @@ class MatrixProductSimulator : public dataframe::Simulator {
     size_t bond_dimension;
 
     int measurement_type;
+    int unitary_type;
 
 		InterfaceSampler interface_sampler;
     QuantumStateSampler quantum_sampler;
@@ -51,9 +55,15 @@ class MatrixProductSimulator : public dataframe::Simulator {
 
     }
 
-    void unitary(size_t i, size_t j) {
-      Eigen::Matrix4cd gate = haar_unitary(2, rng);
-      state->evolve(gate, {static_cast<uint32_t>(i), static_cast<uint32_t>(j)});
+    void unitary(uint32_t i, uint32_t j) {
+      if (unitary_type == MPSS_HAAR) {
+        Eigen::Matrix4cd gate = haar_unitary(2, rng);
+        state->evolve(gate, {i, j});
+      } else if (unitary_type == MPSS_CLIFFORD) {
+        state->random_clifford({i, j});
+      } else {
+        throw std::runtime_error(fmt::format("Invalid unitary type {}.", unitary_type));
+      }
     }
 
 	public:
@@ -65,6 +75,7 @@ class MatrixProductSimulator : public dataframe::Simulator {
       bond_dimension = dataframe::utils::get<int>(params, "bond_dimension", 32);
 
       measurement_type = dataframe::utils::get<int>(params, "measurement_type", MPSS_PROJECTIVE);
+      unitary_type = dataframe::utils::get<int>(params, "unitary_type", MPSS_HAAR);
 
       offset = false;
 
@@ -103,10 +114,20 @@ class MatrixProductSimulator : public dataframe::Simulator {
 
 		virtual dataframe::data_t take_samples() override {
       dataframe::data_t samples;
+
       std::vector<int> surface = state->get_entropy_surface<int>(1u);
       interface_sampler.add_samples(samples, surface);
 
       quantum_sampler.add_samples(samples, state);
+
+      double trace = state->trace();
+      dataframe::utils::emplace(samples, "trace", trace);
+
+      std::vector<double> bond_dimensions(system_size - 1);
+      for (size_t i = 0; i < system_size - 1; i++) {
+        bond_dimensions[i] = static_cast<double>(state->bond_dimension(i));
+      }
+      dataframe::utils::emplace(samples, "bond_dimension_at_site", bond_dimensions);
 
       return samples;
     }
