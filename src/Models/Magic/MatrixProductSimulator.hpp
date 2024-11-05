@@ -26,6 +26,7 @@ class MatrixProductSimulator : public dataframe::Simulator {
 
     void measure(size_t i, size_t j) {
       // TODO check that single-qubit and two-qubit measurements are balanced
+      //std::cout << fmt::format("measure({}, {})\n", i, j);
 
       if (measurement_type == MPSS_PROJECTIVE) {
         // Do projective measurement
@@ -56,6 +57,7 @@ class MatrixProductSimulator : public dataframe::Simulator {
     }
 
     void unitary(uint32_t i, uint32_t j) {
+      //std::cout << fmt::format("unitary({}, {})\n", i, j);
       if (unitary_type == MPSS_HAAR) {
         Eigen::Matrix4cd gate = haar_unitary(2, rng);
         state->evolve(gate, {i, j});
@@ -92,6 +94,7 @@ class MatrixProductSimulator : public dataframe::Simulator {
 
 		virtual void timesteps(uint32_t num_steps) override {
       for (size_t t = 0; t < num_steps; t++) {
+        //std::cout << fmt::format("On timestep {}\n", t);
         for (size_t i = 0; i < system_size/2 - offset; i++) {
           size_t q1 = 2*i + offset;
           size_t q2 = 2*i + 1 + offset;
@@ -112,16 +115,13 @@ class MatrixProductSimulator : public dataframe::Simulator {
       }
     }
 
-		virtual dataframe::data_t take_samples() override {
+    virtual dataframe::data_t take_samples() override {
       dataframe::data_t samples;
 
       std::vector<int> surface = state->get_entropy_surface<int>(1u);
       interface_sampler.add_samples(samples, surface);
 
       quantum_sampler.add_samples(samples, state);
-
-      double trace = state->trace();
-      dataframe::utils::emplace(samples, "trace", trace);
 
       std::vector<double> bond_dimensions(system_size - 1);
       for (size_t i = 0; i < system_size - 1; i++) {
