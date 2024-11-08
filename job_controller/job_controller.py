@@ -12,7 +12,8 @@ from do_run import JobContext
 from dataframe import DataFrame, unbundle_params
 
 
-WORKING_DIR = "/data/heinriea/cliffordsim/job_controller"
+WORKING_DIR = os.environ["WORKING_DIR"]
+print(WORKING_DIR)
 DO_RUN_FILE = os.path.join(WORKING_DIR, "do_run.py")
 COMBINE_DATA_FILE = os.path.join(WORKING_DIR, "combine_data.py")
 DATA_DIR = os.path.join(WORKING_DIR, "data")

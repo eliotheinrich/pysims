@@ -25,7 +25,7 @@ class MatrixProductSimulator : public dataframe::Simulator {
 	private:
 		uint32_t system_size;
 		double beta;
-    double xx_prob;
+    double zz_prob;
     size_t bond_dimension;
 
     int measurement_type;
@@ -38,34 +38,37 @@ class MatrixProductSimulator : public dataframe::Simulator {
 
     bool offset;
 
-    void measure(size_t i, size_t j) {
+    void measure(uint32_t i, uint32_t j) {
       // TODO check that single-qubit and two-qubit measurements are balanced
       if (measurement_type == MPSS_PROJECTIVE) {
         // Do projective measurement
         if (randf() < beta) {
-          if (randf() < xx_prob) {
-            PauliString XX(2);
-            XX.set_x(0, 1);
-            XX.set_x(1, 1);
-            state->measure(XX, {static_cast<uint32_t>(i), static_cast<uint32_t>(j)});
+          if (randf() < zz_prob) {
+            state->measure(PauliString("+ZZ"), {i, j});
           } else {
-            state->mzr(i);
+            state->measure(PauliString("+X"), {i});
           }
         }
       } else if (measurement_type == MPSS_WEAK) {
         // Do weak measurement
-        if (randf() < xx_prob) {
-          PauliString XX(2);
-          XX.set_x(0, 1);
-          XX.set_x(1, 1);
-          state->weak_measure(XX, {static_cast<uint32_t>(i), static_cast<uint32_t>(j)}, beta);
+        if (randf() < zz_prob) {
+          state->weak_measure(PauliString("+ZZ"), {i, j}, beta);
         } else {
-          PauliString Z(1);
-          Z.set_z(0, 1);
-          state->weak_measure(Z, {static_cast<uint32_t>(i)}, beta);
+          state->weak_measure(PauliString("+X"), {i}, beta);
         }
       }
 
+    }
+
+    void measure_right_edge() {
+      uint32_t i = system_size - 1;
+      if (measurement_type == MPSS_PROJECTIVE) {
+        if (randf() < beta && randf() > zz_prob) {
+          state->measure(PauliString("+X"), {i});
+        }
+      } else if (measurement_type == MPSS_WEAK) {
+        state->weak_measure(PauliString("+X"), {i}, beta);
+      }
     }
 
     void unitary(uint32_t i, uint32_t j) {
@@ -87,7 +90,7 @@ class MatrixProductSimulator : public dataframe::Simulator {
 		MatrixProductSimulator(dataframe::Params &params, uint32_t num_threads) : Simulator(params), interface_sampler(params), quantum_sampler(params), z2_table(get_z2_table()) {
       system_size = dataframe::utils::get<int>(params, "system_size");
       beta = dataframe::utils::get<double>(params, "beta");
-      xx_prob = dataframe::utils::get<double>(params, "xx_prob");
+      zz_prob = dataframe::utils::get<double>(params, "zz_prob");
       bond_dimension = dataframe::utils::get<int>(params, "bond_dimension", 32);
 
       measurement_type = dataframe::utils::get<int>(params, "measurement_type", MPSS_PROJECTIVE);
@@ -120,9 +123,7 @@ class MatrixProductSimulator : public dataframe::Simulator {
         }
 
         // Maybe mzr rightmost edge
-        if (randf() < beta && randf() > xx_prob) {
-          state->mzr(system_size - 1);
-        }
+        measure_right_edge();
 
         offset = !offset;
       }
