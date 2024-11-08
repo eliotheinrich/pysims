@@ -4,6 +4,7 @@ import shutil
 import json
 import dill
 from collections.abc import Iterable
+from numpy.random import randint
 
 from combine_data import combine_data
 from do_run import JobContext
@@ -11,7 +12,7 @@ from do_run import JobContext
 from dataframe import DataFrame, unbundle_params
 
 
-WORKING_DIR = "/Users/eliotheinrich/Projects/cliffordsim/job_controller"
+WORKING_DIR = "/data/heinriea/cliffordsim/job_controller"
 DO_RUN_FILE = os.path.join(WORKING_DIR, "do_run.py")
 COMBINE_DATA_FILE = os.path.join(WORKING_DIR, "combine_data.py")
 DATA_DIR = os.path.join(WORKING_DIR, "data")
@@ -219,6 +220,8 @@ def submit_jobs(
 
     if checkpoint_file is None:
         params = unbundle_params(param_bundle)
+        for p in params:
+            p["seed"] = randint(1 << 32 - 1)
         verify_callbacks(params, checkpoint_callbacks)
         job_data = params
         job_args = None
