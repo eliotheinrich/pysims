@@ -8,6 +8,18 @@
 
 #define MPSS_HAAR 0
 #define MPSS_CLIFFORD 1
+#define MPSS_Z2_CLIFFORD 2
+
+static CliffordTable get_z2_table() {
+  auto conserves_xx = [](const QuantumCircuit& qc) {
+    PauliString p("XX");
+    PauliString p_ = p;
+    qc.apply(p);
+    return p == p_;
+  };
+
+  return CliffordTable(conserves_xx);
+}
 
 class MatrixProductSimulator : public dataframe::Simulator {
 	private:
@@ -22,12 +34,12 @@ class MatrixProductSimulator : public dataframe::Simulator {
 		InterfaceSampler interface_sampler;
     QuantumStateSampler quantum_sampler;
 
+    CliffordTable z2_table;
+
     bool offset;
 
     void measure(size_t i, size_t j) {
       // TODO check that single-qubit and two-qubit measurements are balanced
-      //std::cout << fmt::format("measure({}, {})\n", i, j);
-
       if (measurement_type == MPSS_PROJECTIVE) {
         // Do projective measurement
         if (randf() < beta) {
@@ -63,6 +75,8 @@ class MatrixProductSimulator : public dataframe::Simulator {
         state->evolve(gate, {i, j});
       } else if (unitary_type == MPSS_CLIFFORD) {
         state->random_clifford({i, j});
+      } else if (unitary_type == MPSS_Z2_CLIFFORD) {
+        z2_table.apply_random(rng, {i, j}, *state.get());
       } else {
         throw std::runtime_error(fmt::format("Invalid unitary type {}.", unitary_type));
       }
@@ -70,7 +84,7 @@ class MatrixProductSimulator : public dataframe::Simulator {
 
 	public:
     std::shared_ptr<MatrixProductState> state;
-		MatrixProductSimulator(dataframe::Params &params, uint32_t num_threads) : Simulator(params), interface_sampler(params), quantum_sampler(params){
+		MatrixProductSimulator(dataframe::Params &params, uint32_t num_threads) : Simulator(params), interface_sampler(params), quantum_sampler(params), z2_table(get_z2_table()) {
       system_size = dataframe::utils::get<int>(params, "system_size");
       beta = dataframe::utils::get<double>(params, "beta");
       xx_prob = dataframe::utils::get<double>(params, "xx_prob");
@@ -94,7 +108,6 @@ class MatrixProductSimulator : public dataframe::Simulator {
 
 		virtual void timesteps(uint32_t num_steps) override {
       for (size_t t = 0; t < num_steps; t++) {
-        //std::cout << fmt::format("On timestep {}\n", t);
         for (size_t i = 0; i < system_size/2 - offset; i++) {
           size_t q1 = 2*i + offset;
           size_t q2 = 2*i + 1 + offset;
