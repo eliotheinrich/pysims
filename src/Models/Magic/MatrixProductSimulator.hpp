@@ -79,7 +79,6 @@ class MatrixProductSimulator : public dataframe::Simulator {
           }
         }
       }
-
     }
 
     void unitary(uint32_t i, uint32_t j) {

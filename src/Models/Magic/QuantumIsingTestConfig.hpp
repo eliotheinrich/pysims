@@ -37,16 +37,17 @@ Statevector quantum_ising_ground_state(size_t num_qubits, double h) {
   Eigen::Matrix2d Z; Z << 1.0, 0.0, 0.0, -1.0;
   Eigen::Matrix2d X; X << 0.0, 1.0, 1.0, 0.0;
 
+  // Construct Hamiltonian
   for (size_t i = 0; i < num_qubits-1; i++) {
-    H -= make_gate(Z, Z, i, i+1, num_qubits);
+    H -= make_gate(X, X, i, i+1, num_qubits);
   }
 
   for (size_t i = 0; i < num_qubits; i++) {
-    H -= h*make_gate(X, i, num_qubits);
+    H -= h*make_gate(Z, i, num_qubits);
   }
 
+  // Compute ground state of H
   Eigen::SelfAdjointEigenSolver<Eigen::MatrixXd> solver(H);
-
   Eigen::VectorXcd vec = solver.eigenvectors().col(0);
 
   Statevector sv(vec);
@@ -75,6 +76,34 @@ class QuantumIsingTestConfig : public dataframe::Config {
       num_sweeps = dataframe::utils::get<int>(params, "num_sweeps", 10);
 
       state_type = dataframe::utils::get(params, "state_type", QIT_MPS);
+
+      auto xxz_mutation = [](PauliString& p, std::minstd_rand& rng) {
+        PauliString pnew(p);
+        if ((rng() % 2) || (p.num_qubits == 1)) {
+          // Do single-qubit mutation
+          size_t j = rng() % p.num_qubits;
+          PauliString Zj = PauliString(p.num_qubits);
+          Zj.set_z(j, 1); 
+
+          pnew *= Zj;
+        } else {
+          // Do double-qubit mutation
+          size_t j1 = rng() % p.num_qubits;
+          size_t j2 = rng() % p.num_qubits;
+          while (j2 == j1) {
+            j2 = rng() % p.num_qubits;
+          }
+
+          PauliString Xij = PauliString(p.num_qubits);
+          Xij.set_x(j1, 1); 
+          Xij.set_x(j2, 1); 
+          pnew *= Xij;
+        }
+
+        p = pnew;
+      };
+
+      quantum_sampler.set_montecarlo_update(xxz_mutation);
     }
 
     virtual dataframe::DataSlide compute(uint32_t num_threads) override {
