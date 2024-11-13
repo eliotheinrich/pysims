@@ -44,40 +44,31 @@ class MatrixProductSimulator : public dataframe::Simulator {
     std::vector<double> mzr_freq;
     std::vector<double> mxxr_freq;
 
-    void measure(uint32_t i, uint32_t j) {
-      // TODO check that single-qubit and two-qubit measurements are balanced
+    void measurement_layer() {
       if (measurement_type == MPSS_PROJECTIVE) {
-        // Do projective measurement
-        if (randf() < beta) {
-          if (randf() < p) {
-            mxxr_freq[i] += 1.0;
-            mxxr_freq[j] += 1.0;
-            state->measure(TWO_QUBIT_PAULI, {i, j});
-          } else {
-            if (rand() % 2) {
-              mzr_freq[i] += 1.0;
-              state->measure(ONE_QUBIT_PAULI, {i});
+        std::vector<MeasurementData> measurements;
+        for (uint32_t i = 0; i < system_size-1; i++) {
+          if (randf() < beta) {
+            if (randf() < p) {
+              measurements.push_back({TWO_QUBIT_PAULI, {i, i+1}});
             } else {
-              mzr_freq[j] += 1.0;
-              state->measure(ONE_QUBIT_PAULI, {j});
+              measurements.push_back({ONE_QUBIT_PAULI, {i}});
             }
           }
         }
-      } else if (measurement_type == MPSS_WEAK) {
-        // Do weak measurement
-        if (randf() < p) {
-          mxxr_freq[i] += 1.0;
-          mxxr_freq[j] += 1.0;
-          state->weak_measure(TWO_QUBIT_PAULI, {i, j}, beta);
-        } else {
-          if (rand() % 2) {
-            mzr_freq[i] += 1.0;
-            state->weak_measure(ONE_QUBIT_PAULI, {i}, beta);
+
+        state->measure(measurements);
+      } else { 
+        std::vector<WeakMeasurementData> measurements;
+        for (uint32_t i = 0; i < system_size-1; i++) {
+          if (randf() < p) {
+            measurements.push_back({TWO_QUBIT_PAULI, {i, i+1}, beta});
           } else {
-            mzr_freq[j] += 1.0;
-            state->weak_measure(ONE_QUBIT_PAULI, {j}, beta);
+            measurements.push_back({ONE_QUBIT_PAULI, {i}, beta});
           }
         }
+
+        state->weak_measure(measurements);
       }
     }
 
@@ -144,10 +135,7 @@ class MatrixProductSimulator : public dataframe::Simulator {
           unitary(q1, q2);
         }
 
-        for (size_t i = 0; i < system_size-1; i++) {
-          // do measurements
-          measure(i, i+1);
-        }
+        measurement_layer();
 
         // -------- 
         //std::string sx, sz;
