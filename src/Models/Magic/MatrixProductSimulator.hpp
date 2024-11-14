@@ -41,9 +41,6 @@ class MatrixProductSimulator : public dataframe::Simulator {
 
     bool offset;
 
-    std::vector<double> mzr_freq;
-    std::vector<double> mxxr_freq;
-
     void measurement_layer() {
       if (measurement_type == MPSS_PROJECTIVE) {
         std::vector<MeasurementData> measurements;
@@ -96,9 +93,6 @@ class MatrixProductSimulator : public dataframe::Simulator {
       measurement_type = dataframe::utils::get<int>(params, "measurement_type", MPSS_PROJECTIVE);
       unitary_type = dataframe::utils::get<int>(params, "unitary_type", MPSS_HAAR);
 
-      mzr_freq = std::vector<double>(system_size, 0.0);
-      mxxr_freq = std::vector<double>(system_size, 0.0);
-
       offset = false;
 
       state = std::make_shared<MatrixProductState>(system_size, bond_dimension);
@@ -137,19 +131,6 @@ class MatrixProductSimulator : public dataframe::Simulator {
 
         measurement_layer();
 
-        // -------- 
-        //std::string sx, sz;
-        //for (size_t i = 0; i < system_size; i++) {
-        //  sx += "X";
-        //  sz += "Z";
-        //}
-        //PauliString X(sx);
-        //PauliString Z(sz);
-        //double Tx = state->expectation(X);
-        //double Tz = state->expectation(Z);
-        //std::cout << std::format("After timestep {}, X = {}, Z = {}\n", t, Tx, Tz);
-        // -------- 
-
         offset = !offset;
       }
     }
@@ -167,11 +148,8 @@ class MatrixProductSimulator : public dataframe::Simulator {
         bond_dimensions[i] = static_cast<double>(state->bond_dimension(i));
       }
       dataframe::utils::emplace(samples, "bond_dimension_at_site", bond_dimensions);
-      dataframe::utils::emplace(samples, "mzr_freq", mzr_freq);
-      mzr_freq = std::vector<double>(system_size);
 
-      dataframe::utils::emplace(samples, "mxxr_freq", mxxr_freq);
-      mxxr_freq = std::vector<double>(system_size);
+      dataframe::utils::emplace(samples, "trace", state->trace());
 
       return samples;
     }
