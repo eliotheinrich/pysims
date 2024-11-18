@@ -4,7 +4,6 @@ import shutil
 import json
 import dill
 from collections.abc import Iterable
-from numpy.random import randint
 
 from combine_data import combine_data
 from do_run import JobContext
@@ -220,8 +219,6 @@ def submit_jobs(
 
     if checkpoint_file is None:
         params = unbundle_params(param_bundle)
-        for p in params:
-            p["seed"] = randint(1 << 32 - 1)
         verify_callbacks(params, checkpoint_callbacks)
         job_data = params
         job_args = None
