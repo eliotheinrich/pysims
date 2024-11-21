@@ -12,7 +12,7 @@
 #define MTC_STATEVECTOR 0
 #define MTC_MPS 1
 
-class MagicTestConfig : public dataframe::Config {
+class MagicTestConfig {
   public:
     double phi;
     size_t system_size;
@@ -26,7 +26,7 @@ class MagicTestConfig : public dataframe::Config {
 
     QuantumStateSampler sampler;
 
-    MagicTestConfig(dataframe::Params &params) : dataframe::Config(params), sampler(params) {
+    MagicTestConfig(dataframe::Params &params) : sampler(params) {
       phi = dataframe::utils::get<double>(params, "phi");
       system_size = dataframe::utils::get<int>(params, "system_size", 1);
 
@@ -42,7 +42,7 @@ class MagicTestConfig : public dataframe::Config {
       }
     }
 
-    virtual dataframe::DataSlide compute(uint32_t num_threads) override {
+    dataframe::DataSlide compute(uint32_t num_threads) {
       auto start = std::chrono::high_resolution_clock::now();
 
       Eigen::Matrix2cd T;
@@ -104,9 +104,5 @@ class MagicTestConfig : public dataframe::Config {
       slide.push_samples_to_data("time", duration.count());
 
       return slide;
-    }
-
-    virtual std::shared_ptr<Config> clone() override {
-      return std::make_shared<MagicTestConfig>(params);
     }
 };

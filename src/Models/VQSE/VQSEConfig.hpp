@@ -36,9 +36,9 @@
 #define DEFAULT_RECORD_ENERGY_LEVELS false
 #define DEFAULT_NUM_ENERGY_LEVELS 1
 
-class VQSEConfig : public dataframe::Config {
+class VQSEConfig {
   public:
-    VQSEConfig(dataframe::Params &params) : dataframe::Config(params) {
+    VQSEConfig(dataframe::Params &params) {
       // VQSE configuration
       num_qubits = dataframe::utils::get<int>(params, "num_qubits");			
       m = dataframe::utils::get<int>(params, "m");
@@ -109,7 +109,7 @@ class VQSEConfig : public dataframe::Config {
 
     }
 
-    virtual dataframe::DataSlide compute(uint32_t num_threads) override {
+    dataframe::DataSlide compute(uint32_t num_threads) {
       Eigen::setNbThreads(num_threads);
 
       if (!VQSEConfig::printed_ompi_threads) {
@@ -188,10 +188,6 @@ class VQSEConfig : public dataframe::Config {
       slide.push_samples_to_data("time", duration.count());
 
       return slide;
-    }
-
-    virtual std::shared_ptr<Config> clone() override {
-      return std::make_shared<VQSEConfig>(params);
     }
 
   private:

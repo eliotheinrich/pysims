@@ -7,7 +7,7 @@
 
 #include <unsupported/Eigen/KroneckerProduct>
 
-class HalfSystemQuantumIsingConfig : public dataframe::Config {
+class HalfSystemQuantumIsingConfig {
   public:
     size_t system_size;
     size_t bond_dimension;
@@ -19,7 +19,7 @@ class HalfSystemQuantumIsingConfig : public dataframe::Config {
 
     double h;
 
-    HalfSystemQuantumIsingConfig(dataframe::Params &params) : dataframe::Config(params) {
+    HalfSystemQuantumIsingConfig(dataframe::Params &params) {
       system_size = dataframe::utils::get<int>(params, "system_size", 1);
       bond_dimension = dataframe::utils::get<int>(params, "bond_dimension", 64);
       h = dataframe::utils::get<double>(params, "h");
@@ -63,7 +63,7 @@ class HalfSystemQuantumIsingConfig : public dataframe::Config {
       }
     }
 
-    virtual dataframe::DataSlide compute(uint32_t num_threads) override {
+    dataframe::DataSlide compute(uint32_t num_threads) {
       auto start = std::chrono::high_resolution_clock::now();
 
       std::vector<uint32_t> qubits(system_size/2);
@@ -131,9 +131,5 @@ class HalfSystemQuantumIsingConfig : public dataframe::Config {
       slide.push_samples_to_data("time", duration.count());
 
       return slide;
-    }
-
-    virtual std::shared_ptr<Config> clone() override {
-      return std::make_shared<HalfSystemQuantumIsingConfig>(params);
     }
 };

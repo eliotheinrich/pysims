@@ -25,9 +25,9 @@ static BinaryPolynomial cx_on_poly(const BinaryPolynomial& poly, size_t i, size_
   return BinaryPolynomial(terms, poly.n);
 }
 
-class HQCircuitConfig : public dataframe::Config {
+class HQCircuitConfig {
   public:
-    HQCircuitConfig(dataframe::Params& params) : dataframe::Config(params) {
+    HQCircuitConfig(dataframe::Params& params) {
       int seed = dataframe::utils::get<int>(params, "seed", 0);
       if (seed == 0) {
         thread_local std::random_device random_device;
@@ -194,7 +194,7 @@ class HQCircuitConfig : public dataframe::Config {
       return poly;
     }
 
-    virtual dataframe::DataSlide compute(uint32_t num_threads) override {
+    dataframe::DataSlide compute(uint32_t num_threads) {
       std::vector<double> all_amplitudes;
       uint32_t n = 0;
       for (uint32_t k = 0; k < num_polynomials; k++) {
@@ -239,10 +239,6 @@ class HQCircuitConfig : public dataframe::Config {
       }
 
       return slide;
-    }
-
-    virtual std::shared_ptr<Config> clone() override {
-      return std::make_shared<HQCircuitConfig>(params);
     }
 
   private:

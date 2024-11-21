@@ -2,9 +2,9 @@
 
 #include <Frame.h>
 
-class CliffordClusteringConfig : public dataframe::Config {
+class CliffordClusteringConfig {
   public:
-    CliffordClusteringConfig(dataframe::Params &params) : dataframe::Config(params) {
+    CliffordClusteringConfig(dataframe::Params &params) {
       num_qubits = dataframe::utils::get<int>(params, "system_size");
       mzr_prob = dataframe::utils::get<double>(params, "mzr_prob");
 
@@ -44,7 +44,7 @@ class CliffordClusteringConfig : public dataframe::Config {
       return samples;
     }
 
-    virtual dataframe::DataSlide compute(uint32_t num_threads) override {
+    dataframe::DataSlide compute(uint32_t num_threads) {
       auto start = std::chrono::high_resolution_clock::now();
 
       size_t num_samples = sampling_timesteps/measurement_freq;
@@ -94,10 +94,6 @@ class CliffordClusteringConfig : public dataframe::Config {
       slide.push_samples_to_data("time", duration.count());
 
       return slide;
-    }
-
-    virtual std::shared_ptr<Config> clone() override {
-      return std::make_shared<CliffordClusteringConfig>(params);
     }
 
   private:

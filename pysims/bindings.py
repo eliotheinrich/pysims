@@ -1,4 +1,4 @@
-from dataframe import TimeConfig, ParallelCompute, DataFrame, DataSlide
+from dataframe import TimeConfig, CppConfig, ParallelCompute, DataFrame, DataSlide
 import pickle as pkl
 
 from pysims.pysimulators import *
@@ -113,8 +113,7 @@ def prepare_config(params, serialize):
         simulator_generator = simulators[circuit_type]
         return TimeConfig(params, simulator_generator, serialize)
     else:
-        config_generator = config_types[circuit_type]
-        return config_generator(params)
+        return CppConfig(params, config_types[circuit_type])
 
 def resume_run(frame, callback=None, metaparams=None, serialize=False):
     if callback is None:

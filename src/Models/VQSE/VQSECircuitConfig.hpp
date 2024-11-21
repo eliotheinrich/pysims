@@ -22,9 +22,9 @@
 #define RANDOM_PARAMS 1
 #define DEFAULT_PARAMS_INIT RANDOM_PARAMS
 
-class VQSECircuitConfig : public dataframe::Config {
+class VQSECircuitConfig {
   public:
-    VQSECircuitConfig(dataframe::Params &params) : dataframe::Config(params) {
+    VQSECircuitConfig(dataframe::Params &params) {
       seed = dataframe::utils::get<int>(params, "seed", -1);
       if (seed == -1) {
         thread_local std::random_device rd;
@@ -61,7 +61,7 @@ class VQSECircuitConfig : public dataframe::Config {
       record_fidelity = dataframe::utils::get<int>(params, "record_fidelity", true);
     }
 
-    virtual dataframe::DataSlide compute(uint32_t num_threads) override {
+    dataframe::DataSlide compute(uint32_t num_threads) {
       Eigen::setNbThreads(num_threads);
 
       auto start = std::chrono::high_resolution_clock::now();
@@ -128,10 +128,6 @@ class VQSECircuitConfig : public dataframe::Config {
       slide.push_samples_to_data("circuit_depth", (target.length() - target_depth)/(num_qubits/2));
 
       return slide;
-    }
-
-    virtual std::shared_ptr<Config> clone() override {
-      return std::make_shared<VQSECircuitConfig>(params);
     }
 
   private:

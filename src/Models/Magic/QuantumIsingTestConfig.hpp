@@ -55,7 +55,7 @@ Statevector quantum_ising_ground_state(size_t num_qubits, double h) {
 }
 
 
-class QuantumIsingTestConfig : public dataframe::Config {
+class QuantumIsingTestConfig {
   public:
     size_t system_size;
     size_t bond_dimension;
@@ -68,7 +68,7 @@ class QuantumIsingTestConfig : public dataframe::Config {
     QuantumStateSampler quantum_sampler;
     EntropySampler entropy_sampler;
 
-    QuantumIsingTestConfig(dataframe::Params &params) : dataframe::Config(params), quantum_sampler(params), entropy_sampler(params) {
+    QuantumIsingTestConfig(dataframe::Params &params) : quantum_sampler(params), entropy_sampler(params) {
       system_size = dataframe::utils::get<int>(params, "system_size", 1);
       bond_dimension = dataframe::utils::get<int>(params, "bond_dimension", 64);
       h = dataframe::utils::get<double>(params, "h");
@@ -106,7 +106,7 @@ class QuantumIsingTestConfig : public dataframe::Config {
       quantum_sampler.set_montecarlo_update(xxz_mutation);
     }
 
-    virtual dataframe::DataSlide compute(uint32_t num_threads) override {
+    dataframe::DataSlide compute(uint32_t num_threads) {
       auto start = std::chrono::high_resolution_clock::now();
 
       std::shared_ptr<QuantumState> state;
@@ -135,9 +135,5 @@ class QuantumIsingTestConfig : public dataframe::Config {
       slide.push_samples_to_data("time", duration.count());
 
       return slide;
-    }
-
-    virtual std::shared_ptr<Config> clone() override {
-      return std::make_shared<QuantumIsingTestConfig>(params);
     }
 };
