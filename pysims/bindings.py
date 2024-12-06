@@ -1,4 +1,4 @@
-from dataframe import TimeConfig, CppConfig, ParallelCompute, DataFrame, DataSlide
+from dataframe import SimulatorConfig, CppConfig, ParallelCompute, DataFrame, DataSlide
 import pickle as pkl
 
 from pysims.pysimulators import *
@@ -11,7 +11,6 @@ simulators = {
     "blocksim": BlockSimulator,
     "rpm": RPMSimulator,
     "graphsim": GraphCliffordSimulator,
-    "grover_projection": GroverProjectionSimulator,
     "brickwork_circuit": BrickworkCircuitSimulator,
     "partner": PartneringSimulator,
     "groversat": GroverSATSimulator,
@@ -111,7 +110,7 @@ def prepare_config(params, serialize):
     circuit_type = params["circuit_type"]
     if circuit_type in simulators:
         simulator_generator = simulators[circuit_type]
-        return TimeConfig(params, simulator_generator, serialize)
+        return SimulatorConfig(params, simulator_generator, serialize)
     else:
         return CppConfig(params, config_types[circuit_type])
 

@@ -283,7 +283,7 @@ class VQSEConfig {
         std::iota(ancilla.begin(), ancilla.end(), num_qubits);
 
         DensityMatrix rho(qc);
-        rho = rho.partial_trace(ancilla);
+        rho = rho.partial_trace_density_matrix(ancilla);
         return rho;
       }
 

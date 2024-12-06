@@ -16,7 +16,6 @@
 // General quantum models
 #include <RandomCircuitSamplingSimulator.h>
 #include <RandomHamiltonianSimulator.h>
-#include <GroverProjectionSimulator.h>
 #include <GroverSATSimulator.h>
 #include <BrickworkCircuitSimulator.h>
 #include <VQSEConfig.hpp>

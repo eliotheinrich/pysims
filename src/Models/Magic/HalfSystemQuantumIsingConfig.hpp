@@ -51,7 +51,7 @@ class HalfSystemQuantumIsingConfig {
       return t;
     }
 
-    magic_t get_magic_samples(auto& state, const std::vector<uint32_t>& qubitsA, const std::vector<uint32_t>& qubitsB) {
+    double get_magic_samples(auto& state, const std::vector<uint32_t>& qubitsA, const std::vector<uint32_t>& qubitsB) {
       if (sre_method == "montecarlo") {
         return state.magic_mutual_information_montecarlo(qubitsA, qubitsB, num_samples, equilibration_timesteps);
       } else if (sre_method == "exhaustive") {
@@ -96,11 +96,11 @@ class HalfSystemQuantumIsingConfig {
       };
 
       MatrixProductState mps = MatrixProductState::ising_ground_state(system_size, h, bond_dimension, 1e-8, num_sweeps);
-      MatrixProductOperator mpo2 = mps.partial_trace(qubits);
-      MatrixProductOperator mpoAB = mps.partial_trace(vector_complement(qubitsAB));
-      MatrixProductOperator mpoA = mps.partial_trace(vector_complement(qubitsA));
-      MatrixProductOperator mpoB = mps.partial_trace(vector_complement(qubitsA));
-      MatrixProductOperator mpo0 = mps.partial_trace({});
+      MatrixProductOperator mpo2 = mps.partial_trace_mpo(qubits);
+      MatrixProductOperator mpoAB = mps.partial_trace_mpo(vector_complement(qubitsAB));
+      MatrixProductOperator mpoA = mps.partial_trace_mpo(vector_complement(qubitsA));
+      MatrixProductOperator mpoB = mps.partial_trace_mpo(vector_complement(qubitsA));
+      MatrixProductOperator mpo0 = mps.partial_trace_mpo({});
 
       //auto t = take_sre_samples(mps);
       auto t2 = take_sre_samples(mpo2);
@@ -112,7 +112,6 @@ class HalfSystemQuantumIsingConfig {
       auto magic_samples = get_magic_samples(mps, qubitsA, qubitsB);
       
       dataframe::data_t samples;
-      //dataframe::utils::emplace(samples, "t", t);
       dataframe::utils::emplace(samples, "t2", t2);
       dataframe::utils::emplace(samples, "tAB", tAB);
       dataframe::utils::emplace(samples, "tA", tA);

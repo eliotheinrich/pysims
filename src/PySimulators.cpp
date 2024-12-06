@@ -21,7 +21,6 @@ NB_MODULE(pysimulators, m) {
   // General quantum models
   EXPORT_SIMULATOR(RandomCircuitSamplingSimulator);
   EXPORT_SIMULATOR(RandomHamiltonianSimulator);
-  EXPORT_SIMULATOR(GroverProjectionSimulator);
   EXPORT_SIMULATOR(GroverSATSimulator);
   EXPORT_SIMULATOR(BrickworkCircuitSimulator);
   EXPORT_CONFIG(VQSEConfig);
