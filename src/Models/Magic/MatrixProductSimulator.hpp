@@ -34,7 +34,6 @@ class MatrixProductSimulator : public Simulator {
     int measurement_type;
     int unitary_type;
 
-		InterfaceSampler interface_sampler;
     QuantumStateSampler quantum_sampler;
 
     CliffordTable z2_table;
@@ -84,7 +83,7 @@ class MatrixProductSimulator : public Simulator {
 
 	public:
     std::shared_ptr<MatrixProductState> state;
-		MatrixProductSimulator(dataframe::Params &params, uint32_t num_threads) : Simulator(params), interface_sampler(params), quantum_sampler(params), z2_table(get_z2_table()) {
+		MatrixProductSimulator(dataframe::Params &params, uint32_t num_threads) : Simulator(params), quantum_sampler(params), z2_table(get_z2_table()) {
       system_size = dataframe::utils::get<int>(params, "system_size");
       beta = dataframe::utils::get<double>(params, "beta");
       p = dataframe::utils::get<double>(params, "p");
@@ -138,8 +137,8 @@ class MatrixProductSimulator : public Simulator {
     virtual dataframe::data_t take_samples() override {
       dataframe::data_t samples;
 
-      std::vector<int> surface = state->get_entropy_surface<int>(1u);
-      interface_sampler.add_samples(samples, surface);
+      std::vector<double> surface = state->get_entropy_surface<double>(1u);
+      dataframe::utils::emplace(samples, "surface", surface);
 
       quantum_sampler.add_samples(samples, state);
 
