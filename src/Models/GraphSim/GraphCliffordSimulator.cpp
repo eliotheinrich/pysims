@@ -1,5 +1,5 @@
 #include "GraphCliffordSimulator.h"
-#include "RandomCliffordSimulator.h"
+#include "RandomCliffordSimulator.hpp"
 #include "QuantumAutomatonSimulator.h"
 
 #define DEFAULT_EVOLUTION_TYPE "random_clifford"

@@ -3,7 +3,7 @@
 #include <Simulator.hpp>
 #include <Samplers.h>
 
-class RPMSimulator : public dataframe::Simulator {
+class RPMSimulator : public Simulator {
   private:
     uint32_t system_size;
     uint32_t num_sites;

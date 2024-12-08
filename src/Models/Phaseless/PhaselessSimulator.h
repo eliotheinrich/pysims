@@ -4,7 +4,7 @@
 #include <CliffordState.h>
 #include <Samplers.h>
 
-class PhaselessSimulator : public dataframe::Simulator {
+class PhaselessSimulator : public Simulator {
 	private:
 		uint32_t system_size;
 

@@ -3,7 +3,7 @@
 #include <Simulator.hpp>
 #include <Samplers.h>
 
-class BlockSimulator : public dataframe::Simulator {
+class BlockSimulator : public Simulator {
   private:
     uint32_t system_size;
     double pu;

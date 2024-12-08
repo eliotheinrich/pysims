@@ -5,7 +5,7 @@
 #include <CliffordState.h>
 #include <Samplers.h>
 
-class NetworkCliffordSimulator : public dataframe::Simulator {
+class NetworkCliffordSimulator : public Simulator {
 	private:
 		uint32_t system_size;
 

@@ -1,6 +1,5 @@
 #include <iostream>
 #include "QuantumState.h"
-#include "GroverProjectionSimulator.h"
 #include <Eigen/Dense>
 #include <Eigen/Eigenvalues>
 #include <unsupported/Eigen/MatrixFunctions>
@@ -61,96 +60,6 @@ bool test_Statevector() {
   //std::cout << print_pair(state.probabilities(0)) << std::endl;
   //std::cout << print_pair(state.probabilities(1)) << std::endl;
   //std::cout << print_pair(state.probabilities(2)) << std::endl;
-
-  return true;
-}
-
-bool test_GroverSimulation() {
-  std::cout << "Beginning grover simulation\n";
-  Params p;
-  p["system_size"] = 3.0;
-  p["mzr_prob"] = (double) 0.0;
-  p["nmax"] = 50.0;
-
-  GroverProjectionSimulator gs(p,1);
-
-  //for (uint32_t i = 0; i < 10; i++) {
-  //    auto gate = haar_unitary(3);
-  //    gs.state->evolve(haar_unitary(3));
-
-  //    uint32_t q = gs.rand() % 3;
-  //    gs.grover_projection(q, 1);
-
-  //    auto probs = gs.state->probabilities(q);
-  //    std::cout << gs.state->get_statevector().data << std::endl;
-  //    std::cout << "on qubit " << q << ": " << print_pair(probs) << " sum to " << probs.first + probs.second << std::endl;
-  //    std::cout << "entropy of projected qubit: " << gs.entropy(std::vector<uint32_t>{q}, 2) << "\n\n";
-  //}
-
-  std::cout << gs.create_oracle(3, std::vector<uint32_t>{1}) << std::endl;
-  std::cout << gs.create_oracle(3, std::vector<uint32_t>{0,1}) << std::endl;
-  std::cout << gs.create_oracle(3, std::vector<uint32_t>{0,1,2}) << std::endl;
-
-  return true;
-}
-
-bool test_UnitaryEquivalence() {
-  uint32_t num_qubits = 3;
-  auto gate = haar_unitary(num_qubits);
-
-  Statevector state_vector(num_qubits);
-  UnitaryState state_unitary(num_qubits);
-
-  state_vector.evolve(gate);
-  state_unitary.evolve(gate);
-
-  std::cout << state_vector.to_string() << std::endl;
-  std::cout << state_unitary.to_string() << std::endl;
-
-  return true;
-}
-
-bool test_normalize() {
-  uint32_t num_qubits = 3;
-
-  Statevector state(num_qubits);
-  state.data = state.data/2;
-  state.evolve(haar_unitary(num_qubits));
-
-  std::cout << state.to_string() << std::endl;
-  std::cout << state.norm() << std::endl;
-
-  state.normalize();
-
-  std::cout << state.to_string() << std::endl;
-  std::cout << state.norm() << std::endl;
-
-
-  std::cout << "\nBeginning UnitaryState tests\n\n";
-  auto gate = haar_unitary(num_qubits);
-  gate(0,0) += 1e-8;
-
-  UnitaryState ustate1(num_qubits);
-  ustate1.evolve(gate);
-
-  for (auto e : ustate1.unitary.eigenvalues())
-    std::cout << std::abs(e) << " ";
-  std::cout << "\n\n";
-
-  UnitaryState ustate2(num_qubits);
-  ustate2.evolve(gate.pow(10000000));
-  for (auto e : ustate2.unitary.eigenvalues())
-    std::cout << std::abs(e) << " ";
-  std::cout << "\n";
-  std::cout << ustate2.get_statevector().to_string();
-  std::cout << "\n\n";
-
-  ustate2.normalize();
-  for (auto e : ustate2.unitary.eigenvalues())
-    std::cout << std::abs(e) << " ";
-  std::cout << "\n";
-  std::cout << ustate2.get_statevector().to_string();
-  std::cout << "\n\n";
 
   return true;
 }

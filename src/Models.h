@@ -1,5 +1,5 @@
 // Clifford models
-#include <RandomCliffordSimulator.h>
+#include <RandomCliffordSimulator.hpp>
 #include <QuantumAutomatonSimulator.h>
 #include <SandpileCliffordSimulator.h>
 #include <SelfOrganizedCliffordSimulator.h>

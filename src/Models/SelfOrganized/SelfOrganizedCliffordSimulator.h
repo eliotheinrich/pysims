@@ -16,7 +16,7 @@ enum FeedbackType {
 	DistanceThreshold
 };
 
-class SelfOrganizedCliffordSimulator : public dataframe::Simulator {
+class SelfOrganizedCliffordSimulator : public Simulator {
 	private:
 		uint32_t system_size;
 

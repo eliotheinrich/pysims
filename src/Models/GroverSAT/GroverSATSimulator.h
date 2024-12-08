@@ -62,7 +62,7 @@ static Eigen::VectorXcd generate_householder(uint32_t num_qubits) {
 	return -householder;
 }
 
-class GroverSATSimulator : public dataframe::Simulator {
+class GroverSATSimulator : public Simulator {
 	private:
 		uint32_t system_size; 
 

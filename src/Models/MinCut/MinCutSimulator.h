@@ -14,7 +14,7 @@ class GraphEntropyState : public EntropyState {
 		}
 };
 
-class MinCutSimulator : public dataframe::Simulator {
+class MinCutSimulator : public Simulator {
 	private:
 		std::shared_ptr<GraphEntropyState> state;
 

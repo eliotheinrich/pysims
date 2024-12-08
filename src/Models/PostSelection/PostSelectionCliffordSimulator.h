@@ -4,7 +4,7 @@
 #include <CliffordState.h>
 #include <Samplers.h>
 
-class PostSelectionCliffordSimulator : public dataframe::Simulator {
+class PostSelectionCliffordSimulator : public Simulator {
 	private:
 		std::shared_ptr<QuantumCHPState> state;
 

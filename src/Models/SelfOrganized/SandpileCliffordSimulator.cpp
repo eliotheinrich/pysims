@@ -1,5 +1,5 @@
 #include "SandpileCliffordSimulator.h"
-#include "RandomCliffordSimulator.h"
+#include "RandomCliffordSimulator.hpp"
 
 #define DEFAULT_BOUNDARY_CONDITIONS "pbc"
 #define DEFAULT_FEEDBACK_MODE 22

@@ -24,7 +24,7 @@ static CliffordTable get_z2_table() {
   return CliffordTable(symm);
 }
 
-class MatrixProductSimulator : public dataframe::Simulator {
+class MatrixProductSimulator : public Simulator {
 	private:
 		uint32_t system_size;
 		double beta;

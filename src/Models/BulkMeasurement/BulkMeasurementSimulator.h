@@ -4,7 +4,7 @@
 #include <CliffordState.h>
 #include <Samplers.h>
 
-class BulkMeasurementSimulator : public dataframe::Simulator {
+class BulkMeasurementSimulator : public Simulator {
 	private:
 		uint32_t system_size;
 		uint32_t L;

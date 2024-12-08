@@ -21,7 +21,7 @@
 
 
 inline static void rc_timestep(std::shared_ptr<CliffordState> state, uint32_t gate_width, bool offset_layer, bool periodic_bc = true) {
-	uint32_t system_size = state->system_size();
+	uint32_t system_size = state->num_qubits;
 	uint32_t num_gates = system_size / gate_width;
 
 	std::vector<uint32_t> qubits(gate_width);
@@ -55,7 +55,7 @@ static Color RC_COLOR1 = {246.0/255, 77.0/255, 77.0/255, 1.0};
 static Color RC_COLOR2 = {77.0/255, 105.0/255, 246.0/255, 1.0};
 static Color RC_COLOR3 = {189.0/255, 74.0/255, 218.0/255, 1.0};
 
-class RandomCliffordSimulator : public Drawable {
+class RandomCliffordSimulator : public Simulator {
 	private:
 		int seed;
 
@@ -162,7 +162,7 @@ class RandomCliffordSimulator : public Drawable {
 	public:
 		std::shared_ptr<QuantumCHPState> state;
 
-		RandomCliffordSimulator(dataframe::Params &params, uint32_t num_threads) : Drawable(params), entropy_sampler(params), interface_sampler(params) {
+		RandomCliffordSimulator(dataframe::Params &params, uint32_t num_threads) : Simulator(params), entropy_sampler(params), interface_sampler(params) {
       system_size = dataframe::utils::get<int>(params, "system_size");
 
       mzr_prob = dataframe::utils::get<double>(params, "mzr_prob");
@@ -212,15 +212,17 @@ class RandomCliffordSimulator : public Drawable {
 
     virtual std::vector<dataframe::byte_t> serialize() const override {
       std::vector<dataframe::byte_t> data;
-      glz::write_binary(*this, data);
+      auto write_error = glz::write_beve(*this, data);
+      if (write_error) {
+        throw std::runtime_error(fmt::format("Error serializing RandomCliffordSimulator: \n{}", glz::format_error(write_error, data)));
+      }
       return data;
     }
 
     virtual void deserialize(const std::vector<dataframe::byte_t>& bytes) override {
-      auto pe = glz::read_binary(*this, bytes);
-      if (pe) {
-        std::string error_message = "Error parsing RandomCliffordSimluator from binary.";
-        throw std::invalid_argument(error_message);
+      auto parse_error = glz::read_beve(*this, bytes);
+      if (parse_error) {
+        throw std::runtime_error(fmt::format("Error deserializing RandomCliffordSimulator: \n{}", glz::format_error(parse_error, bytes)));
       }
     }
 
@@ -240,25 +242,7 @@ class RandomCliffordSimulator : public Drawable {
     }
 
     virtual Texture get_texture() const override {
-      size_t num_qubits = state->system_size();
-      size_t N = num_qubits*num_qubits;
-      Texture texture(num_qubits, num_qubits);
-
-      for (size_t r = 0; r < num_qubits; r++) {
-        for (size_t i = 0; i < num_qubits; i++) {
-          bool zi = state->tableau.z(r + num_qubits, i);
-          bool xi = state->tableau.x(r + num_qubits, i);
-          if (zi && xi) {
-            texture.set(r, i, RC_COLOR3);
-          } else if (zi) {
-            texture.set(r, i, RC_COLOR1);
-          } else if (xi) {
-            texture.set(r, i, RC_COLOR2);
-          }
-        }
-      }
-
-      return texture;
+      return state->get_texture(RC_COLOR1, RC_COLOR2, RC_COLOR3);
     }
 
     struct glaze {

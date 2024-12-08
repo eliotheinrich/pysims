@@ -33,7 +33,7 @@ static inline double qa_power_law(double x0, double x1, double n, double r) {
 	return std::pow(((std::pow(x1, n + 1.0) - std::pow(x0, n + 1.0))*r + std::pow(x0, n + 1.0)), 1.0/(n + 1.0));
 }
 
-class QuantumAutomatonSimulator : public dataframe::Simulator {
+class QuantumAutomatonSimulator : public Simulator {
 	private:
 		uint32_t system_size;
 

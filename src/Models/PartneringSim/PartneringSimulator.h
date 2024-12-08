@@ -9,7 +9,7 @@ static inline double power_law(double x0, double x1, double n, double r) {
 	return std::pow(((std::pow(x1, n + 1.0) - std::pow(x0, n + 1.0))*r + std::pow(x0, n + 1.0)), 1.0/(n + 1.0));
 }
 
-class PartneringSimulator : public dataframe::Simulator {
+class PartneringSimulator : public Simulator {
 	private:
 		uint32_t num_nodes;
 		uint32_t affinity_type;

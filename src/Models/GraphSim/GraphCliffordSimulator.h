@@ -4,7 +4,7 @@
 #include <CliffordState.h>
 #include <Samplers.h>
 
-class GraphCliffordSimulator : public dataframe::Simulator {
+class GraphCliffordSimulator : public Simulator {
 	private:
 		uint32_t system_size;
 

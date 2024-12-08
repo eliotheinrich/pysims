@@ -1,6 +1,6 @@
 #include "Models.h"
 #include <Models/Magic/MatrixProductSimulator.hpp>
-#include <PyDataFrame.hpp>
+#include <PyQutils.hpp>
 
 NB_MODULE(pysimulators, m) {
   // Clifford models

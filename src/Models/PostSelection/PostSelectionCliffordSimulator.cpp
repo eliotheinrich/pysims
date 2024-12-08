@@ -1,5 +1,5 @@
 #include "PostSelectionCliffordSimulator.h"
-#include <RandomCliffordSimulator.h>
+#include <RandomCliffordSimulator.hpp>
 
 #define DEFAULT_CLIFFORD_TYPE "chp"
 

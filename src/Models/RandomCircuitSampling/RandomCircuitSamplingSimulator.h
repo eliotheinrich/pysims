@@ -4,7 +4,7 @@
 #include <QuantumState.h>
 #include <Samplers.h>
 
-class RandomCircuitSamplingSimulator : public dataframe::Simulator {
+class RandomCircuitSamplingSimulator : public Simulator {
 	private:
 		uint32_t system_size;
 

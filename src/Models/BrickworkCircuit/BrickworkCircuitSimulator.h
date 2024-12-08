@@ -4,7 +4,7 @@
 #include <QuantumState.h>
 #include <Samplers.h>
 
-class BrickworkCircuitSimulator : public dataframe::Simulator {
+class BrickworkCircuitSimulator : public Simulator {
 	private:
 		uint32_t system_size;
 

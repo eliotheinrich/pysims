@@ -4,7 +4,7 @@
 #include <CliffordState.h>
 #include <Samplers.h>
 
-class EnvironmentSimulator : public dataframe::Simulator {
+class EnvironmentSimulator : public Simulator {
 	private:
 		uint32_t system_size;
 

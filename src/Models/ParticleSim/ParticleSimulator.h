@@ -3,7 +3,7 @@
 #include <Simulator.hpp>
 #include <Samplers.h>
 
-class ParticleSimulator : public dataframe::Simulator {
+class ParticleSimulator : public Simulator {
   private:
     uint32_t system_size;
     double pu;
