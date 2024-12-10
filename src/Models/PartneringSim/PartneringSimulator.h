@@ -2,6 +2,7 @@
 
 #include <Frame.h>
 #include <Graph.hpp>
+#include <Simulator.hpp>
 
 #include <climits>
 
