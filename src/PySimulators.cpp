@@ -28,7 +28,6 @@ NB_MODULE(pysimulators, m) {
   EXPORT_CONFIG(MagicTestConfig);
 
   EXPORT_CONFIG(QuantumIsingTestConfig);
-  EXPORT_CONFIG(HalfSystemQuantumIsingConfig);
   EXPORT_SIMULATOR(MatrixProductSimulator);
 
   // Miscellaneous models

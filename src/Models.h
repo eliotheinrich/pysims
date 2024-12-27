@@ -23,7 +23,6 @@
 
 #include <MagicTestConfig.hpp>
 #include <QuantumIsingTestConfig.hpp>
-#include <HalfSystemQuantumIsingConfig.hpp>
 #include <MatrixProductSimulator.hpp>
 
 // Miscellaneous models

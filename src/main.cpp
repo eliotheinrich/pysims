@@ -113,9 +113,6 @@ DataSlide simulation(int argc, char* argv[]) {
   } else if (circuit_type == "quantum_ising") {
     QuantumIsingTestConfig qi(param);
     slide = qi.compute(num_threads);
-  } else if (circuit_type == "half_quantum_ising") {
-    HalfSystemQuantumIsingConfig qi(param);
-    slide = qi.compute(num_threads);
   } else {
     throw std::invalid_argument("Invalid circuit type passed.");
   }

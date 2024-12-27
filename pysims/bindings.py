@@ -29,7 +29,6 @@ config_types = {
     "vqse_circuit": VQSECircuitConfig,
     "magic_test": MagicTestConfig,
     "quantum_ising": QuantumIsingTestConfig,
-    "half_quantum_ising": HalfSystemQuantumIsingConfig,
     "hq_circuit": HQCircuitConfig,
     "clifford_clustering": CliffordClusteringConfig,
 }
