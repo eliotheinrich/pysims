@@ -17,7 +17,7 @@ class PostSelectionCliffordSimulator : public Simulator {
 		void mzr(uint32_t i);
 
 	public:
-		PostSelectionCliffordSimulator(dataframe::Params &params, uint32_t);
+		PostSelectionCliffordSimulator(dataframe::ExperimentParams &params, uint32_t);
 
 		virtual void timesteps(uint32_t num_steps) override;
 

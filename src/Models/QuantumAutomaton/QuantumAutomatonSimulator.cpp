@@ -10,7 +10,7 @@
 using namespace dataframe;
 using namespace dataframe::utils;
 
-QuantumAutomatonSimulator::QuantumAutomatonSimulator(Params &params, uint32_t) : Simulator(params), entropy_sampler(params), interface_sampler(params) {
+QuantumAutomatonSimulator::QuantumAutomatonSimulator(ExperimentParams &params, uint32_t) : Simulator(params), entropy_sampler(params), interface_sampler(params) {
 	system_size = get<int>(params, "system_size");
 	clifford_type = parse_clifford_type(get<std::string>(params, "clifford_type", DEFAULT_CLIFFORD_TYPE));
 	mzr_prob = get<double>(params, "mzr_prob");

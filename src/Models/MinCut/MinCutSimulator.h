@@ -26,7 +26,7 @@ class MinCutSimulator : public Simulator {
 		EntropySampler sampler;
 
 	public:
-		MinCutSimulator(dataframe::Params &params, uint32_t);
+		MinCutSimulator(dataframe::ExperimentParams &params, uint32_t);
 
 		std::string to_string() const;
 

@@ -15,7 +15,7 @@
 using namespace dataframe;
 using namespace dataframe::utils;
 
-SandpileCliffordSimulator::SandpileCliffordSimulator(Params &params, uint32_t) : Simulator(params), interface_sampler(params), entropy_sampler(params) {
+SandpileCliffordSimulator::SandpileCliffordSimulator(ExperimentParams &params, uint32_t) : Simulator(params), interface_sampler(params), entropy_sampler(params) {
   system_size = get<int>(params, "system_size");
 
   mzr_prob = get<double>(params, "mzr_prob");

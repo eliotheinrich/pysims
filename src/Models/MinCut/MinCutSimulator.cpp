@@ -33,7 +33,7 @@ double GraphEntropyState::entropy(const std::vector<uint32_t> &sites, uint32_t i
 }
 
 
-MinCutSimulator::MinCutSimulator(Params &params, uint32_t) : Simulator(params), sampler(params) {
+MinCutSimulator::MinCutSimulator(ExperimentParams &params, uint32_t) : Simulator(params), sampler(params) {
 	system_size = get<int>(params, "system_size");
 	mzr_prob = get<double>(params, "mzr_prob");
 

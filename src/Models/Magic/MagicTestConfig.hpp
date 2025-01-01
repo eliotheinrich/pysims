@@ -26,7 +26,7 @@ class MagicTestConfig {
 
     QuantumStateSampler sampler;
 
-    MagicTestConfig(dataframe::Params &params) : sampler(params) {
+    MagicTestConfig(dataframe::ExperimentParams &params) : sampler(params) {
       phi = dataframe::utils::get<double>(params, "phi");
       system_size = dataframe::utils::get<int>(params, "system_size", 1);
 

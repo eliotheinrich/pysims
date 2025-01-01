@@ -6,7 +6,7 @@
 using namespace dataframe;
 using namespace dataframe::utils;
 
-BrickworkCircuitSimulator::BrickworkCircuitSimulator(Params &params, uint32_t num_threads) : Simulator(params), sampler(params) {
+BrickworkCircuitSimulator::BrickworkCircuitSimulator(ExperimentParams &params, uint32_t num_threads) : Simulator(params), sampler(params) {
 	system_size = get<int>(params, "system_size");
 
 	mzr_prob = get<double>(params, "mzr_prob");

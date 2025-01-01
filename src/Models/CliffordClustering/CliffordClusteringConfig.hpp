@@ -4,7 +4,7 @@
 
 class CliffordClusteringConfig {
   public:
-    CliffordClusteringConfig(dataframe::Params &params) {
+    CliffordClusteringConfig(dataframe::ExperimentParams &params) {
       num_qubits = dataframe::utils::get<int>(params, "system_size");
       mzr_prob = dataframe::utils::get<double>(params, "mzr_prob");
 

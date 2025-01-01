@@ -162,7 +162,7 @@ class RandomCliffordSimulator : public Simulator {
 	public:
 		std::shared_ptr<QuantumCHPState> state;
 
-		RandomCliffordSimulator(dataframe::Params &params, uint32_t num_threads) : Simulator(params), entropy_sampler(params), interface_sampler(params) {
+		RandomCliffordSimulator(dataframe::ExperimentParams &params, uint32_t num_threads) : Simulator(params), entropy_sampler(params), interface_sampler(params) {
       system_size = dataframe::utils::get<int>(params, "system_size");
 
       mzr_prob = dataframe::utils::get<double>(params, "mzr_prob");

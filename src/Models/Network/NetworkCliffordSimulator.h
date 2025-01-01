@@ -26,7 +26,7 @@ class NetworkCliffordSimulator : public Simulator {
 		void add_spatially_averaged_entropy(dataframe::data_t& samples);
 
 	public:
-		NetworkCliffordSimulator(dataframe::Params& params, uint32_t);
+		NetworkCliffordSimulator(dataframe::ExperimentParams& params, uint32_t);
 
 		virtual void timesteps(uint32_t num_steps) override;
 

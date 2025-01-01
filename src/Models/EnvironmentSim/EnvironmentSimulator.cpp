@@ -5,7 +5,7 @@
 using namespace dataframe;
 using namespace dataframe::utils;
 
-EnvironmentSimulator::EnvironmentSimulator(Params &params, uint32_t) : Simulator(params), sampler(params) {
+EnvironmentSimulator::EnvironmentSimulator(ExperimentParams &params, uint32_t) : Simulator(params), sampler(params) {
 	system_size = get<int>(params, "system_size");
 
 	int_prob = get<double>(params, "int_prob");

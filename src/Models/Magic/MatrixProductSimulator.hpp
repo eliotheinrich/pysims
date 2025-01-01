@@ -83,7 +83,7 @@ class MatrixProductSimulator : public Simulator {
 
 	public:
     std::shared_ptr<MatrixProductState> state;
-		MatrixProductSimulator(dataframe::Params &params, uint32_t num_threads) : Simulator(params), quantum_sampler(params), z2_table(get_z2_table()) {
+		MatrixProductSimulator(dataframe::ExperimentParams &params, uint32_t num_threads) : Simulator(params), quantum_sampler(params), z2_table(get_z2_table()) {
       system_size = dataframe::utils::get<int>(params, "system_size");
       beta = dataframe::utils::get<double>(params, "beta");
       p = dataframe::utils::get<double>(params, "p");

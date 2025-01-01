@@ -6,7 +6,7 @@
 using namespace dataframe;
 using namespace dataframe::utils;
 
-PostSelectionCliffordSimulator::PostSelectionCliffordSimulator(Params &params, uint32_t) : Simulator(params), sampler(params) {
+PostSelectionCliffordSimulator::PostSelectionCliffordSimulator(ExperimentParams &params, uint32_t) : Simulator(params), sampler(params) {
 	system_size = get<int>(params, "system_size");
 	mzr_prob = get<double>(params, "mzr_prob");
 

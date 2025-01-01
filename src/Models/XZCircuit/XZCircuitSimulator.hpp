@@ -165,7 +165,7 @@ class XZCircuitSimulator : public Simulator {
     }
 
 	public:
-		XZCircuitSimulator(dataframe::Params &params, uint32_t) : Simulator(params), entropy_sampler(params), interface_sampler(params) {
+		XZCircuitSimulator(dataframe::ExperimentParams &params, uint32_t) : Simulator(params), entropy_sampler(params), interface_sampler(params) {
       system_size = dataframe::utils::get<int>(params, "system_size");
       mzr_prob = dataframe::utils::get<double>(params, "mzr_prob");
       pz = dataframe::utils::get<double>(params, "pz");

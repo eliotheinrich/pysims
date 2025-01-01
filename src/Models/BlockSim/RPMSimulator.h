@@ -23,7 +23,7 @@ class RPMSimulator : public Simulator {
     int slope(uint32_t i) const;
 
   public:
-    RPMSimulator(dataframe::Params &params, uint32_t);
+    RPMSimulator(dataframe::ExperimentParams &params, uint32_t);
 
     virtual void timesteps(uint32_t num_steps) override;
     virtual void equilibration_timesteps(uint32_t num_steps) override {

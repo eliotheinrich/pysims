@@ -37,7 +37,7 @@ class GraphCliffordSimulator : public Simulator {
 
 
 	public:
-		GraphCliffordSimulator(dataframe::Params &params, uint32_t);
+		GraphCliffordSimulator(dataframe::ExperimentParams &params, uint32_t);
 
 		virtual void timesteps(uint32_t num_steps) override;
 		virtual dataframe::data_t take_samples() override;

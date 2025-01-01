@@ -4,7 +4,7 @@
 using namespace dataframe;
 using namespace dataframe::utils;
 
-RandomHamiltonianSimulator::RandomHamiltonianSimulator(Params &params, uint32_t num_threads) : Simulator(params), entropy_sampler(params), prob_sampler(params) {
+RandomHamiltonianSimulator::RandomHamiltonianSimulator(ExperimentParams &params, uint32_t num_threads) : Simulator(params), entropy_sampler(params), prob_sampler(params) {
   system_size = get<int>(params, "system_size");
   dt = get<double>(params, "dt");
   mu = get<double>(params, "mu", 0.0);

@@ -6,7 +6,7 @@
 using namespace dataframe;
 using namespace dataframe::utils;
 
-RPMSimulator::RPMSimulator(Params &params, uint32_t) : Simulator(params), sampler(params) {
+RPMSimulator::RPMSimulator(ExperimentParams &params, uint32_t) : Simulator(params), sampler(params) {
   system_size = get<int>(params, "system_size");
   if (system_size < 1) {
     throw std::invalid_argument("System size must be larger than 0.");

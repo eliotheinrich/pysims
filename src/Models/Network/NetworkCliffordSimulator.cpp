@@ -5,7 +5,7 @@
 using namespace dataframe;
 using namespace dataframe::utils;
 
-NetworkCliffordSimulator::NetworkCliffordSimulator(Params &params, uint32_t) : Simulator(params), sampler(params) {
+NetworkCliffordSimulator::NetworkCliffordSimulator(ExperimentParams &params, uint32_t) : Simulator(params), sampler(params) {
 	system_size = get<int>(params, "system_size");
 
 	p = get<double>(params, "p");

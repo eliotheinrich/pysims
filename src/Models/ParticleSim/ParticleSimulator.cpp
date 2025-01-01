@@ -16,7 +16,7 @@ using namespace dataframe::utils;
 // o o o | o o o | o o o | o o o | o o o | o o o |
 
 
-BlockSimulator::BlockSimulator(Params &params, uint32_t) : Simulator(params), sampler(params) {
+BlockSimulator::BlockSimulator(ExperimentParams &params, uint32_t) : Simulator(params), sampler(params) {
   system_size = get<int>(params, "system_size");
 
   pm = get<double>(params, "pm");

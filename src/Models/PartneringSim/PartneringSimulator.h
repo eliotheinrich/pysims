@@ -45,7 +45,7 @@ class PartneringSimulator : public Simulator {
 		Graph<> affinity_graph;
 		Graph<> augmented_graph;
 
-		PartneringSimulator(dataframe::Params &params, uint32_t);
+		PartneringSimulator(dataframe::ExperimentParams &params, uint32_t);
 
 		virtual void timesteps(uint32_t num_steps) override;
 		virtual void equilibration_timesteps(uint32_t num_steps) override {

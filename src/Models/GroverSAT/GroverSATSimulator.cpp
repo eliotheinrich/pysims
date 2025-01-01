@@ -88,7 +88,7 @@ bool ConjugateNormalForm::evaluate(const std::vector<bool>& vals) const {
 	return true;
 }
 
-GroverSATSimulator::GroverSATSimulator(Params &params, uint32_t num_threads) : Simulator(params), sampler(params) {
+GroverSATSimulator::GroverSATSimulator(ExperimentParams &params, uint32_t num_threads) : Simulator(params), sampler(params) {
 	system_size = get<int>(params, "system_size");
 
 	num_variables = get<int>(params, "num_variables");

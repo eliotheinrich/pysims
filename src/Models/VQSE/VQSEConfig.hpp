@@ -38,7 +38,7 @@
 
 class VQSEConfig {
   public:
-    VQSEConfig(dataframe::Params &params) {
+    VQSEConfig(dataframe::ExperimentParams &params) {
       // VQSE configuration
       num_qubits = dataframe::utils::get<int>(params, "num_qubits");			
       m = dataframe::utils::get<int>(params, "m");

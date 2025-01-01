@@ -8,7 +8,7 @@
 using namespace dataframe;
 using namespace dataframe::utils;
 
-PhaselessSimulator::PhaselessSimulator(Params &params, uint32_t) : Simulator(params), sampler(params) {
+PhaselessSimulator::PhaselessSimulator(ExperimentParams &params, uint32_t) : Simulator(params), sampler(params) {
 	system_size = get<int>(params, "system_size");
 
 	mzr_prob = get<double>(params, "mzr_prob");

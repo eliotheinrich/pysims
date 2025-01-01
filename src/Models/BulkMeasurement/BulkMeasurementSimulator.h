@@ -21,7 +21,7 @@ class BulkMeasurementSimulator : public Simulator {
 		uint32_t site_index(uint32_t, uint32_t, uint32_t);
 
 	public:
-		BulkMeasurementSimulator(dataframe::Params& params, uint32_t);
+		BulkMeasurementSimulator(dataframe::ExperimentParams& params, uint32_t);
 
 		virtual void timesteps(uint32_t num_steps) override;
 

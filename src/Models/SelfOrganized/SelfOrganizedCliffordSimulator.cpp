@@ -34,7 +34,7 @@ static FeedbackType parse_feedback_type(const std::string& s) {
 	}
 }
 
-SelfOrganizedCliffordSimulator::SelfOrganizedCliffordSimulator(Params &params, uint) : Simulator(params), sampler(params) {
+SelfOrganizedCliffordSimulator::SelfOrganizedCliffordSimulator(ExperimentParams &params, uint) : Simulator(params), sampler(params) {
 	system_size = get<int>(params, "system_size");
 
 	mzr_prob = get<double>(params, "mzr_prob");

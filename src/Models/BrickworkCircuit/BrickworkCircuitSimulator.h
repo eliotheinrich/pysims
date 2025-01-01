@@ -20,7 +20,7 @@ class BrickworkCircuitSimulator : public Simulator {
 	public:
 		std::shared_ptr<Statevector> state;
 
-		BrickworkCircuitSimulator(dataframe::Params &params, uint32_t num_threads);
+		BrickworkCircuitSimulator(dataframe::ExperimentParams &params, uint32_t num_threads);
 
 		virtual void timesteps(uint32_t num_steps) override;
 

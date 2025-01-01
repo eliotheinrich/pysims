@@ -15,7 +15,7 @@ class ParticleSimulator : public Simulator {
     uint32_t get_shape(uint32_t s0, uint32_t s1, uint32_t s2) const;
 
   public:
-    ParticleSimulator(dataframe::Params &params, uint32_t);
+    ParticleSimulator(dataframe::ExperimentParams &params, uint32_t);
 
     virtual void timesteps(uint32_t num_steps) override;
 

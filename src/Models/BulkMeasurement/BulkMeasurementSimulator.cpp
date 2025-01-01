@@ -5,7 +5,7 @@
 using namespace dataframe;
 using namespace dataframe::utils;
 
-BulkMeasurementSimulator::BulkMeasurementSimulator(Params &params, uint32_t) : Simulator(params), sampler(params) {
+BulkMeasurementSimulator::BulkMeasurementSimulator(ExperimentParams &params, uint32_t) : Simulator(params), sampler(params) {
 	system_size = get<int>(params, "system_size");
   L = static_cast<uint32_t>(std::sqrt(system_size));
   if (std::abs(std::sqrt(system_size) - L) > 1e-5) {

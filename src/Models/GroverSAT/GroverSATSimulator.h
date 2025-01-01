@@ -84,7 +84,7 @@ class GroverSATSimulator : public Simulator {
 	public:
 		std::shared_ptr<Statevector> state;
 
-		GroverSATSimulator(dataframe::Params &params, uint32_t);
+		GroverSATSimulator(dataframe::ExperimentParams &params, uint32_t);
 
 		virtual void timesteps(uint32_t num_steps) override;
 

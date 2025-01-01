@@ -20,7 +20,7 @@ class EnvironmentSimulator : public Simulator {
 		EntropySampler sampler;
 
 	public:
-		EnvironmentSimulator(dataframe::Params& params, uint32_t);
+		EnvironmentSimulator(dataframe::ExperimentParams& params, uint32_t);
 
 		void one_dimensional_interactions();
 		void two_dimensional_interactions();

@@ -17,7 +17,7 @@ static inline float sample_powerlaw(float y, float x0, float x1, float a) {
 	return std::pow((std::pow(x1, a+1) - std::pow(x0, a+1))*y + std::pow(x0, a+1), 1./(a+1.));
 }
 
-GraphCliffordSimulator::GraphCliffordSimulator(Params &params, uint32_t) : Simulator(params), sampler(params) {
+GraphCliffordSimulator::GraphCliffordSimulator(ExperimentParams &params, uint32_t) : Simulator(params), sampler(params) {
 	system_size = get<int>(params, "system_size");
 
 	evolution_type = get<std::string>(params, "evolution_type", DEFAULT_EVOLUTION_TYPE);

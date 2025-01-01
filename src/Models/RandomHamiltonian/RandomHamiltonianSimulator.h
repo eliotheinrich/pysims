@@ -21,7 +21,7 @@ class RandomHamiltonianSimulator : public Simulator {
 	public:
 		std::shared_ptr<Statevector> state;
 
-		RandomHamiltonianSimulator(dataframe::Params &params, uint32_t num_threads);
+		RandomHamiltonianSimulator(dataframe::ExperimentParams &params, uint32_t num_threads);
 
 		virtual void timesteps(uint32_t num_steps) override;
 

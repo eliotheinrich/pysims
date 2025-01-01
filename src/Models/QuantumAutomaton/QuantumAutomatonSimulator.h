@@ -55,7 +55,7 @@ class QuantumAutomatonSimulator : public Simulator {
 		void timesteps_brickwork(uint32_t);
 
 	public:
-		QuantumAutomatonSimulator(dataframe::Params &params, uint32_t);
+		QuantumAutomatonSimulator(dataframe::ExperimentParams &params, uint32_t);
 
 		virtual void timesteps(uint32_t num_steps) override;
 

@@ -7,7 +7,7 @@
 using namespace dataframe;
 using namespace dataframe::utils;
 
-RandomCircuitSamplingSimulator::RandomCircuitSamplingSimulator(Params &params, uint32_t num_threads) : Simulator(params), entropy_sampler(params), prob_sampler(params) {
+RandomCircuitSamplingSimulator::RandomCircuitSamplingSimulator(ExperimentParams &params, uint32_t num_threads) : Simulator(params), entropy_sampler(params), prob_sampler(params) {
   system_size = get<int>(params, "system_size");
 
   mzr_prob = get<double>(params, "mzr_prob");

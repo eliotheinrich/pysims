@@ -25,7 +25,7 @@ class RandomCircuitSamplingSimulator : public Simulator {
 	public:
 		std::shared_ptr<QuantumState> state;
 
-		RandomCircuitSamplingSimulator(dataframe::Params &params, uint32_t num_threads);
+		RandomCircuitSamplingSimulator(dataframe::ExperimentParams &params, uint32_t num_threads);
 
 		virtual void timesteps(uint32_t num_steps) override;
 

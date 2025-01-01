@@ -60,7 +60,7 @@ class SelfOrganizedCliffordSimulator : public Simulator {
 		void add_distance_distribution(dataframe::data_t &samples) const;
 
 	public:
-		SelfOrganizedCliffordSimulator(dataframe::Params &params, uint32_t);
+		SelfOrganizedCliffordSimulator(dataframe::ExperimentParams &params, uint32_t);
 
 		virtual void timesteps(uint32_t num_steps) override;
 

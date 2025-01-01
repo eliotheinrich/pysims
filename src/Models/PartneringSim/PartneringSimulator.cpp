@@ -10,7 +10,7 @@
 using namespace dataframe;
 using namespace dataframe::utils;
 
-PartneringSimulator::PartneringSimulator(Params &params, uint32_t) : Simulator(params) {
+PartneringSimulator::PartneringSimulator(ExperimentParams &params, uint32_t) : Simulator(params) {
 	num_nodes = get<int>(params, "num_nodes");
 	affinity_type = get<int>(params, "affinity_type", DEFAULT_AFFINITY_TYPE);
 

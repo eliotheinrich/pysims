@@ -24,7 +24,7 @@
 
 class VQSECircuitConfig {
   public:
-    VQSECircuitConfig(dataframe::Params &params) {
+    VQSECircuitConfig(dataframe::ExperimentParams &params) {
       seed = dataframe::utils::get<int>(params, "seed", -1);
       if (seed == -1) {
         thread_local std::random_device rd;

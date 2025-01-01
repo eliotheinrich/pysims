@@ -35,7 +35,7 @@ class BlockSimulator : public Simulator {
     void deposit(uint32_t i);
 
   public:
-    BlockSimulator(dataframe::Params &params, uint32_t);
+    BlockSimulator(dataframe::ExperimentParams &params, uint32_t);
     ~BlockSimulator()=default;
 
     virtual void timesteps(uint32_t num_steps) override;

@@ -25,7 +25,7 @@ class PhaselessSimulator : public Simulator {
 		void apply_gate(uint32_t q1, uint32_t q2);
 
 	public:
-		PhaselessSimulator(dataframe::Params& params, uint32_t);
+		PhaselessSimulator(dataframe::ExperimentParams& params, uint32_t);
 
 		void one_dimensional_timestep();
 		void two_dimensional_timestep();
