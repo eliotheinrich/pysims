@@ -231,7 +231,7 @@ void SandpileCliffordSimulator::timestep() {
   right_boundary();
 }
 
-void SandpileCliffordSimulator::add_reduced_substrate_height_samples(dataframe::data_t& samples, const std::vector<int>& entropy_surface) const {
+void SandpileCliffordSimulator::add_reduced_substrate_height_samples(dataframe::SampleMap& samples, const std::vector<int>& entropy_surface) const {
   auto [e1, e2] = interface_sampler.find_edges(entropy_surface);
   std::vector<double> reduced_substrate(system_size, 0u);
   for (size_t i = e1; i < e2; i++) {
@@ -241,8 +241,8 @@ void SandpileCliffordSimulator::add_reduced_substrate_height_samples(dataframe::
   emplace(samples, "reduced_surface", reduced_substrate);
 }
 
-data_t SandpileCliffordSimulator::take_samples() {
-  data_t samples;
+SampleMap SandpileCliffordSimulator::take_samples() {
+  SampleMap samples;
 
   state->tableau.rref();
 

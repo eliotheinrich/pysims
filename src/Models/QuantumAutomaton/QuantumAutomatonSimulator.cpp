@@ -78,8 +78,8 @@ void QuantumAutomatonSimulator::timesteps(uint32_t num_steps) {
 	}
 }
 
-data_t QuantumAutomatonSimulator::take_samples() {
-	data_t samples;
+SampleMap QuantumAutomatonSimulator::take_samples() {
+	SampleMap samples;
 	
 	entropy_sampler.add_samples(samples, state);
 	

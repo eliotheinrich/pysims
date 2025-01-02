@@ -34,5 +34,5 @@ class RPMSimulator : public Simulator {
 
     std::string to_string() const;
 
-    virtual dataframe::data_t take_samples() override;
+    virtual dataframe::SampleMap take_samples() override;
 };

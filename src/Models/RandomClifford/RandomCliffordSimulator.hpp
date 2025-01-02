@@ -226,8 +226,8 @@ class RandomCliffordSimulator : public Simulator {
       }
     }
 
-    virtual dataframe::data_t take_samples() override {
-      dataframe::data_t samples;
+    virtual dataframe::SampleMap take_samples() override {
+      dataframe::SampleMap samples;
 
       entropy_sampler.add_samples(samples, state);
 

@@ -92,7 +92,7 @@ class MagicTestConfig {
       state->evolve(qc);
 
       dataframe::DataSlide slide;
-      dataframe::data_t samples;
+      dataframe::SampleMap samples;
 
       sampler.add_samples(samples, state);
       slide.add_samples(samples);

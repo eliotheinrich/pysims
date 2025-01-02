@@ -31,14 +31,14 @@ class GraphCliffordSimulator : public Simulator {
 		void generate_random_graph();
 
 		uint32_t dist(int i, int j) const;
-		void add_distance_distribution(dataframe::data_t &samples) const;
-		void add_degree_distribution(dataframe::data_t &samples) const;
-		void add_avg_max_dist(dataframe::data_t &samples) const;
+		void add_distance_distribution(dataframe::SampleMap &samples) const;
+		void add_degree_distribution(dataframe::SampleMap &samples) const;
+		void add_avg_max_dist(dataframe::SampleMap &samples) const;
 
 
 	public:
 		GraphCliffordSimulator(dataframe::ExperimentParams &params, uint32_t);
 
 		virtual void timesteps(uint32_t num_steps) override;
-		virtual dataframe::data_t take_samples() override;
+		virtual dataframe::SampleMap take_samples() override;
 };

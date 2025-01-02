@@ -31,5 +31,5 @@ class PhaselessSimulator : public Simulator {
 		void two_dimensional_timestep();
 		virtual void timesteps(uint32_t num_steps) override;
 
-    dataframe::data_t take_samples() override;
+    dataframe::SampleMap take_samples() override;
 };

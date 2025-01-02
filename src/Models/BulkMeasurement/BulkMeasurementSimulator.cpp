@@ -74,8 +74,8 @@ void BulkMeasurementSimulator::timesteps(uint32_t num_steps) {
   }
 }
 
-data_t BulkMeasurementSimulator::take_samples() {
-	data_t samples;
+SampleMap BulkMeasurementSimulator::take_samples() {
+	SampleMap samples;
 
   std::vector<double> entropy(L);
   for (uint32_t q = 0; q < L; q++) {

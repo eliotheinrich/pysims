@@ -26,5 +26,5 @@ class EnvironmentSimulator : public Simulator {
 		void two_dimensional_interactions();
 		virtual void timesteps(uint32_t num_steps) override;
 
-		virtual dataframe::data_t take_samples() override;
+		virtual dataframe::SampleMap take_samples() override;
 };

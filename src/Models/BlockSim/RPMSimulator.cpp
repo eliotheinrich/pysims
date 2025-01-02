@@ -117,11 +117,11 @@ void RPMSimulator::timesteps(uint32_t num_steps) {
   }
 }
 
-data_t RPMSimulator::take_samples() {
+SampleMap RPMSimulator::take_samples() {
   int N = pbc ? num_sites : num_sites - 1;
   std::vector<int> sampled_surface(surface.begin(), surface.begin() + N);
 
-  data_t samples;
+  SampleMap samples;
   sampler.add_samples(samples, sampled_surface);
   return samples;
 }

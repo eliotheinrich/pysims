@@ -134,8 +134,8 @@ class MatrixProductSimulator : public Simulator {
       }
     }
 
-    virtual dataframe::data_t take_samples() override {
-      dataframe::data_t samples;
+    virtual dataframe::SampleMap take_samples() override {
+      dataframe::SampleMap samples;
 
       std::vector<double> surface = state->get_entropy_surface<double>(1u);
       dataframe::utils::emplace(samples, "surface", surface);

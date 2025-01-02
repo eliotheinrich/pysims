@@ -241,7 +241,7 @@ void SelfOrganizedCliffordSimulator::timesteps(uint32_t num_steps) {
 	}
 }
 
-void SelfOrganizedCliffordSimulator::add_distance_distribution(data_t &samples) const {
+void SelfOrganizedCliffordSimulator::add_distance_distribution(SampleMap &samples) const {
 	std::vector<uint32_t> hist(system_size/2, 0);
 	for (uint32_t i = 0; i < system_size; i++) {
 		for (auto const &j : state->graph.neighbors(i)) {
@@ -254,8 +254,8 @@ void SelfOrganizedCliffordSimulator::add_distance_distribution(data_t &samples) 
 	}
 }
 
-data_t SelfOrganizedCliffordSimulator::take_samples() {
-	data_t samples;
+SampleMap SelfOrganizedCliffordSimulator::take_samples() {
+	SampleMap samples;
 	sampler.add_samples(samples, state);
 
 	if (feedback_type == FeedbackType::ClusterThreshold) {

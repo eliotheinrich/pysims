@@ -88,6 +88,6 @@ class GroverSATSimulator : public Simulator {
 
 		virtual void timesteps(uint32_t num_steps) override;
 
-		void add_fidelity_samples(dataframe::data_t& samples);
-		virtual dataframe::data_t take_samples() override;
+		void add_fidelity_samples(dataframe::SampleMap& samples);
+		virtual dataframe::SampleMap take_samples() override;
 };

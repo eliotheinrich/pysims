@@ -77,8 +77,8 @@ void MinCutSimulator::timesteps(uint32_t num_steps) {
 }
 
 
-data_t MinCutSimulator::take_samples() {
-	data_t samples;
+SampleMap MinCutSimulator::take_samples() {
+	SampleMap samples;
 	sampler.add_samples(samples, state);
 	return samples;
 }

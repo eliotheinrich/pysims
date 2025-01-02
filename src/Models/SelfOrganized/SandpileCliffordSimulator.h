@@ -43,7 +43,7 @@ class SandpileCliffordSimulator : public Simulator {
 
 		uint32_t get_shape(uint32_t s0, uint32_t s1, uint32_t s2) const;
 
-    void add_reduced_substrate_height_samples(dataframe::data_t& samples, const std::vector<int>& surface) const;
+    void add_reduced_substrate_height_samples(dataframe::SampleMap& samples, const std::vector<int>& surface) const;
 
 	public:
 		std::shared_ptr<QuantumCHPState> state;
@@ -61,5 +61,5 @@ class SandpileCliffordSimulator : public Simulator {
     virtual std::vector<dataframe::byte_t> serialize() const override;
     virtual void deserialize(const std::vector<dataframe::byte_t>& data) override;
 
-		virtual dataframe::data_t take_samples() override;
+		virtual dataframe::SampleMap take_samples() override;
 };

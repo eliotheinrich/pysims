@@ -159,7 +159,7 @@ uint32_t GraphCliffordSimulator::dist(int i, int j) const {
 	}
 }
 
-void GraphCliffordSimulator::add_distance_distribution(data_t &samples) const {
+void GraphCliffordSimulator::add_distance_distribution(SampleMap &samples) const {
 	uint32_t max_dist = system_size/2;
 	std::vector<uint32_t> distribution(max_dist, 0);
 	for (uint32_t i = 0; i < system_size; i++) {
@@ -174,7 +174,7 @@ void GraphCliffordSimulator::add_distance_distribution(data_t &samples) const {
 }
 
 
-void GraphCliffordSimulator::add_avg_max_dist(data_t &samples) const {
+void GraphCliffordSimulator::add_avg_max_dist(SampleMap &samples) const {
 	double p1 = 0.;
 	double p2 = 0.;
 	uint32_t n = 0;
@@ -202,15 +202,15 @@ void GraphCliffordSimulator::add_avg_max_dist(data_t &samples) const {
 	}
 }
 
-void GraphCliffordSimulator::add_degree_distribution(data_t &samples) const {
+void GraphCliffordSimulator::add_degree_distribution(SampleMap &samples) const {
 	auto degree_counts = state->graph.compute_degree_counts();
 	for (uint32_t i = 0; i < system_size; i++) {
 		samples.emplace("deg_" + std::to_string(i), degree_counts[i]);
 	}
 }
 
-data_t GraphCliffordSimulator::take_samples() {
-	data_t samples;
+SampleMap GraphCliffordSimulator::take_samples() {
+	SampleMap samples;
 	sampler.add_samples(samples, state);
 	
 	add_avg_max_dist(samples);

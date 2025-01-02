@@ -33,7 +33,7 @@ void NetworkCliffordSimulator::timesteps(uint32_t num_steps) {
 	}
 }
 
-void NetworkCliffordSimulator::add_degree_distribution(data_t& samples) const {
+void NetworkCliffordSimulator::add_degree_distribution(SampleMap& samples) const {
 	std::vector<uint32_t> dist(system_size);
 	for (uint32_t i = 0; i < system_size; i++) {
 		dist[network.degree(i)]++;
@@ -50,7 +50,7 @@ void NetworkCliffordSimulator::add_degree_distribution(data_t& samples) const {
 	}
 }
 
-void NetworkCliffordSimulator::add_spatially_averaged_entropy(data_t& samples) {
+void NetworkCliffordSimulator::add_spatially_averaged_entropy(SampleMap& samples) {
 	std::vector<uint32_t> all_qubits(system_size);
 	std::iota(all_qubits.begin(), all_qubits.end(), 0);
 
@@ -68,8 +68,8 @@ void NetworkCliffordSimulator::add_spatially_averaged_entropy(data_t& samples) {
   emplace(samples, "entropy", s);
 }
 
-data_t NetworkCliffordSimulator::take_samples() {
-	data_t samples;
+SampleMap NetworkCliffordSimulator::take_samples() {
+	SampleMap samples;
 	sampler.add_samples(samples, state);
 
 	add_spatially_averaged_entropy(samples);

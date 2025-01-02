@@ -251,8 +251,8 @@ void BlockSimulator::timesteps(uint32_t num_steps) {
   }
 }
 
-data_t BlockSimulator::take_samples() {
-  data_t samples;
+SampleMap BlockSimulator::take_samples() {
+  SampleMap samples;
   sampler.add_samples(samples, surface);
   return samples;
 }

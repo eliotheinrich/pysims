@@ -57,12 +57,12 @@ class SelfOrganizedCliffordSimulator : public Simulator {
 		void cluster_threshold();
 		void distance_threshold();
 
-		void add_distance_distribution(dataframe::data_t &samples) const;
+		void add_distance_distribution(dataframe::SampleMap &samples) const;
 
 	public:
 		SelfOrganizedCliffordSimulator(dataframe::ExperimentParams &params, uint32_t);
 
 		virtual void timesteps(uint32_t num_steps) override;
 
-		virtual dataframe::data_t take_samples() override;
+		virtual dataframe::SampleMap take_samples() override;
 };

@@ -35,10 +35,10 @@ class PartneringSimulator : public Simulator {
 			return augmented_graph.edge_weight(i, j);
 		}
 
-		void add_affinity_samples(dataframe::data_t& samples) const;
-		void add_global_properties_samples(dataframe::data_t& samples) const;
-		void add_local_properties_samples(dataframe::data_t& samples) const;
-		void add_counts_samples(dataframe::data_t& samples) const;
+		void add_affinity_samples(dataframe::SampleMap& samples) const;
+		void add_global_properties_samples(dataframe::SampleMap& samples) const;
+		void add_local_properties_samples(dataframe::SampleMap& samples) const;
+		void add_counts_samples(dataframe::SampleMap& samples) const;
 
 	public:
 		Graph<> partner_graph;
@@ -54,5 +54,5 @@ class PartneringSimulator : public Simulator {
 			start_sampling = true;
 		}
 
-		virtual dataframe::data_t take_samples() override;
+		virtual dataframe::SampleMap take_samples() override;
 };

@@ -22,13 +22,13 @@ class NetworkCliffordSimulator : public Simulator {
 		EntropySampler sampler;
 
 
-		void add_degree_distribution(dataframe::data_t& samples) const;
-		void add_spatially_averaged_entropy(dataframe::data_t& samples);
+		void add_degree_distribution(dataframe::SampleMap& samples) const;
+		void add_spatially_averaged_entropy(dataframe::SampleMap& samples);
 
 	public:
 		NetworkCliffordSimulator(dataframe::ExperimentParams& params, uint32_t);
 
 		virtual void timesteps(uint32_t num_steps) override;
 
-		dataframe::data_t take_samples() override;
+		dataframe::SampleMap take_samples() override;
 };

@@ -128,7 +128,7 @@ void GroverSATSimulator::timesteps(uint32_t num_steps) {
 	}
 }
 
-void GroverSATSimulator::add_fidelity_samples(data_t& samples) {
+void GroverSATSimulator::add_fidelity_samples(SampleMap& samples) {
 	uint32_t s = 1u << system_size;
 	
 	double p = 0;
@@ -141,8 +141,8 @@ void GroverSATSimulator::add_fidelity_samples(data_t& samples) {
 	samples.emplace("fidelity", p);
 }
 
-data_t GroverSATSimulator::take_samples() {
-	data_t samples;
+SampleMap GroverSATSimulator::take_samples() {
+	SampleMap samples;
 	sampler.add_samples(samples, state);
 
 	if (record_fidelity) {

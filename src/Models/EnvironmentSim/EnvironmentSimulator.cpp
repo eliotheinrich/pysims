@@ -71,8 +71,8 @@ void EnvironmentSimulator::timesteps(uint32_t num_steps) {
 	}
 }
 
-data_t EnvironmentSimulator::take_samples() {
-	data_t samples;
+SampleMap EnvironmentSimulator::take_samples() {
+	SampleMap samples;
 	sampler.add_samples(samples, state);
 	return samples;
 }

@@ -95,8 +95,8 @@ void PhaselessSimulator::timesteps(uint32_t num_steps) {
 	}
 }
 
-data_t PhaselessSimulator::take_samples() {
-	data_t samples;
+SampleMap PhaselessSimulator::take_samples() {
+	SampleMap samples;
 	sampler.add_samples(samples, state);
 
 	if (sample_measurement_outcomes) {

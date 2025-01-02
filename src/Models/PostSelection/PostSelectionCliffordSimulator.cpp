@@ -30,8 +30,8 @@ void PostSelectionCliffordSimulator::timesteps(uint32_t num_steps) {
 	}
 }
 
-data_t PostSelectionCliffordSimulator::take_samples() {
-	data_t samples;
+SampleMap PostSelectionCliffordSimulator::take_samples() {
+	SampleMap samples;
 	sampler.add_samples(samples, state);
 	return samples;
 }

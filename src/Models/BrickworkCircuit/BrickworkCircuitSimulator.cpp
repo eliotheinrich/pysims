@@ -46,8 +46,8 @@ void BrickworkCircuitSimulator::timesteps(uint32_t num_steps) {
 	}
 }
 
-data_t BrickworkCircuitSimulator::take_samples() {
-	data_t samples;
+SampleMap BrickworkCircuitSimulator::take_samples() {
+	SampleMap samples;
 	sampler.add_samples(samples, state);
 	return samples;
 }

@@ -117,7 +117,7 @@ class QuantumIsingTestConfig {
       }
 
       dataframe::DataSlide slide;
-      dataframe::data_t samples;
+      dataframe::SampleMap samples;
 
       auto surface = state->get_entropy_surface<double>(1);
 
