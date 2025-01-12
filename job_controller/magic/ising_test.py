@@ -6,9 +6,9 @@ from dataframe import *
 from job_controller import submit_jobs
 import numpy as np
 
-def generate_config(system_size, h, state_type=0, delta=1.0, sample_magic=False, sre_type="montecarlo", num_runs=1):
+def generate_config(system_size, h, state_type=0, delta=1.0, sre_type="montecarlo", num_runs=1):
     config = {}
-    config["circuit_type"] = "quantum_ising"
+    config["config_type"] = "quantum_ising"
     config["num_runs"] = num_runs
 
     system_size = list(system_size)
@@ -28,17 +28,18 @@ def generate_config(system_size, h, state_type=0, delta=1.0, sample_magic=False,
     config["sample_stabilizer_renyi_entropy"] = False
     config["sre_method"] = sre_type
     config["sre_num_samples"] = 50000
-    config["sample_magic_mutual_information"] = sample_magic
+    config["sample_magic_mutual_information"] = False
+    config["sample_bipartite_magic_mutual_information"] = True
     config["zparams"] = zparams
 
     return config
 
 
 if __name__ == "__main__":
-    L = [8, 16, 24]
+    L = [8]
     h = np.linspace(0.0, 2.0, 50)
     for Li in L:
-        param_matrix = generate_config([Li], h, state_type=[0], sample_magic=True, sre_type=["exhaustive", "montecarlo"], num_runs=1)
+        param_matrix = generate_config([Li], h, state_type=[0], sre_type=["exhaustive", "montecarlo", "virtual"], num_runs=1)
         submit_jobs(f"ising_test{Li}", param_bundle=param_matrix, ncores=4, memory="10gb", time="6:00:00", nodes=1, cleanup=False, run_local=True)
 
     param_matrix = generate_config(L, h, sample_magic=True, sre_type=["virtual"], num_runs=1)

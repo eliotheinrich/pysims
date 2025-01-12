@@ -13,7 +13,7 @@ def generate_config(
     ):
 
     config = {}
-    config["circuit_type"] = "mps_simulator"
+    config["config_type"] = "mps_simulator"
     config["num_runs"] = num_runs
 
     system_size = list(system_size)
