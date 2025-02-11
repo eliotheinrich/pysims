@@ -52,7 +52,7 @@ class CliffordClusteringConfig {
       for (size_t i = 0; i < num_copies; i++) {
         states[i] = std::vector<QuantumGraphState>(num_samples);
 
-        QuantumGraphState g(num_qubits, rng());
+        QuantumGraphState g(num_qubits);
         rc_timesteps(g, equilibration_timesteps, mzr_prob);
 
         for (size_t j = 0; j < num_samples; j++) {

@@ -85,7 +85,7 @@ class QuantumIsingTestConfig {
           PauliString Zj = PauliString(p.num_qubits);
           Zj.set_z(j, 1); 
 
-          pnew *= Zj;
+          pnew = Zj * pnew;
         } else {
           // Do double-qubit mutation
           size_t j1 = rng() % p.num_qubits;
@@ -97,7 +97,7 @@ class QuantumIsingTestConfig {
           PauliString Xij = PauliString(p.num_qubits);
           Xij.set_x(j1, 1); 
           Xij.set_x(j2, 1); 
-          pnew *= Xij;
+          pnew = Xij * pnew;
         }
 
         p = pnew;
