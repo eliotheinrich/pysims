@@ -183,11 +183,14 @@ class RandomCliffordSimulator : public Simulator {
       sample_sparsity = dataframe::utils::get<int>(params, "sample_sparsity", false);	
 
       seed = dataframe::utils::get<int>(params, "seed", -1);
+      if (seed != - 1) {
+        CliffordState::seed(seed);
+      }
 
       start_sampling = false;
 
 
-      state = std::make_shared<QuantumCHPState>(system_size, seed);
+      state = std::make_shared<QuantumCHPState>(system_size);
     }
 
 		virtual void equilibration_timesteps(uint32_t num_steps) override {
