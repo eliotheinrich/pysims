@@ -9,7 +9,7 @@ from job_controller import submit_jobs
 import numpy as np
 
 if __name__ == "__main__":
-    num_nodes = 3
+    num_nodes = 1
 
     L = [8, 16, 32]
     param_matrix = generate_config(
@@ -29,4 +29,4 @@ if __name__ == "__main__":
         num_runs=60
     )
 
-    submit_jobs(f"bipartite_magic_mc_64", param_bundle=param_matrix, ncores=64, memory="10gb", time="36:00:00", nodes=num_nodes, cleanup=False, run_local=False)
+    #submit_jobs(f"bipartite_magic_mc_64", param_bundle=param_matrix, ncores=64, memory="10gb", time="36:00:00", nodes=num_nodes, cleanup=False, run_local=False)
