@@ -38,7 +38,6 @@ class JobContext:
             data = resume_run(data, callback, self.metaparams, self.serialize)
             return data
 
-
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("job_name", type=str, help="Name of a job to be executed.")

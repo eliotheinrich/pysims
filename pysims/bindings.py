@@ -103,15 +103,16 @@ pyneural_simulators = {
 
 register("pyneural", pyneural_simulators)
 
-register("pyfermion", {"chain_fermion": "ChainSimulator", "adaptive_fermion": "AdaptiveFermionSimulator"})
+register("pyqca", {"qca": "QCASimulator"})
+
 
 def prepare_config(params, serialize):
-    circuit_type = params["circuit_type"]
-    if circuit_type in simulators:
-        simulator_generator = simulators[circuit_type]
+    config_type = params["config_type"]
+    if config_type in simulators:
+        simulator_generator = simulators[config_type]
         return SimulatorConfig(params, simulator_generator, serialize)
     else:
-        return CppConfig(params, config_types[circuit_type])
+        return CppConfig(params, config_types[config_type])
 
 def resume_run(frame, callback=None, metaparams=None, serialize=False):
     if callback is None:
