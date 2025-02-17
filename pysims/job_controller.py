@@ -2,18 +2,15 @@ import subprocess
 import os
 import shutil
 import json
-import dill
-from collections.abc import Iterable
+import dill as pkl
 
-from combine_data import combine_data
-from do_run import JobContext
+from .combine_data import combine_data
+from .do_run import JobContext, load_job_args, dump_job_args
 
-from dataframe import DataFrame, unbundle_params
+from dataframe import DataFrame, unbundle_param_matrix
 
 
 WORKING_DIR = os.environ["WORKING_DIR"]
-DO_RUN_FILE = os.path.join(WORKING_DIR, "do_run.py")
-COMBINE_DATA_FILE = os.path.join(WORKING_DIR, "combine_data.py")
 DATA_DIR = os.path.join(WORKING_DIR, "data")
 
 
@@ -76,10 +73,13 @@ def submit_and_get_id(script_path, dependency=None):
 
 
 def create_arg_file(job_name, context, job_data, job_args):
-    args = (context, job_data, job_args)
+    #args = (context, job_data, job_args)
+    #filename = os.path.join(context.dir, f"{job_name}.pkl")
+    #with open(filename, "wb") as file:
+    #    pkl.dump(args, file)
+    #return filename
     filename = os.path.join(context.dir, f"{job_name}.pkl")
-    with open(filename, "wb") as file:
-        dill.dump(args, file)
+    dump_job_args(filename, context, job_data, job_args)
     return filename
 
 
@@ -97,7 +97,7 @@ def generate_run_script(job_name, context, arg_file):
         f"module load miniconda3/miniconda",
         f"conda activate test",
         f"cd {context.dir}",
-        f"python {DO_RUN_FILE} {job_name} {arg_file}"
+        f"python -c 'from pysims.do_run import main; main(\"{job_name}\", \"{arg_file}\")'"
     ]
 
     return '\n'.join(script)
@@ -145,7 +145,7 @@ def do_run_slurm(context, job_data, job_args, metaparams, num_nodes, checkpoint_
         f"module load miniconda3/miniconda",
         f"conda activate test",
 
-        f"python {COMBINE_DATA_FILE} {context.name} {context.dir} {context.ext} {num_checkpoints}",
+        f"python -c 'from pysims.combine_data import main; main(\"{context.name}\", \"{context.dir}\", \"{context.ext}\", {num_checkpoints})'",
         f"mv -f {os.path.join(context.dir, context.name + '.' + context.ext)} {DATA_DIR}",
     ]
 
@@ -162,15 +162,15 @@ def do_run_slurm(context, job_data, job_args, metaparams, num_nodes, checkpoint_
 
 def submit_jobs(
         job_name,
+        config_generator,
         param_bundle=None,
         checkpoint_file=None,
         init_callback=None,
         cleanup=True,
-        memory="5gb", 
-        time="24:00:00", 
-        ncores=64, 
-        ncores_per_task=1, 
-        partition="default",
+        memory="5gb",
+        time="24:00:00",
+        ncores=1,
+        partition=None,
         nodes=1,
         run_local=False,
         atol=1e-5,
@@ -184,26 +184,20 @@ def submit_jobs(
 
     if checkpoint_callbacks is None:
         checkpoint_callbacks = []
-    num_checkpoints = len(checkpoint_callbacks)
-
-    serialize = num_checkpoints > 0
 
     metaparams = {
         "num_threads": ncores,
-        "num_threads_per_task": ncores_per_task,
 
         "atol": atol,
         "rtol": rtol,
 
         "parallelization_type": parallelization_type,
 
-        "serialize": serialize,
-
         "batch_size": batch_size,
         "verbose": verbose,
     }
 
-    if partition == "default":
+    if partition is None:
         if int(ncores) >= 48:
             partition = "exclusive"
         else:
@@ -215,16 +209,18 @@ def submit_jobs(
             shutil.rmtree(case_dir)
         os.mkdir(case_dir)
 
-    context = JobContext(job_name, case_dir, ext, partition, nodes, ncores, memory, time, cleanup, serialize, metaparams)
+    context = JobContext(job_name, config_generator, case_dir, ext, partition, nodes, ncores, memory, time, cleanup, metaparams)
 
     if checkpoint_file is None:
-        params = unbundle_params(param_bundle)
+        params = unbundle_param_matrix(param_bundle)
         verify_callbacks(params, checkpoint_callbacks)
         job_data = params
         job_args = None
     elif param_bundle is None:
         job_data = checkpoint_file
         job_args = init_callback
+
+    context.test_config_generator(job_data)
 
     if run_local:
         do_run_locally(context, job_data, job_args, metaparams, nodes, checkpoint_callbacks)

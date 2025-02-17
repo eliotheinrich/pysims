@@ -34,19 +34,7 @@ def combine_data(job_name, dir, num_checkpoints=None):
     return data
 
 
-if __name__ == "__main__":
-    parser = argparse.ArgumentParser()
-    parser.add_argument("job_name", type=str, help="Name of the job.")
-    parser.add_argument("directory", type=str, help="Case directory.")
-    parser.add_argument("extension", type=str, help="Data file extension.")
-    parser.add_argument("num_checkpoints", type=str, help="Number of checkpoints so that only final checkpoint file is loaded.")
-    args = parser.parse_args()
-
-    job_name = args.job_name
-    dir = args.directory
-    ext = args.extension
-    num_checkpoints = args.num_checkpoints
-
-    data = combine_data(job_name, dir, num_checkpoints)
-    data_filename = os.path.join(dir, f'{job_name}.{ext}')
+def main(job_name, directory, extension, num_checkpoints):
+    data = combine_data(job_name, directory, num_checkpoints)
+    data_filename = os.path.join(directory, f'{job_name}.{extension}')
     data.write(data_filename)
