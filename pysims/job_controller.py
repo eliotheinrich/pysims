@@ -12,7 +12,30 @@ from dataframe import DataFrame, unbundle_param_matrix
 
 WORKING_DIR = os.environ["WORKING_DIR"]
 DATA_DIR = os.path.join(WORKING_DIR, "data")
+CONDA_ENV = "test"
+MODULES = ["miniconda/3"]
 
+def andromeda2_get_partition(time):
+    if '-' in time:
+        days_part, time_part = time.split('-')
+        days = int(days_part)
+    else:
+        days = 0
+        time_part = time
+    
+    hours, minutes, seconds = map(int, time_part.split(":"))
+    
+    total_seconds = days * 86400 + hours * 3600 + minutes * 60 + seconds
+    
+    short_time = 12 * 3600 # 12 hours
+    medium_time = 48 * 3600 # 2 days
+    
+    if total_seconds < short_time:
+        return "short"
+    elif short_time <= total_seconds <= medium_time:
+        return "medium"
+    else:
+        return "long"
 
 def save_config(config, filename):
     config = json.dumps(config, indent=1)
@@ -73,11 +96,6 @@ def submit_and_get_id(script_path, dependency=None):
 
 
 def create_arg_file(job_name, context, job_data, job_args):
-    #args = (context, job_data, job_args)
-    #filename = os.path.join(context.dir, f"{job_name}.pkl")
-    #with open(filename, "wb") as file:
-    #    pkl.dump(args, file)
-    #return filename
     filename = os.path.join(context.dir, f"{job_name}.pkl")
     dump_job_args(filename, context, job_data, job_args)
     return filename
@@ -87,18 +105,20 @@ def generate_run_script(job_name, context, arg_file):
     output_path = os.path.join(WORKING_DIR, f"slurm.{job_name}.%j.out")
     script = [
         f"#!/usr/bin/bash",
-        f"#SBATCH --partition={context.partition}",
         f"#SBATCH --job-name={job_name}",
         f"#SBATCH --output={output_path}",
         f"#SBATCH --cpus-per-task={context.ncores}",
         f"#SBATCH --nodes=1 --ntasks=1",
         f"#SBATCH --mem={context.memory}",
         f"#SBATCH --time={context.time}",
-        f"module load miniconda3/miniconda",
-        f"conda activate test",
+        f"module load {' '.join(MODULES)}",
+        f"conda activate {CONDA_ENV}",
         f"cd {context.dir}",
         f"python -c 'from pysims.do_run import main; main(\"{job_name}\", \"{arg_file}\")'"
     ]
+
+    if context.partition is not None:
+        script.insert(2, f"#SBATCH --partition={context.partition}")
 
     return '\n'.join(script)
 
@@ -134,7 +154,6 @@ def do_run_slurm(context, job_data, job_args, metaparams, num_nodes, checkpoint_
     num_checkpoints = len(checkpoint_callbacks)
     combine_script = [
         f"#!/usr/bin/bash",
-        f"#SBATCH --partition=shared",
         f"#SBATCH --job-name={context.name}",
         f"#SBATCH --output={output_path}"
         f"#SBATCH --cpus-per-task=1",
@@ -142,8 +161,8 @@ def do_run_slurm(context, job_data, job_args, metaparams, num_nodes, checkpoint_
         f"#SBATCH --mem=50gb",
         f"#SBATCH --time=00:30:00",
 
-        f"module load miniconda3/miniconda",
-        f"conda activate test",
+        f"module load {' '.join(MODULES)}",
+        f"conda activate {CONDA_ENV}",
 
         f"python -c 'from pysims.combine_data import main; main(\"{context.name}\", \"{context.dir}\", \"{context.ext}\", {num_checkpoints})'",
         f"mv -f {os.path.join(context.dir, context.name + '.' + context.ext)} {DATA_DIR}",
@@ -197,18 +216,12 @@ def submit_jobs(
         "verbose": verbose,
     }
 
-    if partition is None:
-        if int(ncores) >= 48:
-            partition = "exclusive"
-        else:
-            partition = "shared"
-
     case_dir = os.path.join(WORKING_DIR, f"cases/{job_name}_case")
     if os.path.exists(case_dir):
         shutil.rmtree(case_dir)
     os.mkdir(case_dir)
 
-    context = JobContext(job_name, config_generator, case_dir, ext, partition, nodes, ncores, memory, time, cleanup, metaparams)
+    context = JobContext(job_name, config_generator, case_dir, ext, andromeda2_get_partition(time), nodes, ncores, memory, time, cleanup, metaparams)
 
     if checkpoint_file is None:
         params = unbundle_param_matrix(param_bundle)
