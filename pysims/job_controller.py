@@ -204,10 +204,9 @@ def submit_jobs(
             partition = "shared"
 
     case_dir = os.path.join(WORKING_DIR, f"cases/{job_name}_case")
-    if checkpoint_file is None:
-        if os.path.exists(case_dir):
-            shutil.rmtree(case_dir)
-        os.mkdir(case_dir)
+    if os.path.exists(case_dir):
+        shutil.rmtree(case_dir)
+    os.mkdir(case_dir)
 
     context = JobContext(job_name, config_generator, case_dir, ext, partition, nodes, ncores, memory, time, cleanup, metaparams)
 

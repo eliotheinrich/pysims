@@ -70,20 +70,23 @@ class JobContext:
         self.cleanup = cleanup
         self.metaparams = metaparams
 
+        if self.config_generator_name == "<lambda>":
+            raise RuntimeError("Cannot provide a lambda function as config_generator.")
+
+
     def execute(self, job_data, *job_args):
         if isinstance(job_data, list):
             params = job_data
             configs = [make_config(self.config_generator, self.config_generator_name, param) for param in params]
-            #configs = [self.config_generator(param) for param in params]
             return compute(configs, **self.metaparams)
         elif isinstance(job_data, str):
             file_name = job_data
             frame = load_data(os.path.join(self.dir, file_name))
             return self.execute(frame, *job_args)
         elif isinstance(job_data, DataFrame):
+            # Checkpoint file
             data = job_data
             callback, = job_args
-            # TODO revisit
             return resume_run(self.config_generator, self.config_generator_name, data, callback, self.metaparams)
 
     def get_params(self, job_data):
