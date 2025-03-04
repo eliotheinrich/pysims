@@ -55,7 +55,7 @@ Statevector quantum_ising_ground_state(size_t num_qubits, double h) {
 }
 
 
-class QuantumIsingTestConfig {
+class QuantumIsingConfig {
   public:
     size_t system_size;
     size_t bond_dimension;
@@ -68,7 +68,7 @@ class QuantumIsingTestConfig {
     QuantumStateSampler quantum_sampler;
     EntropySampler entropy_sampler;
 
-    QuantumIsingTestConfig(dataframe::ExperimentParams &params) : quantum_sampler(params), entropy_sampler(params) {
+    QuantumIsingConfig(dataframe::ExperimentParams &params) : quantum_sampler(params), entropy_sampler(params) {
       system_size = dataframe::utils::get<int>(params, "system_size", 1);
       bond_dimension = dataframe::utils::get<int>(params, "bond_dimension", 64);
       h = dataframe::utils::get<double>(params, "h");

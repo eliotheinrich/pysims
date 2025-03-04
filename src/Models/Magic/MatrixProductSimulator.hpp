@@ -5,6 +5,7 @@
 
 #define MPSS_PROJECTIVE 0
 #define MPSS_WEAK 1
+#define MPSS_NONE 2
 
 #define MPSS_HAAR 0
 #define MPSS_CLIFFORD 1
@@ -34,6 +35,8 @@ class MatrixProductSimulator : public Simulator {
     int measurement_type;
     int unitary_type;
 
+    int mps_debug_level;
+
     QuantumStateSampler quantum_sampler;
 
     CliffordTable z2_table;
@@ -42,29 +45,25 @@ class MatrixProductSimulator : public Simulator {
 
     void measurement_layer() {
       if (measurement_type == MPSS_PROJECTIVE) {
-        std::vector<MeasurementData> measurements;
         for (uint32_t i = 0; i < system_size-1; i++) {
           if (randf() < beta) {
             if (randf() < p) {
-              measurements.push_back({TWO_QUBIT_PAULI, {i, i+1}});
+              state->measure(TWO_QUBIT_PAULI, {i, i+1});
             } else {
-              measurements.push_back({ONE_QUBIT_PAULI, {i}});
+              state->measure(ONE_QUBIT_PAULI, {i});
             }
           }
         }
-
-        state->measure(measurements);
-      } else { 
-        std::vector<WeakMeasurementData> measurements;
+      } else if (measurement_type == MPSS_WEAK) { 
         for (uint32_t i = 0; i < system_size-1; i++) {
           if (randf() < p) {
-            measurements.push_back({TWO_QUBIT_PAULI, {i, i+1}, beta});
+            state->weak_measure(TWO_QUBIT_PAULI, {i, i+1}, beta);
           } else {
-            measurements.push_back({ONE_QUBIT_PAULI, {i}, beta});
+            state->weak_measure(ONE_QUBIT_PAULI, {i}, beta);
           }
         }
-
-        state->weak_measure(measurements);
+      } else if (measurement_type == MPSS_NONE) {
+        return;
       }
     }
 
@@ -91,10 +90,13 @@ class MatrixProductSimulator : public Simulator {
 
       measurement_type = dataframe::utils::get<int>(params, "measurement_type", MPSS_PROJECTIVE);
       unitary_type = dataframe::utils::get<int>(params, "unitary_type", MPSS_HAAR);
+      mps_debug_level = dataframe::utils::get<int>(params, "mps_debug_level", 0);
 
       offset = false;
 
       state = std::make_shared<MatrixProductState>(system_size, bond_dimension);
+      state->set_debug_level(mps_debug_level);
+
       state->seed(rand());
 
       PauliMutationFunc z2_mutation = [](PauliString& p, std::minstd_rand& rng) {

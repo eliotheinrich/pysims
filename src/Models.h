@@ -22,7 +22,7 @@
 #include <VQSECircuitConfig.hpp>
 
 #include <MagicTestConfig.hpp>
-#include <QuantumIsingTestConfig.hpp>
+#include <QuantumIsingConfig.hpp>
 #include <MatrixProductSimulator.hpp>
 
 // Miscellaneous models
