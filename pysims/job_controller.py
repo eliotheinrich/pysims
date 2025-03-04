@@ -82,7 +82,7 @@ def submit_and_get_id(script_path, dependency=None):
             if isinstance(dependency, str) or isinstance(dependency, int):
                 dependency = [dependency]
             dependency = ':'.join(dependency)
-            command.append(f'--dependency=afterok:{dependency}')
+            command.append(f'--dependency=afterany:{dependency}')
         command.append(script_path)
         result = subprocess.run(command, capture_output=True, text=True, check=True)
 
