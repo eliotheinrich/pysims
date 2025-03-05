@@ -35,8 +35,6 @@ class MatrixProductSimulator : public Simulator {
     int measurement_type;
     int unitary_type;
 
-    int mps_debug_level;
-
     QuantumStateSampler quantum_sampler;
 
     CliffordTable z2_table;
@@ -90,13 +88,14 @@ class MatrixProductSimulator : public Simulator {
 
       measurement_type = dataframe::utils::get<int>(params, "measurement_type", MPSS_PROJECTIVE);
       unitary_type = dataframe::utils::get<int>(params, "unitary_type", MPSS_HAAR);
-      mps_debug_level = dataframe::utils::get<int>(params, "mps_debug_level", 0);
+      int mps_debug_level = dataframe::utils::get<int>(params, "mps_debug_level", 0);
+      int mps_orthogonality_level = dataframe::utils::get<int>(params, "mps_orthogonality_level", 1);
 
       offset = false;
 
       state = std::make_shared<MatrixProductState>(system_size, bond_dimension);
       state->set_debug_level(mps_debug_level);
-
+      state->set_orthogonality_level(mps_orthogonality_level);
       state->seed(rand());
 
       PauliMutationFunc z2_mutation = [](PauliString& p, std::minstd_rand& rng) {

@@ -64,6 +64,8 @@ class QuantumIsingConfig {
     int state_type;
     double h;
     double delta;
+    
+    int orthogonality_level;
 
     QuantumStateSampler quantum_sampler;
     EntropySampler entropy_sampler;
@@ -76,6 +78,8 @@ class QuantumIsingConfig {
       num_sweeps = dataframe::utils::get<int>(params, "num_sweeps", 10);
 
       state_type = dataframe::utils::get(params, "state_type", QIT_MPS);
+
+      orthogonality_level = dataframe::utils::get(params, "orthogonality_level", 1);
 
       auto xxz_mutation = [](PauliString& p, std::minstd_rand& rng) {
         PauliString pnew(p);
@@ -111,7 +115,9 @@ class QuantumIsingConfig {
 
       std::shared_ptr<QuantumState> state;
       if (state_type == QIT_MPS) {
-        state = std::make_shared<MatrixProductState>(MatrixProductState::ising_ground_state(system_size, h, bond_dimension, 1e-8, num_sweeps));
+        MatrixProductState mps = MatrixProductState::ising_ground_state(system_size, h, bond_dimension, 1e-8, num_sweeps);
+        mps.set_orthogonality_level(orthogonality_level);
+        state = std::make_shared<MatrixProductState>(mps);
       } else if (state_type == QIT_STATEVECTOR) {
         state = std::make_shared<Statevector>(quantum_ising_ground_state(system_size, h));
       }
