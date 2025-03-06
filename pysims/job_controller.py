@@ -186,7 +186,7 @@ def submit_jobs(
         checkpoint_file=None,
         init_callback=None,
         cleanup=True,
-        num_runs=1,
+        nruns=1,
         memory="5gb",
         time="24:00:00",
         ncores=1,
@@ -207,7 +207,7 @@ def submit_jobs(
 
     metaparams = {
         "num_threads": ncores,
-        "num_runs": num_runs,
+        "num_runs": nruns,
 
         "atol": atol,
         "rtol": rtol,
@@ -219,9 +219,10 @@ def submit_jobs(
     }
 
     case_dir = os.path.join(WORKING_DIR, f"cases/{job_name}_case")
-    if os.path.exists(case_dir):
-        shutil.rmtree(case_dir)
-    os.mkdir(case_dir)
+    if checkpoint_file is None:
+        if os.path.exists(case_dir):
+            shutil.rmtree(case_dir)
+        os.mkdir(case_dir)
 
     context = JobContext(job_name, config_generator, case_dir, ext, andromeda2_get_partition(time), nodes, ncores, memory, time, cleanup, metaparams)
 
