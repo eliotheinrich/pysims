@@ -131,10 +131,8 @@ class JobContext:
 
 def main(job_name, arg_file):
     context, job_data, job_args = load_job_args(arg_file)
-    #with open(arg_file, "rb") as file:
-        #context, job_data, job_args = pkl.load(file)
 
     data = context.execute(job_data, job_args)
 
-    data_filename = os.path.join(context.dir, f'{job_name}.eve')
+    data_filename = os.path.join(context.dir, f"{job_name}.eve")
     data.write(data_filename)

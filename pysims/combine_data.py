@@ -15,6 +15,7 @@ def combine_data(job_name, dir, num_checkpoints=None):
     total_time = []
     num_jobs = []
     num_threads = []
+    num_runs = []
     for file in os.listdir(dir):
         m = re.search(pattern, file)
         if m is not None:
@@ -22,14 +23,16 @@ def combine_data(job_name, dir, num_checkpoints=None):
             _data = load_data(os.path.join(dir, file))
             total_time.append(_data.metadata["total_time"])
             num_jobs.append(_data.metadata["num_jobs"])
+            num_runs.append(_data.metadata["num_runs"])
             num_threads.append(_data.metadata["num_threads"])
 
             data += _data
             data.reduce()
 
-    data.add_metadata('total_time', max(total_time))
-    data.add_metadata('num_jobs', sum(num_jobs))
-    data.add_metadata('num_threads', sum(num_threads))
+    data.add_metadata("total_time", max(total_time))
+    data.add_metadata("num_jobs", sum(num_jobs))
+    data.add_metadata("num_threads", sum(num_threads))
+    data.add_metadata("num_runs", sum(num_runs))
 
     return data
 

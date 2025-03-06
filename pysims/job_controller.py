@@ -186,6 +186,7 @@ def submit_jobs(
         checkpoint_file=None,
         init_callback=None,
         cleanup=True,
+        num_runs=1,
         memory="5gb",
         time="24:00:00",
         ncores=1,
@@ -206,6 +207,7 @@ def submit_jobs(
 
     metaparams = {
         "num_threads": ncores,
+        "num_runs": num_runs,
 
         "atol": atol,
         "rtol": rtol,
