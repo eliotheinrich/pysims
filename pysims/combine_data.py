@@ -21,12 +21,15 @@ def combine_data(job_name, dir, num_checkpoints=None):
         if m is not None:
             print(f"{file} matches pattern")
             _data = load_data(os.path.join(dir, file))
-            total_time.append(_data.metadata["total_time"])
-            num_jobs.append(_data.metadata["num_jobs"])
-            num_runs.append(_data.metadata["num_runs"])
-            num_threads.append(_data.metadata["num_threads"])
 
-            data += _data
+            try:
+                data += _data
+                total_time.append(_data.metadata["total_time"])
+                num_jobs.append(_data.metadata["num_jobs"])
+                num_runs.append(_data.metadata["num_runs"])
+                num_threads.append(_data.metadata["num_threads"])
+            except ValueError as e:
+                print(f"Could not add data for some reason")
             data.reduce()
 
     data.add_metadata("total_time", max(total_time))
