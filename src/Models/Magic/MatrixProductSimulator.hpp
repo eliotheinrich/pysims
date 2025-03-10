@@ -96,7 +96,17 @@ class MatrixProductSimulator : public Simulator {
       state = std::make_shared<MatrixProductState>(system_size, bond_dimension);
       state->set_debug_level(mps_debug_level);
       state->set_orthogonality_level(mps_orthogonality_level);
-      state->seed(rand());
+
+      std::string filename = dataframe::utils::get<std::string>(params, "filename", "");
+      int s;
+      if (filename != "") {
+        s = load_seed(filename);
+        std::cout << fmt::format("Found filename = {}, loaded seed = {}\n", filename, s);
+      } else {
+        s = rand();
+      }
+      QuantumState::seed(s);
+      seed(s);
 
       PauliMutationFunc z2_mutation = [](PauliString& p, std::minstd_rand& rng) {
         size_t n = p.num_qubits;
