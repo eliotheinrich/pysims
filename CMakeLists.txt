@@ -23,7 +23,6 @@ if (${CMAKE_CXX_COMPILER_ID} STREQUAL "Intel")
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -diag-disable=2196")
 endif()
 
-set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin)
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/lib)
 
 set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS} -g -DDEBUG -DSERIAL")
@@ -81,14 +80,14 @@ endif()
 FetchContent_Declare(
   glaze
   GIT_REPOSITORY https://github.com/stephenberry/glaze.git
-  GIT_TAG main
+  GIT_TAG cc4ce0efe5133c23ec55f07d9e753f7dd1abb0b8
 )
 list(APPEND EXTERNALS glaze)
 
 FetchContent_Declare(
     eigen
     GIT_REPOSITORY https://gitlab.com/libeigen/eigen
-    GIT_TAG master
+    GIT_TAG 3.4
     GIT_SHALLOW TRUE
     GIT_PROGRESS TRUE
 )
@@ -101,9 +100,9 @@ list(APPEND EXTERNALS eigen)
 FetchContent_MakeAvailable(${EXTERNALS})
 
 include_directories(
+    ${glaze_SOURCE_DIR}/include
     ${dataframe_SOURCE_DIR}/src
     ${utils_SOURCE_DIR}/src
-    ${glaze_SOURCE_DIR}/include
     ${eigen_SOURCE_DIR}
 )
 
@@ -154,7 +153,7 @@ if (PS_BUILDING_PYTHON)
     )
 else()
     # --- MAIN --- #
-    add_executable(main src/main.cpp)
+    add_executable(main src/test.cpp)
     target_include_directories(main PRIVATE 
         src 
         ${MODEL_DIRS}
@@ -163,16 +162,4 @@ else()
     set(CMAKE_DEBUG_POSTFIX "d")
     set_target_properties(main PROPERTIES DEBUG_POSTFIX ${CMAKE_DEBUG_POSTFIX})
     target_link_libraries(main PUBLIC ${SIMULATOR_LIBS} dataframe)
-
-    # --- TEST --- #
-    add_executable(test_sim src/test.cpp)
-    target_link_libraries(test_sim ${Python_LIBRARIES})
-    target_include_directories(test_sim PRIVATE
-        src
-        ${MODEL_DIRS}
-        ${NB_DIR}/include
-    )
-
-    set_target_properties(test_sim PROPERTIES DEBUG_POSTFIX ${CMAKE_DEBUG_POSTFIX})
-    target_link_libraries(test_sim PUBLIC quantum_state clifford_state ${SIMULATOR_LIBS} dataframe blas lapack)
 endif()
