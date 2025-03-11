@@ -10,30 +10,31 @@ endif()
 find_program(CMAKE_C_COMPILER NAMES $ENV{CC} gcc PATHS ENV PATH NO_DEFAULT_PATH)
 find_program(CMAKE_CXX_COMPILER NAMES $ENV{CXX} g++ PATHS ENV PATH NO_DEFAULT_PATH)
 
-message("Build type: " ${CMAKE_BUILD_TYPE})
-message("Compiler: " ${CMAKE_CXX_COMPILER})
-
-set(CMAKE_POSITION_INDEPENDENT_CODE ON)
-
-#set(CMAKE_DEBUG_POSTFIX "d")
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-all -Wno-unused-function -Wno-deprecated-declarations -pthread")
+set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS} -g")
+set(CMAKE_DEBUG_POSTFIX "d")
+set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS} -O3")
+set(CMAKE_POSITION_INDEPENDENT_CODE ON)
+set(CMAKE_PREFIX_PATH "$ENV{CMAKE_PREFIX_PATH}")
+set(CMAKE_LIBRARY_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}/lib")
 
 # Ignore annoying Intel warnings
 if (${CMAKE_CXX_COMPILER_ID} STREQUAL "Intel")
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -diag-disable=2196")
 endif()
 
-set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/lib)
-
-set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS} -g -DDEBUG -DSERIAL")
-set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS} -O3")
-
-link_directories("$ENV{BLAS_DIR}" "$ENV{ITENSOR_DIR}/lib")
-
-
 # -------------------------------- #
-# ------ Fetching externals ------ #
+# ---- Fetching dependencies ----- #
 # -------------------------------- #
+
+#find_package(OpenBLAS CONFIG REQUIRED)
+
+find_package(fmt REQUIRED)
+add_definitions(-DFMT_HEADER_ONLY=On)
+
+foreach(PATH IN LISTS CMAKE_PREFIX_PATH)
+    include_directories("${PATH}/include")
+endforeach()
 
 include(FetchContent)
 
@@ -106,35 +107,33 @@ include_directories(
     ${eigen_SOURCE_DIR}
 )
 
+# Subdirectories append to MODELS_LIBS and MODELS_INCLUDE
+set(MODELS_LIBS)
+set(MODELS_INCLUDE)
+add_subdirectory(${CMAKE_SOURCE_DIR}/src/Models/RandomClifford)
+add_subdirectory(${CMAKE_SOURCE_DIR}/src/Models/QuantumAutomaton)
+add_subdirectory(${CMAKE_SOURCE_DIR}/src/Models/VQSE)
+add_subdirectory(${CMAKE_SOURCE_DIR}/src/Models/Magic)
+add_subdirectory(${CMAKE_SOURCE_DIR}/src/Models/XZCircuit)
+add_subdirectory(${CMAKE_SOURCE_DIR}/src/Models/MinCut)
+add_subdirectory(${CMAKE_SOURCE_DIR}/src/Models/BlockSim)
+add_subdirectory(${CMAKE_SOURCE_DIR}/src/Models/SelfOrganized)
+add_subdirectory(${CMAKE_SOURCE_DIR}/src/Models/GraphSim)
+add_subdirectory(${CMAKE_SOURCE_DIR}/src/Models/PostSelection)
+add_subdirectory(${CMAKE_SOURCE_DIR}/src/Models/BrickworkCircuit)
+add_subdirectory(${CMAKE_SOURCE_DIR}/src/Models/PartneringSim)
+add_subdirectory(${CMAKE_SOURCE_DIR}/src/Models/GroverSAT)
+add_subdirectory(${CMAKE_SOURCE_DIR}/src/Models/Phaseless)
+add_subdirectory(${CMAKE_SOURCE_DIR}/src/Models/Network)
+add_subdirectory(${CMAKE_SOURCE_DIR}/src/Models/EnvironmentSim)
+add_subdirectory(${CMAKE_SOURCE_DIR}/src/Models/BulkMeasurement)
+add_subdirectory(${CMAKE_SOURCE_DIR}/src/Models/RandomCircuitSampling)
+add_subdirectory(${CMAKE_SOURCE_DIR}/src/Models/RandomHamiltonian)
+add_subdirectory(${CMAKE_SOURCE_DIR}/src/Models/HQAmplitude)
+add_subdirectory(${CMAKE_SOURCE_DIR}/src/Models/CliffordClustering)
 
-set(VQSE_DIR ${CMAKE_SOURCE_DIR}/src/Models/VQSE)
-set(MAGIC_DIR ${CMAKE_SOURCE_DIR}/src/Models/Magic)
-set(XZCIRCUIT_DIR ${CMAKE_SOURCE_DIR}/src/Models/XZCircuit)
-set(QA_DIR ${CMAKE_SOURCE_DIR}/src/Models/QuantumAutomaton)
-set(RC_DIR ${CMAKE_SOURCE_DIR}/src/Models/RandomClifford)
-set(MC_DIR ${CMAKE_SOURCE_DIR}/src/Models/MinCut)
-set(BS_DIR ${CMAKE_SOURCE_DIR}/src/Models/BlockSim)
-set(SOC_DIR ${CMAKE_SOURCE_DIR}/src/Models/SelfOrganized)
-set(GS_DIR ${CMAKE_SOURCE_DIR}/src/Models/GraphSim)
-set(PS_DIR ${CMAKE_SOURCE_DIR}/src/Models/PostSelection)
-set(BW_DIR ${CMAKE_SOURCE_DIR}/src/Models/BrickworkCircuit)
-set(PARTNER_DIR ${CMAKE_SOURCE_DIR}/src/Models/PartneringSim)
-set(GROVERSAT_DIR ${CMAKE_SOURCE_DIR}/src/Models/GroverSAT)
-set(PHASELESS_DIR ${CMAKE_SOURCE_DIR}/src/Models/Phaseless)
-set(NETWORK_CLIFFORD_DIR ${CMAKE_SOURCE_DIR}/src/Models/Network)
-set(ENV_SIM_DIR ${CMAKE_SOURCE_DIR}/src/Models/EnvironmentSim)
-set(BULK_SIM_DIR ${CMAKE_SOURCE_DIR}/src/Models/BulkMeasurement)
-set(RCS_DIR ${CMAKE_SOURCE_DIR}/src/Models/RandomCircuitSampling)
-set(RH_DIR ${CMAKE_SOURCE_DIR}/src/Models/RandomHamiltonian)
-set(HQ_DIR ${CMAKE_SOURCE_DIR}/src/Models/HQAmplitude)
-set(CLIFFORD_CLUSTERING_DIR ${CMAKE_SOURCE_DIR}/src/Models/CliffordClustering)
-
-set(MODEL_DIRS ${CLIFFORD_CLUSTERING_DIR} ${RH_DIR} ${RCS_DIR} ${VQSE_DIR} ${MAGIC_DIR} ${XZCIRCUIT_DIR} ${QA_DIR} ${RC_DIR} ${MC_DIR} ${BS_DIR} ${SOC_DIR} ${GS_DIR} ${PS_DIR} ${BW_DIR} ${PARTNER_DIR} ${GROVERSAT_DIR} ${PHASELESS_DIR} ${NETWORK_CLIFFORD_DIR} ${ENV_SIM_DIR} ${BULK_SIM_DIR} ${HQ_DIR})
-set(SIMULATOR_LIBS quantum_automaton random_hamiltonian random_circuit_sampling mincut blocksim self_organized graphsim post_selection brickwork_circuit partnersim groversat phaseless network_clifford env_sim bulk_sim)
-
-foreach(DIR IN LISTS MODEL_DIRS) 
-    add_subdirectory(${DIR})
-endforeach()
+message("MODELS_LIBS = ${MODELS_LIBS}")
+message("MODELS_INCLUDE = ${MODELS_INCLUDE}")
 
 if (PS_BUILDING_PYTHON)
     nanobind_add_module(
@@ -144,8 +143,8 @@ if (PS_BUILDING_PYTHON)
         src/PySimulators.cpp
     )
     set_target_properties(pysimulators PROPERTIES POSITION_INDEPENDENT_CODE ON)
-    target_include_directories(pysimulators PRIVATE src ${MODEL_DIRS})
-    target_link_libraries(pysimulators PRIVATE ${SIMULATOR_LIBS} dataframe quantum_state quantum_circuit)
+    target_link_libraries(pysimulators PRIVATE ${MODELS_LIBS} dataframe)
+    target_include_directories(pysimulators PRIVATE ${MODELS_INCLUDE})
 
     install(
         TARGETS pysimulators
@@ -154,12 +153,7 @@ if (PS_BUILDING_PYTHON)
 else()
     # --- MAIN --- #
     add_executable(main src/test.cpp)
-    target_include_directories(main PRIVATE 
-        src 
-        ${MODEL_DIRS}
-    )
-
-    set(CMAKE_DEBUG_POSTFIX "d")
     set_target_properties(main PROPERTIES DEBUG_POSTFIX ${CMAKE_DEBUG_POSTFIX})
-    target_link_libraries(main PUBLIC ${SIMULATOR_LIBS} dataframe)
+    target_link_libraries(main PUBLIC ${MODELS_LIBS} dataframe)
+    target_include_directories(main PRIVATE src ${MODELS_INCLUDE})
 endif()

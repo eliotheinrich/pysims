@@ -2,3 +2,9 @@ add_library(blocksim
 	BlockSimulator.cpp
 	RPMSimulator.cpp
 )
+
+list(APPEND MODELS_LIBS blocksim)
+set(MODELS_LIBS "${MODELS_LIBS}" PARENT_SCOPE)
+
+list(APPEND MODELS_INCLUDE "${CMAKE_CURRENT_SOURCE_DIR}")
+set(MODELS_INCLUDE "${MODELS_INCLUDE}" PARENT_SCOPE)

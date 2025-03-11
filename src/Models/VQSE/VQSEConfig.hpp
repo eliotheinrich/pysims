@@ -113,7 +113,7 @@ class VQSEConfig {
       Eigen::setNbThreads(num_threads);
 
       if (!VQSEConfig::printed_ompi_threads) {
-        //std::cout << "OMP_NUM_THREADS for Eigen parallelization: " << Eigen::nbThreads() << std::endl;
+        //std::cout << fmt::format("OMP_NUM_THREADS for Eigen parallelization: {}\n", Eigen::nbThreads);
         VQSEConfig::printed_ompi_threads = true;
       }
 

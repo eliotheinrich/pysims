@@ -1,7 +1,7 @@
 #pragma once
 
 #include <Frame.h>
-#include <BinaryPolynomial.h>
+#include <LinearCode.h>
 
 #include <random>
 #include <unordered_set>
