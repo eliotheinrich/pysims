@@ -42,7 +42,7 @@ void RandomCircuitSamplingSimulator::brickwork_haar() {
 
   for (uint32_t q = 0; q < system_size; q++) {
     if (randf() < mzr_prob) {
-      state->mzr(q);
+      state->measure(Measurement::computational_basis(q));
     }
   }
 
@@ -58,7 +58,7 @@ void RandomCircuitSamplingSimulator::random_haar() {
 
   uint32_t q = rand() % system_size;
   if (randf() < mzr_prob/2) {
-    state->mzr(q);
+    state->measure(Measurement::computational_basis(q));
   }
 }
 

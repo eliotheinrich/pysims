@@ -254,7 +254,7 @@ class VQSEConfig {
         QuantumCircuit qc = generate_haar_circuit(num_qubits, target_depth);
 
         for (auto const& q : measured) {
-          qc.add_measurement(q);
+          qc.add_measurement(Measurement::computational_basis(q));
         }
 
         qc.append(generate_haar_circuit(num_qubits, post_measurement_layers));

@@ -107,10 +107,11 @@ class VQSECircuitConfig {
         QuantumCircuit target_d = prepare_target_circuit_to_depth(target, d);
 
         outputs.push_back(rng() % 2);
+        target_d.set_measurement_outcomes(outputs);
 
 
         target_state = Statevector(num_qubits);
-        target_state.evolve(target_d, outputs);
+        target_state.evolve(target_d);
 
         std::vector<double> params = initialize_params(ansatz.num_params());
         vqse = VQSE(ansatz, 1, num_iterations_per_layer, hamiltonian_type, update_frequency, sampling_type, num_shots, optimizer);
@@ -204,7 +205,7 @@ class VQSECircuitConfig {
 
         for (uint32_t q = 0; q < num_qubits; q++) {
           if (randf() < mzr_prob) {
-            circuit.add_measurement(q);
+            circuit.add_measurement(Measurement::computational_basis(q));
             depth++;
             if (depth == target_depth) {
               break;

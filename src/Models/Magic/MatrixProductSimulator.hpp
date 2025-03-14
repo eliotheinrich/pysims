@@ -46,18 +46,18 @@ class MatrixProductSimulator : public Simulator {
         for (uint32_t i = 0; i < system_size-1; i++) {
           if (randf() < beta) {
             if (randf() < p) {
-              state->measure(TWO_QUBIT_PAULI, {i, i+1});
+              state->measure(Measurement({i, i+1}, TWO_QUBIT_PAULI));
             } else {
-              state->measure(ONE_QUBIT_PAULI, {i});
+              state->measure(Measurement({i}, ONE_QUBIT_PAULI));
             }
           }
         }
       } else if (measurement_type == MPSS_WEAK) { 
         for (uint32_t i = 0; i < system_size-1; i++) {
           if (randf() < p) {
-            state->weak_measure(TWO_QUBIT_PAULI, {i, i+1}, beta);
+            state->weak_measure(WeakMeasurement({i, i+1}, beta, TWO_QUBIT_PAULI));
           } else {
-            state->weak_measure(ONE_QUBIT_PAULI, {i}, beta);
+            state->weak_measure(WeakMeasurement({i}, beta, ONE_QUBIT_PAULI));
           }
         }
       } else if (measurement_type == MPSS_NONE) {
