@@ -55,8 +55,7 @@ class MagicTestConfig {
         state = std::make_shared<MatrixProductState>(system_size, bond_dimension);
       }
 
-      thread_local std::random_device gen;
-      std::minstd_rand rng(gen());
+      std::minstd_rand rng(randi());
 
       QuantumCircuit qc(system_size);
       if (state_type == MTC_T_DOPED_CLIFFORD) {
@@ -77,14 +76,12 @@ class MagicTestConfig {
       }
 
       if (apply_random_clifford) {
-        thread_local std::random_device gen;
-        std::minstd_rand rng(gen());
         for (size_t k = 0; k < 3; k++) {
           for (size_t i = 0; i < system_size/2 - 1; i++) {
             uint32_t q1 = (k % 2) ? 2*i : 2*i + 1;
             uint32_t q2 = q1 + 1;
 
-            qc.append(random_clifford(2, rng), {q1, q2});
+            qc.append(random_clifford(2), {q1, q2});
           }
         }
       }

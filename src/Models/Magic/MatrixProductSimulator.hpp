@@ -54,11 +54,13 @@ class MatrixProductSimulator : public Simulator {
         }
       } else if (measurement_type == MPSS_WEAK) { 
         for (uint32_t i = 0; i < system_size-1; i++) {
+          bool b;
           if (randf() < p) {
-            state->weak_measure(WeakMeasurement({i, i+1}, beta, TWO_QUBIT_PAULI));
+            b = state->weak_measure(WeakMeasurement({i, i+1}, beta, TWO_QUBIT_PAULI));
           } else {
-            state->weak_measure(WeakMeasurement({i}, beta, ONE_QUBIT_PAULI));
+            b = state->weak_measure(WeakMeasurement({i}, beta, ONE_QUBIT_PAULI));
           }
+          std::cout << fmt::format("Measured {} on {}\n", b, i);
         }
       } else if (measurement_type == MPSS_NONE) {
         return;
@@ -67,12 +69,12 @@ class MatrixProductSimulator : public Simulator {
 
     void unitary(uint32_t i, uint32_t j) {
       if (unitary_type == MPSS_HAAR) {
-        Eigen::Matrix4cd gate = haar_unitary(2, rng);
+        Eigen::Matrix4cd gate = haar_unitary(2);
         state->evolve(gate, {i, j});
       } else if (unitary_type == MPSS_CLIFFORD) {
         state->random_clifford({i, j});
       } else if (unitary_type == MPSS_Z2_CLIFFORD) {
-        z2_table.apply_random(rng, {i, j}, *state.get());
+        z2_table.apply_random({i, j}, *state.get());
       } else {
         throw std::runtime_error(std::format("Invalid unitary type {}.", unitary_type));
       }
@@ -103,22 +105,21 @@ class MatrixProductSimulator : public Simulator {
         s = load_seed(filename);
         std::cout << fmt::format("Found filename = {}, loaded seed = {}\n", filename, s);
       } else {
-        s = rand();
+        s = randi();
       }
-      QuantumState::seed(s);
-      seed(s);
+      Random::seed_rng(s);
 
-      PauliMutationFunc z2_mutation = [](PauliString& p, std::minstd_rand& rng) {
+      PauliMutationFunc z2_mutation = [](PauliString& p) {
         size_t n = p.num_qubits;
         PauliString q(n);
-        if (rng() % 2) {
+        if (randi() % 2) {
           // Single-qubit mutation
-          q.set_z(rng() % n, 1);
+          q.set_z(randi() % n, 1);
         } else {
-          size_t i = rng() % n;
-          size_t j = rng() % n;
+          size_t i = randi() % n;
+          size_t j = randi() % n;
           while (j == i) {
-            j = rng() % n;
+            j = randi() % n;
           }
 
           q.set_x(i, 1);

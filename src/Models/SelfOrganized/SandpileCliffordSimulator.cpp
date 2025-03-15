@@ -93,7 +93,7 @@ SandpileCliffordSimulator::SandpileCliffordSimulator(ExperimentParams &params, u
 }
 
 void SandpileCliffordSimulator::mzr(uint32_t i) {
-  if (state->randf() < mzr_prob) {
+  if (randf() < mzr_prob) {
     // (maybe) record entropy surface for avalanche calculations
     std::vector<int> entropy_surface1;
     if (sample_avalanche_sizes && start_sampling) {
@@ -128,7 +128,7 @@ void SandpileCliffordSimulator::mzr(uint32_t i) {
 }
 
 void SandpileCliffordSimulator::unitary(uint32_t i) {
-  if (state->randf() < unitary_prob) {
+  if (randf() < unitary_prob) {
 
     std::vector<uint32_t> qubits;
     if (unitary_qubits == 2) {

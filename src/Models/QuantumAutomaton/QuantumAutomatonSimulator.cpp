@@ -38,7 +38,7 @@ void QuantumAutomatonSimulator::timesteps_brickwork(uint32_t num_steps) {
 		qa_timestep(state);
 
 		for (uint32_t j = 0; j < system_size; j++) {
-			if (state->randf() < mzr_prob) {
+			if (randf() < mzr_prob) {
 				state->mzr(j);
 				state->h(j);
 			}
@@ -52,12 +52,12 @@ uint32_t QuantumAutomatonSimulator::randpl() {
 
 void QuantumAutomatonSimulator::timesteps_powerlaw(uint32_t num_steps) {
 	for (uint32_t i = 0; i < num_steps; i++) {
-		uint32_t q1 = rand() % system_size;
+		uint32_t q1 = randi() % system_size;
 		uint32_t dq = randpl();
-		uint32_t q2 = (rand() % 2) ? mod(q1 + dq, system_size) : mod(q1 - dq, system_size);
+		uint32_t q2 = (randi() % 2) ? mod(q1 + dq, system_size) : mod(q1 - dq, system_size);
 
-		if (rand() % 2) {
-			if (rand() % 2) {
+		if (randi() % 2) {
+			if (randi() % 2) {
 				state->cx(q1, q2);
 			} else {
 				state->cx(q2, q1);

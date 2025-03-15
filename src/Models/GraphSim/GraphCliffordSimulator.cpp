@@ -56,7 +56,7 @@ void GraphCliffordSimulator::qa_timesteps(uint32_t num_steps) {
 		qa_timestep(state);
 
 		for (uint32_t j = 0; j < system_size; j++) {
-			if (state->randf() < mzr_prob) {
+			if (randf() < mzr_prob) {
 				mzr(j);
 			}
 		}
@@ -73,7 +73,7 @@ void GraphCliffordSimulator::rc_timesteps(uint32_t num_steps) {
 		rc_timestep(state, gate_width, offset_layer);
 
 		for (uint32_t j = 0; j < system_size; j++) {
-			if (state->randf() < mzr_prob) {
+			if (randf() < mzr_prob) {
 				mzr(j);
 			}
 		}

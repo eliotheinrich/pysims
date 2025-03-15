@@ -126,9 +126,9 @@ class VQSEConfig {
       // Randomly select qubits to measure
       std::vector<uint32_t> qubits(num_qubits);
       std::iota(qubits.begin(), qubits.end(), 0);
-      thread_local std::random_device rd;
-      std::mt19937 gen(rd());
-      std::shuffle(qubits.begin(), qubits.end(), gen);
+
+      std::minstd_rand rng(randi());
+      std::shuffle(qubits.begin(), qubits.end(), rng);
       std::vector<uint32_t> measured_qubits(qubits.begin(), qubits.begin() + num_measurements);
 
       target = VQSEConfig::prepare_target(num_qubits, target_depth, target_type, post_measurement_layers, measured_qubits, density_matrix_target);
@@ -309,14 +309,11 @@ class VQSEConfig {
 
       std::vector<double> params(num_params, 0.0);
 
-      thread_local std::random_device rd;
-      std::mt19937 gen(rd());
-
       if (params_init == ZERO_PARAMS) { // All params init to 0
                                         // Do nothing
       } else if (params_init == RANDOM_PARAMS) { // Randomly on [0, 2*pi]
         for (uint32_t i = 0; i < num_params; i++) {
-          params[i] = 2*PI*double(gen())/double(RAND_MAX);
+          params[i] = 2*PI*randf();
         }
       }
 
