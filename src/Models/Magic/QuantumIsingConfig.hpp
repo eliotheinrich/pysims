@@ -81,21 +81,21 @@ class QuantumIsingConfig {
 
       orthogonality_level = dataframe::utils::get(params, "orthogonality_level", 1);
 
-      auto xxz_mutation = [](PauliString& p, std::minstd_rand& rng) {
+      auto xxz_mutation = [](PauliString& p) {
         PauliString pnew(p);
-        if ((rng() % 2) || (p.num_qubits == 1)) {
+        if ((randi() % 2) || (p.num_qubits == 1)) {
           // Do single-qubit mutation
-          size_t j = rng() % p.num_qubits;
+          size_t j = randi() % p.num_qubits;
           PauliString Zj = PauliString(p.num_qubits);
           Zj.set_z(j, 1); 
 
           pnew = Zj * pnew;
         } else {
           // Do double-qubit mutation
-          size_t j1 = rng() % p.num_qubits;
-          size_t j2 = rng() % p.num_qubits;
+          size_t j1 = randi() % p.num_qubits;
+          size_t j2 = randi() % p.num_qubits;
           while (j2 == j1) {
-            j2 = rng() % p.num_qubits;
+            j2 = randi() % p.num_qubits;
           }
 
           PauliString Xij = PauliString(p.num_qubits);

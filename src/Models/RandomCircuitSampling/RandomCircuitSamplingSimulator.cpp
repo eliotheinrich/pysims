@@ -21,8 +21,6 @@ RandomCircuitSamplingSimulator::RandomCircuitSamplingSimulator(ExperimentParams 
   } else if (state_type == 1) {
     state = std::make_shared<MatrixProductState>(system_size, 64, 1e-8);
   }
-
-  state->seed(rand());
 }
 
 void RandomCircuitSamplingSimulator::full_haar() {

@@ -99,7 +99,7 @@ float SelfOrganizedCliffordSimulator::max_component_size() const {
 
 void SelfOrganizedCliffordSimulator::random_measure() {
 	for (uint32_t j = 0; j < system_size; j++) {
-		if (state->randf() < mzr_prob) {
+		if (randf() < mzr_prob) {
 			mzr(j);
 		}
 	}

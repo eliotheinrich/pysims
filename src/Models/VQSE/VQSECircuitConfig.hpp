@@ -25,14 +25,6 @@
 class VQSECircuitConfig {
   public:
     VQSECircuitConfig(dataframe::ExperimentParams &params) {
-      seed = dataframe::utils::get<int>(params, "seed", -1);
-      if (seed == -1) {
-        thread_local std::random_device rd;
-        seed = rd();
-      }
-
-      rng = std::minstd_rand(seed);
-
       // VQSE configuration
       num_qubits = dataframe::utils::get<int>(params, "num_qubits");			
 
@@ -106,7 +98,7 @@ class VQSECircuitConfig {
         ansatz.append(prepare_ansatz(2)); // Variational section
         QuantumCircuit target_d = prepare_target_circuit_to_depth(target, d);
 
-        outputs.push_back(rng() % 2);
+        outputs.push_back(randi() % 2);
         target_d.set_measurement_outcomes(outputs);
 
 
@@ -133,9 +125,6 @@ class VQSECircuitConfig {
 
   private:
     static bool printed_ompi_threads;
-
-    int seed;
-    std::minstd_rand rng;
 
     uint32_t num_qubits;
 
@@ -170,14 +159,6 @@ class VQSECircuitConfig {
     bool record_energy_levels;
     uint32_t num_energy_levels;
 
-    double randf() {
-      return double(rng())/double(RAND_MAX);
-    }
-
-    int rand() {
-      return rng();
-    }
-
     static std::vector<std::string> parse_rotation_gates(const std::string& s) {
       std::vector<std::string> gates;
       std::stringstream ss(s);
@@ -199,7 +180,7 @@ class VQSECircuitConfig {
           for (uint32_t q = 0; q < num_qubits/2; q++) {
             auto [q1, q2] = get_targets(i, q, num_qubits);
 
-            circuit.add_gate(haar_unitary(2, rng), {q1, q2});
+            circuit.add_gate(haar_unitary(2), {q1, q2});
           }
         }
 

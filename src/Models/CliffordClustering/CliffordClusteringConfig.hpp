@@ -124,7 +124,7 @@ class CliffordClusteringConfig {
         }
 
         for (size_t j = 0; j < num_qubits; j++) {
-          if (state.randf() < mzr_prob) {
+          if (randf() < mzr_prob) {
             state.mzr(j);
           }
         }

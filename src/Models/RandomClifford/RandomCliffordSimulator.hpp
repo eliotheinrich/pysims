@@ -89,35 +89,35 @@ class RandomCliffordSimulator : public Simulator {
       state->random_clifford(qbits);
 
       if (randf() < mzr_prob) {
-        mzr(rand() % system_size);
+        mzr(randi() % system_size);
       }
     }
 
     void timestep_random_nonlocal() {
-      uint32_t q1 = rand() % system_size;
-      uint32_t q2 = rand() % system_size;
+      uint32_t q1 = randi() % system_size;
+      uint32_t q2 = randi() % system_size;
       while (q2 == q1) {
-        q2 = rand() % system_size;
+        q2 = randi() % system_size;
       }
 
       std::vector<uint32_t> qbits{q1, q2};;
       state->random_clifford(qbits);
 
       if (randf() < mzr_prob) {
-        mzr(rand() % system_size);
+        mzr(randi() % system_size);
       }
     }
 
     void timestep_powerlaw() {
-      uint32_t q1 = rand() % system_size;
+      uint32_t q1 = randi() % system_size;
       uint32_t dq = randpl();
-      uint32_t q2 = (rand() % 2) ? mod(q1 + dq, system_size) : mod(q1 - dq, system_size);
+      uint32_t q2 = (randi() % 2) ? mod(q1 + dq, system_size) : mod(q1 - dq, system_size);
 
       std::vector<uint32_t> qbits{q1, q2};;
       state->random_clifford(qbits);
 
       if (randf() < mzr_prob) {
-        mzr(rand() % system_size);
+        mzr(randi() % system_size);
       }
     }
 
@@ -133,7 +133,7 @@ class RandomCliffordSimulator : public Simulator {
 
         // Apply measurements
         for (uint32_t j = 0; j < system_size; j++) {
-          if (state->randf() < mzr_prob) {
+          if (randf() < mzr_prob) {
             mzr(j);
           }
         }
@@ -182,13 +182,7 @@ class RandomCliffordSimulator : public Simulator {
 
       sample_sparsity = dataframe::utils::get<int>(params, "sample_sparsity", false);	
 
-      seed = dataframe::utils::get<int>(params, "seed", -1);
-      if (seed != - 1) {
-        CliffordState::seed(seed);
-      }
-
       start_sampling = false;
-
 
       state = std::make_shared<QuantumCHPState>(system_size);
     }

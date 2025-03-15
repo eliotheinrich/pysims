@@ -10,7 +10,7 @@ inline static void qa_layer(std::shared_ptr<CliffordState> state, bool offset, b
 		uint32_t qubit1 = offset ? (2*i + 1) % system_size : 2*i;
 		uint32_t qubit2 = offset ? (2*i + 2) % system_size : (2*i + 1) % system_size;
 
-		if (state->rand() % 2 == 0) {
+		if (randi() % 2 == 0) {
 			std::swap(qubit1, qubit2);
 		}
 
