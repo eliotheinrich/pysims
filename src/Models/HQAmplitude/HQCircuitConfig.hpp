@@ -3,7 +3,6 @@
 #include <Frame.h>
 #include <LinearCode.h>
 
-#include <random>
 #include <unordered_set>
 #include <memory>
 
@@ -28,14 +27,6 @@ static BinaryPolynomial cx_on_poly(const BinaryPolynomial& poly, size_t i, size_
 class HQCircuitConfig {
   public:
     HQCircuitConfig(dataframe::ExperimentParams& params) {
-      int seed = dataframe::utils::get<int>(params, "seed", 0);
-      if (seed == 0) {
-        thread_local std::random_device random_device;
-        rng.seed(random_device());
-      } else {
-        rng.seed(seed);
-      }
-
       k = dataframe::utils::get<int>(params, "k");
       m = std::pow(2, k);
       num_qubits = 3*m;
@@ -56,7 +47,7 @@ class HQCircuitConfig {
         double I = 0.0;
         uint32_t positive = 0;
         for (uint64_t z = 0; z < s; z++) {
-          Bitstring bits(z, poly.n);
+          BitString bits = BitString::from_bits(poly.n, z);
           if (poly.evaluate(bits)) {
             positive++;
           }
@@ -105,7 +96,7 @@ class HQCircuitConfig {
           }
 
           uint32_t rank = gamma.rank();
-          int f0 = poly.evaluate(Bitstring(poly.n));
+          int f0 = poly.evaluate(BitString(poly.n));
           double sign = std::pow(-1.0, double(r) + f0);
           return sign/(1u << rank);
         } else {
@@ -121,7 +112,7 @@ class HQCircuitConfig {
 
       std::unordered_set<size_t> s1;
       for (size_t q = 0; q < num_qubits; q++) {
-        Bitstring bits(q, num_qubits);
+        BitString bits = BitString::from_bits(num_qubits, q);
         if (bits.hamming_weight() % 2 == 0) {
           s1.insert(q);
         }
@@ -211,7 +202,7 @@ class HQCircuitConfig {
           uint64_t s = 1u << m;
           amplitudes = std::vector<double>(s);
           for (uint64_t z = 0; z < s; z++) {
-            Bitstring bits(z, m);
+            BitString bits = BitString::from_bits(m, z);
             BinaryPolynomial poly_z = poly.partial_evaluate(bits, inds);
             amplitudes[z] = calculate_amplitude(poly_z);
           }
@@ -219,7 +210,11 @@ class HQCircuitConfig {
           // Monte-Carlo calculation
           amplitudes = std::vector<double>(num_samples);
           for (uint32_t i = 0; i < num_samples; i++) {
-            Bitstring bits = Bitstring::random(m, rng);
+            BitString bits(m);
+            for (size_t j = 0; j < bits.size(); j++) {
+              bits[j] = randi();
+            }
+
             BinaryPolynomial poly_z = poly.partial_evaluate(bits, inds);
             amplitudes[i] = calculate_amplitude(poly_z);
           }
@@ -253,15 +248,4 @@ class HQCircuitConfig {
     uint32_t calculation_type;
     uint32_t num_samples;
     uint32_t num_polynomials;
-
-    std::minstd_rand rng;
-
-    int rand() {
-      return rng();
-    }
-
-    double randf() {
-      return double(rng())/double(RAND_MAX);
-    }
-
 };
