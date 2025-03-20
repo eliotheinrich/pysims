@@ -54,13 +54,11 @@ class MatrixProductSimulator : public Simulator {
         }
       } else if (measurement_type == MPSS_WEAK) { 
         for (uint32_t i = 0; i < system_size-1; i++) {
-          bool b;
           if (randf() < p) {
-            b = state->weak_measure(WeakMeasurement({i, i+1}, beta, TWO_QUBIT_PAULI));
+            state->weak_measure(WeakMeasurement({i, i+1}, beta, TWO_QUBIT_PAULI));
           } else {
-            b = state->weak_measure(WeakMeasurement({i}, beta, ONE_QUBIT_PAULI));
+            state->weak_measure(WeakMeasurement({i}, beta, ONE_QUBIT_PAULI));
           }
-          std::cout << fmt::format("Measured {} on {}\n", b, i);
         }
       } else if (measurement_type == MPSS_NONE) {
         return;
