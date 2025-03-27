@@ -29,7 +29,7 @@ def make_config(config_generator_script, config_generator_name, params):
     return locals["config"]
 
 
-def resume_run(config_generator, config_generator_name, frame, callback=None, metaparams=None):
+def resume_run(config_generator, config_generator_name, frame, metaparams, callback=None):
     if callback is None:
         def callback(x):
             return
@@ -43,10 +43,10 @@ def resume_run(config_generator, config_generator_name, frame, callback=None, me
         config.inject_buffer(buffer)
         configs.append(config)
 
-    if metaparams is None:
-        metaparams = frame.metadata
+    _metaparams = metaparams.copy()
+    _metaparams["num_runs"] = 1
 
-    new_frame = compute(configs, **metaparams)
+    new_frame = compute(configs, **_metaparams)
 
     num_slides = len(frame.slides)
     for n in range(num_slides):
@@ -87,7 +87,7 @@ class JobContext:
             # Checkpoint file
             data = job_data
             callback, = job_args
-            return resume_run(self.config_generator, self.config_generator_name, data, callback, self.metaparams)
+            return resume_run(self.config_generator, self.config_generator_name, data, self.metaparams, callback)
 
     def get_params(self, job_data):
         if isinstance(job_data, list):

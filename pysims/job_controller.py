@@ -22,14 +22,14 @@ def andromeda2_get_partition(time):
     else:
         days = 0
         time_part = time
-    
+
     hours, minutes, seconds = map(int, time_part.split(":"))
-    
+
     total_seconds = days * 86400 + hours * 3600 + minutes * 60 + seconds
-    
+
     short_time = 12 * 3600 # 12 hours
     medium_time = 48 * 3600 # 2 days
-    
+
     if total_seconds < short_time:
         return "short"
     elif short_time <= total_seconds <= medium_time:
@@ -57,7 +57,8 @@ def verify_callbacks(params, callbacks):
 
 def do_run_locally(context, job_data, job_args, metaparams, num_nodes, checkpoint_callbacks):
     for i in range(num_nodes):
-        data = context.execute(job_data, job_args, serialize=len(checkpoint_callbacks) > 0)
+        data = context.execute(job_data, job_args)
+        # data should be automatically serialized and added to data by now if needed
 
         for callback in checkpoint_callbacks:
             data = context.execute(data, callback)
@@ -65,11 +66,11 @@ def do_run_locally(context, job_data, job_args, metaparams, num_nodes, checkpoin
         data_filename = os.path.join(context.dir, f"{context.name}_{i}.{context.ext}")
         data.write(data_filename)
 
-    data = combine_data(context.name, context.dir)
+    data = combine_data(context.name, context.dir, metaparams["average_congruent_runs"])
+
     data_filename = os.path.join(context.dir, f"{context.name}.{context.ext}")
     data.write(data_filename)
     subprocess.run(["mv", "-f", data_filename, DATA_DIR])
-    mv_script = ["mv", "-f", data_filename, DATA_DIR]
 
     if context.cleanup:
         shutil.rmtree(context.dir)
@@ -167,7 +168,7 @@ def do_run_slurm(context, job_data, job_args, metaparams, num_nodes, checkpoint_
         f"module load {' '.join(MODULES)}",
         f"conda activate {CONDA_ENV}",
 
-        f"python -c 'from pysims.combine_data import main; main(\"{context.name}\", \"{context.dir}\", \"{context.ext}\", {num_checkpoints})'",
+        f"python -c 'from pysims.combine_data import main; main(\"{context.name}\", \"{context.dir}\", \"{context.ext}\", \"{average_congruent_runs}\", {num_checkpoints})'",
         f"mv -f {os.path.join(context.dir, context.name + '.' + context.ext)} {DATA_DIR}",
     ]
 
@@ -216,10 +217,14 @@ def submit_jobs(
         "rtol": rtol,
 
         "parallelization_type": parallelization_type,
+        "average_congruent_runs": True,
 
         "batch_size": batch_size,
         "verbose": verbose,
     }
+
+    if len(checkpoint_callbacks) > 0:
+        metaparams["serialize"] = True
 
     case_dir = os.path.join(WORKING_DIR, f"cases/{job_name}_case")
     if checkpoint_file is None:

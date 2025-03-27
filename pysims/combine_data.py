@@ -5,7 +5,7 @@ import os
 from dataframe import DataFrame, load_data
 
 
-def combine_data(job_name, dir, num_checkpoints=None):
+def combine_data(job_name, dir, avg, num_checkpoints=None):
     if num_checkpoints is None:
         pattern = f"{job_name}_(\\d+)(?:_(\\d+))?\\.(json|eve)"
     else:
@@ -30,7 +30,9 @@ def combine_data(job_name, dir, num_checkpoints=None):
                 num_threads.append(_data.metadata["num_threads"])
             except ValueError as e:
                 print(f"Could not add data for some reason")
-            data.reduce()
+
+            if avg:
+                data.reduce()
 
     data.add_metadata("total_time", max(total_time))
     data.add_metadata("num_jobs", sum(num_jobs))
@@ -40,7 +42,7 @@ def combine_data(job_name, dir, num_checkpoints=None):
     return data
 
 
-def main(job_name, directory, extension, num_checkpoints):
-    data = combine_data(job_name, directory, num_checkpoints)
-    data_filename = os.path.join(directory, f'{job_name}.{extension}')
+def main(job_name, directory, extension, avg, num_checkpoints):
+    data = combine_data(job_name, directory, avg, num_checkpoints)
+    data_filename = os.path.join(directory, f"{job_name}.{extension}")
     data.write(data_filename)
