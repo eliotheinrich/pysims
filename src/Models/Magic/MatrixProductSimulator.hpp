@@ -162,4 +162,13 @@ class MatrixProductSimulator : public Simulator {
 
       return samples;
     }
+
+    virtual std::vector<char> serialize() const override {
+      return state->serialize();
+    }
+
+    virtual void deserialize(const std::vector<char>& bytes) override {
+      state = std::make_shared<MatrixProductState>(system_size, bond_dimension);
+      state->deserialize(bytes);
+    }
 };

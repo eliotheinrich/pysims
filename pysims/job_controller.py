@@ -13,7 +13,7 @@ from dataframe import DataFrame, unbundle_param_matrix
 WORKING_DIR = os.environ["WORKING_DIR"]
 DATA_DIR = os.path.join(WORKING_DIR, "data")
 CONDA_ENV = "test"
-MODULES = ["miniconda/3"]
+MODULES = []
 
 def andromeda2_get_partition(time):
     if '-' in time:
@@ -57,7 +57,7 @@ def verify_callbacks(params, callbacks):
 
 def do_run_locally(context, job_data, job_args, metaparams, num_nodes, checkpoint_callbacks):
     for i in range(num_nodes):
-        data = context.execute(job_data, job_args)
+        data = context.execute(job_data, job_args, serialize=len(checkpoint_callbacks) > 0)
 
         for callback in checkpoint_callbacks:
             data = context.execute(data, callback)
@@ -104,13 +104,15 @@ def create_arg_file(job_name, context, job_data, job_args):
 def generate_run_script(job_name, context, arg_file):
     output_path = os.path.join(WORKING_DIR, f"slurm.{job_name}.%j.out")
     script = [
-        f"#!/usr/bin/bash",
+        f"#!/usr/bin/bash -l",
         f"#SBATCH --job-name={job_name}",
         f"#SBATCH --output={output_path}",
         f"#SBATCH --cpus-per-task={context.ncores}",
         f"#SBATCH --nodes=1 --ntasks=1",
         f"#SBATCH --mem={context.memory}",
         f"#SBATCH --time={context.time}",
+        f"source ~/build_setup",
+        "export OMP_NUM_THREADS=1",
         f"module load {' '.join(MODULES)}",
         f"conda activate {CONDA_ENV}",
         f"cd {context.dir}",
@@ -132,20 +134,20 @@ def do_run_slurm(context, job_data, job_args, metaparams, num_nodes, checkpoint_
 
         # Write scripts to files
         batch_script_filename = os.path.join(context.dir, f"{job_name_str}.sl")
-        with open(batch_script_filename, 'w') as f:
+        with open(batch_script_filename, "w") as f:
             f.write(script)
 
         # Run script
         ids[i] = submit_and_get_id(batch_script_filename)
 
         for j, callback in enumerate(checkpoint_callbacks, start=1):
-            job_name_str = f'{context.name}_{i}_{j}'
-            checkpoint_file = os.path.join(context.dir, f'{context.name}_{i}_{j-1}.eve')
+            job_name_str = f"{context.name}_{i}_{j}"
+            checkpoint_file = os.path.join(context.dir, f"{context.name}_{i}_{j-1}.eve")
             arg_file = create_arg_file(job_name_str, context, checkpoint_file, callback)
             script = generate_run_script(job_name_str, context, arg_file)
 
             batch_script_filename = os.path.join(context.dir, f"{job_name_str}.sl")
-            with open(batch_script_filename, 'w') as f:
+            with open(batch_script_filename, "w") as f:
                 f.write(script)
 
             ids[i] = submit_and_get_id(batch_script_filename, dependency=ids[i])
@@ -161,6 +163,7 @@ def do_run_slurm(context, job_data, job_args, metaparams, num_nodes, checkpoint_
         f"#SBATCH --mem=50gb",
         f"#SBATCH --time=00:30:00",
 
+        f"source ~/build_setup",
         f"module load {' '.join(MODULES)}",
         f"conda activate {CONDA_ENV}",
 
@@ -171,9 +174,9 @@ def do_run_slurm(context, job_data, job_args, metaparams, num_nodes, checkpoint_
     if context.cleanup:
         combine_script.append(f"rm -r {context.dir}")
 
-    combine_script = '\n'.join(combine_script)
-    combine_script_batch = os.path.join(context.dir, f'{context.name}_combine.sl')
-    with open(combine_script_batch, 'w') as file:
+    combine_script = "\n".join(combine_script)
+    combine_script_batch = os.path.join(context.dir, f"{context.name}_combine.sl")
+    with open(combine_script_batch, "w") as file:
         file.write(combine_script)
 
     submit_and_get_id(combine_script_batch, dependency=ids)

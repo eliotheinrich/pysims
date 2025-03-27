@@ -79,7 +79,7 @@ class JobContext:
             params = job_data
             configs = [make_config(self.config_generator, self.config_generator_name, param) for param in params]
             return compute(configs, **self.metaparams)
-        elif isinstance(job_data, str):
+        elif isinstance(job_data, str): # Filename
             file_name = job_data
             frame = load_data(os.path.join(self.dir, file_name))
             return self.execute(frame, *job_args)
@@ -110,15 +110,17 @@ class JobContext:
             unpickle_script = [
                  "import dill as pkl",
                  "import os",
-                 "import numpy as np",
                  "from pysims import make_config",
+                 "import numpy as np",
                  "os.chdir(os.path.expanduser('~'))",
                 f"with open('{filename}', 'rb') as file:",
                  "  generator, name = pkl.load(file)",
                 f"  config = make_config(generator, name, {params[0]})"
             ]
 
-            result = subprocess.run([sys.executable, "-c", "\n".join(unpickle_script)], capture_output=True, text=True)
+            cmd = [sys.executable, "-c", "\n".join(unpickle_script)]
+
+            result = subprocess.run(cmd, capture_output=True, text=True)
 
             if result.returncode != 0:
                 error_message = result.stderr.strip()
