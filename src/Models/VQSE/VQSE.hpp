@@ -168,7 +168,7 @@ class VQSE {
 			double energy = 1.;
 
 			for (auto const &[b, p] : outcomes) {
-				for (uint32_t j = 0; j < ansatz.num_qubits; j++) {
+				for (uint32_t j = 0; j < ansatz.get_num_qubits(); j++) {
 					energy += r[j]*(2*int((b >> j) & 1) - 1)*p;
 				}
 			}
@@ -263,7 +263,7 @@ class VQSE {
 
 		inline double local_energy_by_bitstring(uint32_t z) const {
 			double energy = 1.;
-			for (uint32_t j = 0; j < ansatz.num_qubits; j++) {
+			for (uint32_t j = 0; j < ansatz.get_num_qubits(); j++) {
 				energy += r[j]*(2*int((z >> j) & 1) - 1);
 			}
 			
@@ -309,15 +309,15 @@ class VQSE {
 			std::random_device rd;
 			this->rng = std::mt19937(rd());
 
-			num_qubits = ansatz.num_qubits;
+			num_qubits = ansatz.get_num_qubits();
 
 			eigenvalue_estimates = std::vector<double>(m);
 			bitstring_estimates = std::vector<uint32_t>(m);
 			std::iota(bitstring_estimates.begin(), bitstring_estimates.end(), 0);
 
 			double d = 1./(2.*m);
-			r = std::vector<double>(ansatz.num_qubits);
-			for (uint32_t i = 0; i < ansatz.num_qubits; i++) {
+			r = std::vector<double>(ansatz.get_num_qubits());
+			for (uint32_t i = 0; i < ansatz.get_num_qubits(); i++) {
 				r[i] = 1. + double(i)*d;
 			}
 

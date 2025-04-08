@@ -36,6 +36,7 @@ class MatrixProductSimulator : public Simulator {
     int unitary_type;
 
     QuantumStateSampler quantum_sampler;
+    MagicStateSampler magic_sampler;
 
     CliffordTable z2_table;
 
@@ -80,7 +81,7 @@ class MatrixProductSimulator : public Simulator {
 
 	public:
     std::shared_ptr<MatrixProductState> state;
-		MatrixProductSimulator(dataframe::ExperimentParams &params, uint32_t num_threads) : Simulator(params), quantum_sampler(params), z2_table(get_z2_table()) {
+		MatrixProductSimulator(dataframe::ExperimentParams &params, uint32_t num_threads) : Simulator(params), quantum_sampler(params), magic_sampler(params), z2_table(get_z2_table()) {
       system_size = dataframe::utils::get<int>(params, "system_size");
       beta = dataframe::utils::get<double>(params, "beta");
       p = dataframe::utils::get<double>(params, "p");
@@ -89,13 +90,11 @@ class MatrixProductSimulator : public Simulator {
       measurement_type = dataframe::utils::get<int>(params, "measurement_type", MPSS_PROJECTIVE);
       unitary_type = dataframe::utils::get<int>(params, "unitary_type", MPSS_HAAR);
       int mps_debug_level = dataframe::utils::get<int>(params, "mps_debug_level", 0);
-      int mps_orthogonality_level = dataframe::utils::get<int>(params, "mps_orthogonality_level", 1);
 
       offset = false;
 
       state = std::make_shared<MatrixProductState>(system_size, bond_dimension);
       state->set_debug_level(mps_debug_level);
-      state->set_orthogonality_level(mps_orthogonality_level);
 
       std::string filename = dataframe::utils::get<std::string>(params, "filename", "");
       int s;
@@ -127,7 +126,7 @@ class MatrixProductSimulator : public Simulator {
         p = p * q;
       };
 
-      quantum_sampler.set_montecarlo_update(z2_mutation);
+      magic_sampler.set_montecarlo_update(z2_mutation);
     }
 
 		virtual void timesteps(uint32_t num_steps) override {
@@ -151,6 +150,7 @@ class MatrixProductSimulator : public Simulator {
       dataframe::utils::emplace(samples, "surface", surface);
 
       quantum_sampler.add_samples(samples, state);
+      magic_sampler.add_samples(samples, state);
 
       std::vector<double> bond_dimensions(system_size - 1);
       for (size_t i = 0; i < system_size - 1; i++) {

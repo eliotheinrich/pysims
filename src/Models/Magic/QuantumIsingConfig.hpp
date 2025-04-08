@@ -65,12 +65,11 @@ class QuantumIsingConfig {
     double h;
     double delta;
     
-    int orthogonality_level;
-
     QuantumStateSampler quantum_sampler;
+    MagicStateSampler magic_sampler;
     EntropySampler entropy_sampler;
 
-    QuantumIsingConfig(dataframe::ExperimentParams &params) : quantum_sampler(params), entropy_sampler(params) {
+    QuantumIsingConfig(dataframe::ExperimentParams &params) : quantum_sampler(params), magic_sampler(params), entropy_sampler(params) {
       system_size = dataframe::utils::get<int>(params, "system_size", 1);
       bond_dimension = dataframe::utils::get<int>(params, "bond_dimension", 64);
       h = dataframe::utils::get<double>(params, "h");
@@ -78,8 +77,6 @@ class QuantumIsingConfig {
       num_sweeps = dataframe::utils::get<int>(params, "num_sweeps", 10);
 
       state_type = dataframe::utils::get(params, "state_type", QIT_MPS);
-
-      orthogonality_level = dataframe::utils::get(params, "orthogonality_level", 1);
 
       auto xxz_mutation = [](PauliString& p) {
         PauliString pnew(p);
@@ -107,16 +104,15 @@ class QuantumIsingConfig {
         p = pnew;
       };
 
-      quantum_sampler.set_montecarlo_update(xxz_mutation);
+      magic_sampler.set_montecarlo_update(xxz_mutation);
     }
 
     dataframe::DataSlide compute(uint32_t num_threads) {
       auto start = std::chrono::high_resolution_clock::now();
 
-      std::shared_ptr<QuantumState> state;
+      std::shared_ptr<MagicQuantumState> state;
       if (state_type == QIT_MPS) {
         MatrixProductState mps = MatrixProductState::ising_ground_state(system_size, h, bond_dimension, 1e-8, num_sweeps);
-        mps.set_orthogonality_level(orthogonality_level);
         state = std::make_shared<MatrixProductState>(mps);
       } else if (state_type == QIT_STATEVECTOR) {
         state = std::make_shared<Statevector>(quantum_ising_ground_state(system_size, h));
@@ -131,6 +127,7 @@ class QuantumIsingConfig {
       slide.push_samples_to_data("surface", surface);
 
       quantum_sampler.add_samples(samples, state);
+      magic_sampler.add_samples(samples, state);
       entropy_sampler.add_samples(samples, state);
       slide.add_samples(samples);
       slide.push_samples(samples);
