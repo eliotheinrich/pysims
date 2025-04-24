@@ -11,6 +11,9 @@
 #define MPSS_CLIFFORD 1
 #define MPSS_Z2_CLIFFORD 2
 
+#define MPSS_MPS 0
+#define MPSS_STATEVECTOR 1
+
 #define TWO_QUBIT_PAULI PauliString("+XX")
 #define ONE_QUBIT_PAULI PauliString("+Z")
 
@@ -34,6 +37,7 @@ class MatrixProductSimulator : public Simulator {
 
     int measurement_type;
     int unitary_type;
+    int state_type;
 
     QuantumStateSampler quantum_sampler;
     MagicStateSampler magic_sampler;
@@ -80,21 +84,29 @@ class MatrixProductSimulator : public Simulator {
     }
 
 	public:
-    std::shared_ptr<MatrixProductState> state;
+    std::shared_ptr<MagicQuantumState> state;
 		MatrixProductSimulator(dataframe::ExperimentParams &params, uint32_t num_threads) : Simulator(params), quantum_sampler(params), magic_sampler(params), z2_table(get_z2_table()) {
       system_size = dataframe::utils::get<int>(params, "system_size");
       beta = dataframe::utils::get<double>(params, "beta");
       p = dataframe::utils::get<double>(params, "p");
-      bond_dimension = dataframe::utils::get<int>(params, "bond_dimension", 32);
 
       measurement_type = dataframe::utils::get<int>(params, "measurement_type", MPSS_PROJECTIVE);
       unitary_type = dataframe::utils::get<int>(params, "unitary_type", MPSS_HAAR);
-      int mps_debug_level = dataframe::utils::get<int>(params, "mps_debug_level", 0);
+
+      state_type = dataframe::utils::get<int>(params, "state_type", MPSS_MPS);
+      if (state_type == MPSS_MPS) {
+        bond_dimension = dataframe::utils::get<int>(params, "bond_dimension", 32);
+
+        int mps_debug_level = dataframe::utils::get<int>(params, "mps_debug_level", 0);
+        state = std::make_shared<MatrixProductState>(system_size, bond_dimension);
+
+        MatrixProductState* mps = dynamic_cast<MatrixProductState*>(state.get());
+        mps->set_debug_level(mps_debug_level);
+      } else if (state_type == MPSS_STATEVECTOR) {
+        state = std::make_shared<Statevector>(system_size);
+      }
 
       offset = false;
-
-      state = std::make_shared<MatrixProductState>(system_size, bond_dimension);
-      state->set_debug_level(mps_debug_level);
 
       std::string filename = dataframe::utils::get<std::string>(params, "filename", "");
       int s;
@@ -146,19 +158,27 @@ class MatrixProductSimulator : public Simulator {
     virtual dataframe::SampleMap take_samples() override {
       dataframe::SampleMap samples;
 
-      std::vector<double> surface = state->get_entropy_surface<double>(1u);
-      dataframe::utils::emplace(samples, "surface", surface);
-
       quantum_sampler.add_samples(samples, state);
       magic_sampler.add_samples(samples, state);
 
-      std::vector<double> bond_dimensions(system_size - 1);
-      for (size_t i = 0; i < system_size - 1; i++) {
-        bond_dimensions[i] = static_cast<double>(state->bond_dimension(i));
-      }
-      dataframe::utils::emplace(samples, "bond_dimension_at_site", bond_dimensions);
+      if (state_type == MPSS_MPS) {
+        std::vector<double> entanglement = state->get_entropy_surface<double>(1u);
+        dataframe::utils::emplace(samples, "entanglement", entanglement);
 
-      dataframe::utils::emplace(samples, "trace", state->trace());
+        std::vector<double> bond_dimensions(system_size - 1);
+        MatrixProductState* mps = dynamic_cast<MatrixProductState*>(state.get());
+        for (size_t i = 0; i < system_size - 1; i++) {
+          bond_dimensions[i] = static_cast<double>(mps->bond_dimension(i));
+        }
+        dataframe::utils::emplace(samples, "bond_dimension_at_site", bond_dimensions);
+
+        dataframe::utils::emplace(samples, "trace", mps->trace());
+      } else {
+        Qubits qubits(system_size/2);
+        std::iota(qubits.begin(), qubits.end(), 0);
+        double entanglement = state->entropy(qubits, 1u);
+        dataframe::utils::emplace(samples, "entanglement", entanglement);
+      }
 
       return samples;
     }

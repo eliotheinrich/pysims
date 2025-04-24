@@ -48,6 +48,7 @@ bool test_mps() {
   params["spin_glass_order_basis"] = "Y";
   params["sample_stabilizer_renyi_entropy"] = static_cast<int>(false);
   params["sre_method"] = "virtual";
+  params["sre_mc_equilibration_timesteps"] = static_cast<int>(0);
   params["sre_num_samples"] = static_cast<int>(500);
 
   params["sampling_timesteps"] = static_cast<int>(60);
