@@ -65,6 +65,12 @@ class MatrixProductSimulator : public Simulator {
             state->weak_measure(WeakMeasurement({i}, beta, ONE_QUBIT_PAULI));
           }
         }
+
+        // --------------- //
+        if (randf() >= p) {
+          state->weak_measure(WeakMeasurement({system_size-1}, beta, ONE_QUBIT_PAULI));
+        }
+        // --------------- //
       } else if (measurement_type == MPSS_NONE) {
         return;
       }
@@ -161,10 +167,10 @@ class MatrixProductSimulator : public Simulator {
       quantum_sampler.add_samples(samples, state);
       magic_sampler.add_samples(samples, state);
 
-      if (state_type == MPSS_MPS) {
-        std::vector<double> entanglement = state->get_entropy_surface<double>(1u);
-        dataframe::utils::emplace(samples, "entanglement", entanglement);
+      std::vector<double> entanglement = state->get_entropy_surface<double>(1u);
+      dataframe::utils::emplace(samples, "entanglement", entanglement);
 
+      if (state_type == MPSS_MPS) {
         std::vector<double> bond_dimensions(system_size - 1);
         MatrixProductState* mps = dynamic_cast<MatrixProductState*>(state.get());
         for (size_t i = 0; i < system_size - 1; i++) {
@@ -173,11 +179,6 @@ class MatrixProductSimulator : public Simulator {
         dataframe::utils::emplace(samples, "bond_dimension_at_site", bond_dimensions);
 
         dataframe::utils::emplace(samples, "trace", mps->trace());
-      } else {
-        Qubits qubits(system_size/2);
-        std::iota(qubits.begin(), qubits.end(), 0);
-        double entanglement = state->entropy(qubits, 1u);
-        dataframe::utils::emplace(samples, "entanglement", entanglement);
       }
 
       return samples;
