@@ -39,8 +39,8 @@ class MatrixProductSimulator : public Simulator {
     int unitary_type;
     int state_type;
 
-    QuantumStateSampler quantum_sampler;
-    MagicStateSampler magic_sampler;
+    std::shared_ptr<ParticipationSampler> participation_sampler;
+    std::shared_ptr<StabilizerEntropySampler> magic_sampler;
 
     CliffordTable z2_table;
 
@@ -91,7 +91,7 @@ class MatrixProductSimulator : public Simulator {
 
 	public:
     std::shared_ptr<MagicQuantumState> state;
-		MatrixProductSimulator(dataframe::ExperimentParams &params, uint32_t num_threads) : Simulator(params), quantum_sampler(params), magic_sampler(params), z2_table(get_z2_table()) {
+		MatrixProductSimulator(dataframe::ExperimentParams &params, uint32_t num_threads) : Simulator(params), z2_table(get_z2_table()) {
       system_size = dataframe::utils::get<int>(params, "system_size");
       beta = dataframe::utils::get<double>(params, "beta");
       p = dataframe::utils::get<double>(params, "p");
@@ -101,6 +101,9 @@ class MatrixProductSimulator : public Simulator {
 
       state_type = dataframe::utils::get<int>(params, "state_type", MPSS_MPS);
       if (state_type == MPSS_MPS) {
+        participation_sampler = std::make_shared<MPSParticipationSampler>(params);
+        magic_sampler = std::make_shared<MPSMagicSampler>(params);
+
         bond_dimension = dataframe::utils::get<int>(params, "bond_dimension", 32);
 
         int mps_debug_level = dataframe::utils::get<int>(params, "mps_debug_level", 0);
@@ -109,6 +112,9 @@ class MatrixProductSimulator : public Simulator {
         MatrixProductState* mps = dynamic_cast<MatrixProductState*>(state.get());
         mps->set_debug_level(mps_debug_level);
       } else if (state_type == MPSS_STATEVECTOR) {
+        participation_sampler = std::make_shared<QuantumStateSampler>(params);
+        magic_sampler = std::make_shared<MagicStateSampler>(params);
+
         state = std::make_shared<Statevector>(system_size);
       }
 
@@ -124,27 +130,27 @@ class MatrixProductSimulator : public Simulator {
       }
       Random::seed_rng(s);
 
-      PauliMutationFunc z2_mutation = [](PauliString& p) {
-        size_t n = p.num_qubits;
-        PauliString q(n);
-        if (randi() % 2) {
-          // Single-qubit mutation
-          q.set_z(randi() % n, 1);
-        } else {
-          size_t i = randi() % n;
-          size_t j = randi() % n;
-          while (j == i) {
-            j = randi() % n;
-          }
+      //PauliMutationFunc z2_mutation = [](PauliString& p) {
+      //  size_t n = p.num_qubits;
+      //  PauliString q(n);
+      //  if (randi() % 2) {
+      //    // Single-qubit mutation
+      //    q.set_z(randi() % n, 1);
+      //  } else {
+      //    size_t i = randi() % n;
+      //    size_t j = randi() % n;
+      //    while (j == i) {
+      //      j = randi() % n;
+      //    }
 
-          q.set_x(i, 1);
-          q.set_x(j, 1);
-        }
+      //    q.set_x(i, 1);
+      //    q.set_x(j, 1);
+      //  }
 
-        p = p * q;
-      };
+      //  p = p * q;
+      //};
 
-      magic_sampler.set_montecarlo_update(z2_mutation);
+      //magic_sampler->set_montecarlo_update(z2_mutation);
     }
 
 		virtual void timesteps(uint32_t num_steps) override {
@@ -164,8 +170,8 @@ class MatrixProductSimulator : public Simulator {
     virtual dataframe::SampleMap take_samples() override {
       dataframe::SampleMap samples;
 
-      quantum_sampler.add_samples(samples, state);
-      magic_sampler.add_samples(samples, state);
+      participation_sampler->add_samples(samples, state);
+      magic_sampler->add_samples(samples, state);
 
       std::vector<double> entanglement = state->get_entropy_surface<double>(1u);
       dataframe::utils::emplace(samples, "entanglement", entanglement);
