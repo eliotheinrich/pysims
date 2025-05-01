@@ -36,8 +36,8 @@ void emulate_simulation(ExperimentParams& params, size_t num_threads=1) {
 
 bool test_mps() {
   ExperimentParams params;
-  params["system_size"] = static_cast<int>(16);
-  params["bond_dimension"] = static_cast<int>(128);
+  params["system_size"] = static_cast<int>(32);
+  params["bond_dimension"] = static_cast<int>(64);
   params["beta"] = 1.2;
   params["p"] = 0.5;
 
@@ -45,17 +45,13 @@ bool test_mps() {
   params["measurement_type"] = static_cast<int>(1);
 
   params["sample_spin_glass_order"] = static_cast<int>(true);
-  params["spin_glass_order_basis"] = "Y";
+
   params["sample_stabilizer_renyi_entropy"] = static_cast<int>(false);
-  params["sre_method"] = "virtual";
-  params["sre_mc_equilibration_timesteps"] = static_cast<int>(0);
   params["sre_num_samples"] = static_cast<int>(500);
 
   params["sampling_timesteps"] = static_cast<int>(60);
   params["measurement_freq"] = static_cast<int>(3);
-  params["equilibration_timesteps"] = static_cast<int>(0);
-
-  params["mps_orthogonality_level"] = static_cast<int>(1);
+  params["equilibration_timesteps"] = static_cast<int>(100);
 
   emulate_simulation<MatrixProductSimulator>(params, 1);
 
