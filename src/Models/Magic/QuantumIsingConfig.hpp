@@ -66,10 +66,11 @@ class QuantumIsingConfig {
     double delta;
     
     QuantumStateSampler quantum_sampler;
-    MagicStateSampler magic_sampler;
+    std::unique_ptr<ParticipationSampler> participation_sampler;
+    std::unique_ptr<StabilizerEntropySampler> magic_sampler;
     EntropySampler entropy_sampler;
 
-    QuantumIsingConfig(dataframe::ExperimentParams &params) : quantum_sampler(params), magic_sampler(params), entropy_sampler(params) {
+    QuantumIsingConfig(dataframe::ExperimentParams &params) : quantum_sampler(params), entropy_sampler(params) {
       system_size = dataframe::utils::get<int>(params, "system_size", 1);
       bond_dimension = dataframe::utils::get<int>(params, "bond_dimension", 64);
       h = dataframe::utils::get<double>(params, "h");
@@ -78,33 +79,36 @@ class QuantumIsingConfig {
 
       state_type = dataframe::utils::get(params, "state_type", QIT_MPS);
 
-      auto xxz_mutation = [](PauliString& p) {
-        PauliString pnew(p);
-        if ((randi() % 2) || (p.num_qubits == 1)) {
-          // Do single-qubit mutation
-          size_t j = randi() % p.num_qubits;
-          PauliString Zj = PauliString(p.num_qubits);
-          Zj.set_z(j, 1); 
+      if (state_type == QIT_STATEVECTOR) {
+        PauliMutationFunc z2_mutation = [](PauliString& p) {
+          size_t n = p.num_qubits;
+          PauliString q(n);
+          if (randi() % 2) {
+            // Single-qubit mutation
+            q.set_z(randi() % n, 1);
+          } else {
+            size_t i = randi() % n;
+            size_t j = randi() % n;
+            while (j == i) {
+              j = randi() % n;
+            }
 
-          pnew = Zj * pnew;
-        } else {
-          // Do double-qubit mutation
-          size_t j1 = randi() % p.num_qubits;
-          size_t j2 = randi() % p.num_qubits;
-          while (j2 == j1) {
-            j2 = randi() % p.num_qubits;
+            q.set_x(i, 1);
+            q.set_x(j, 1);
           }
 
-          PauliString Xij = PauliString(p.num_qubits);
-          Xij.set_x(j1, 1); 
-          Xij.set_x(j2, 1); 
-          pnew = Xij * pnew;
-        }
+          p = p * q;
+        };
 
-        p = pnew;
-      };
 
-      magic_sampler.set_montecarlo_update(xxz_mutation);
+        magic_sampler = std::make_unique<GenericMagicSampler>(params);
+        participation_sampler = std::make_unique<GenericParticipationSampler>(params);
+
+        dynamic_cast<GenericMagicSampler*>(magic_sampler.get())->set_montecarlo_update(z2_mutation);
+      } else {
+        magic_sampler = std::make_unique<MPSMagicSampler>(params);
+        participation_sampler = std::make_unique<MPSParticipationSampler>(params);
+      }
     }
 
     dataframe::DataSlide compute(uint32_t num_threads) {
@@ -123,11 +127,12 @@ class QuantumIsingConfig {
 
       auto surface = state->get_entropy_surface<double>(1);
 
-      slide.add_data("surface", surface.size());
-      slide.push_samples_to_data("surface", surface);
+      slide.add_data("entanglement", surface.size());
+      slide.push_samples_to_data("entanglement", surface);
 
       quantum_sampler.add_samples(samples, state);
-      magic_sampler.add_samples(samples, state);
+      participation_sampler->add_samples(samples, state);
+      magic_sampler->add_samples(samples, state);
       entropy_sampler.add_samples(samples, state);
       slide.add_samples(samples);
       slide.push_samples(samples);
