@@ -97,7 +97,7 @@ void SandpileCliffordSimulator::mzr(uint32_t i) {
     // (maybe) record entropy surface for avalanche calculations
     std::vector<int> entropy_surface1;
     if (sample_avalanche_sizes && start_sampling) {
-      entropy_surface1 = state->get_entropy_surface<int>(2);
+      entropy_surface1 = state->get_entanglement<int>(2);
     }
 
     // Do measurement
@@ -116,7 +116,7 @@ void SandpileCliffordSimulator::mzr(uint32_t i) {
 
     // record avalanche sizes
     if (sample_avalanche_sizes && start_sampling) {
-      std::vector<int> entropy_surface2 = state->get_entropy_surface<int>(2);
+      std::vector<int> entropy_surface2 = state->get_entanglement<int>(2);
       int s = 0.0;
       for (uint32_t i = 0; i < system_size; i++) {
         s += std::abs(entropy_surface1[i] - entropy_surface2[i]);
@@ -205,9 +205,9 @@ void SandpileCliffordSimulator::feedback(uint32_t q) {
     q2 = q + 1;
   }
 
-  int s0 = state->cum_entropy<int>(q0);
-  int s1 = state->cum_entropy<int>(q);
-  int s2 = state->cum_entropy<int>(q2);
+  int s0 = state->cum_entanglement<int>(q0);
+  int s1 = state->cum_entanglement<int>(q);
+  int s2 = state->cum_entanglement<int>(q2);
 
   uint32_t shape = get_shape(s0, s1, s2);
 
@@ -246,7 +246,7 @@ SampleMap SandpileCliffordSimulator::take_samples() {
 
   state->tableau.rref();
 
-  std::vector<int> entropy_surface = state->get_entropy_surface<int>(2);
+  std::vector<int> entropy_surface = state->get_entanglement<int>(2);
 
   interface_sampler.add_samples(samples, entropy_surface);
   if (sample_reduced_surface) {

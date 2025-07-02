@@ -125,7 +125,7 @@ class QuantumIsingConfig {
       dataframe::DataSlide slide;
       dataframe::SampleMap samples;
 
-      auto surface = state->get_entropy_surface<double>(1);
+      auto surface = state->get_entanglement<double>(1);
 
       slide.add_data("entanglement", surface.size());
       slide.push_samples_to_data("entanglement", surface);

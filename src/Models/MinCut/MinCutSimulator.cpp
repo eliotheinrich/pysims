@@ -3,7 +3,8 @@
 using namespace dataframe;
 using namespace dataframe::utils;
 
-double GraphEntropyState::entropy(const std::vector<uint32_t> &sites, uint32_t index) {
+double GraphEntropyState::entanglement(const QubitSupport &support, uint32_t index) {
+  Qubits sites = to_qubits(support);
 	if (sites.size() % 2) {
 		throw std::invalid_argument("Number of sites must be even in MinCutSimulator.");
 	}

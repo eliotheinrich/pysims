@@ -62,7 +62,7 @@ void NetworkCliffordSimulator::add_spatially_averaged_entropy(SampleMap& samples
 		std::shuffle(all_qubits.begin(), all_qubits.end(), gen);
 
 		std::vector<uint32_t> qubits(all_qubits.begin(), all_qubits.begin() + system_size/2);
-    s[i] = state->entropy(qubits, 2);
+    s[i] = state->entanglement(qubits, 2);
 	}
 
   emplace(samples, "entropy", s);

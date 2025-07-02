@@ -82,7 +82,7 @@ SampleMap BulkMeasurementSimulator::take_samples() {
     std::vector<uint32_t> qubits(q);
     std::iota(qubits.begin(), qubits.end(), 0);
 
-    entropy[q] = state->entropy(qubits, 2);
+    entropy[q] = state->entanglement(qubits, 2);
   }
 
   emplace(samples, "surface", entropy);

@@ -149,15 +149,7 @@ class MatrixProductSimulator : public Simulator {
 
       offset = false;
 
-      std::string filename = dataframe::utils::get<std::string>(params, "filename", "");
-      int s;
-      if (filename != "") {
-        s = load_seed(filename);
-        std::cout << fmt::format("Found filename = {}, loaded seed = {}\n", filename, s);
-      } else {
-        s = randi();
-      }
-      Random::seed_rng(s);
+      Random::seed_rng(randi());
     }
 
 		virtual void timesteps(uint32_t num_steps) override {
@@ -181,7 +173,7 @@ class MatrixProductSimulator : public Simulator {
       magic_sampler->add_samples(samples, state);
       quantum_sampler.add_samples(samples, state);
 
-      std::vector<double> entanglement = state->get_entropy_surface<double>(1u);
+      std::vector<double> entanglement = state->get_entanglement<double>(1u);
       dataframe::utils::emplace(samples, "entanglement", entanglement);
 
       if (state_type == MPSS_MPS) {

@@ -43,9 +43,9 @@ NB_MODULE(pysimulators, m) {
     .def("add_edge", &Graph<>::add_edge);
   
 
-  m.def("graph_state_entropy", 
+  m.def("graph_state_entanglement", 
       [](Graph<> &graph, const std::vector<uint32_t>& sites) { 
-        return QuantumGraphState::graph_state_entropy(sites, graph); 
+        return QuantumGraphState::graph_state_entanglement(sites, graph); 
       });
 
 }

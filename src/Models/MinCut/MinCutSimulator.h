@@ -4,10 +4,10 @@
 #include <Simulator.hpp>
 #include <Samplers.h>
 
-class GraphEntropyState : public EntropyState {
+class GraphEntropyState : public EntanglementEntropyState {
 	public:
 		Graph<> state;
-		virtual double entropy(const std::vector<uint32_t>& sites, uint32_t index) override;
+		virtual double entanglement(const QubitSupport& support, uint32_t index) override;
 		GraphEntropyState()=default;
 		GraphEntropyState(uint32_t num_nodes) {
 			state = Graph<>(num_nodes);

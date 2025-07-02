@@ -199,7 +199,7 @@ class XZCircuitSimulator : public Simulator {
 
       entropy_sampler.add_samples(samples, state);
 
-      std::vector<int> surface = state->get_entropy_surface<int>(2);
+      std::vector<int> surface = state->get_entanglement<int>(2);
       interface_sampler.add_samples(samples, surface);
 
       return samples;

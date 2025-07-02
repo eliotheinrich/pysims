@@ -144,9 +144,9 @@ class RandomCliffordSimulator : public Simulator {
 
     void mzr(uint32_t q) {
       if (sample_avalanche_sizes && start_sampling) {
-        std::vector<int> surface1 = state->get_entropy_surface<int>(2);
+        std::vector<int> surface1 = state->get_entanglement<int>(2);
         state->mzr(q);
-        std::vector<int> surface2 = state->get_entropy_surface<int>(2);
+        std::vector<int> surface2 = state->get_entanglement<int>(2);
 
         int s = 0.0;
         for (uint32_t i = 0; i < system_size; i++) {
@@ -228,7 +228,7 @@ class RandomCliffordSimulator : public Simulator {
 
       entropy_sampler.add_samples(samples, state);
 
-      std::vector<int> surface = state->get_entropy_surface<int>(2);
+      std::vector<int> surface = state->get_entanglement<int>(2);
       interface_sampler.add_samples(samples, surface);
 
       if (sample_sparsity) {
