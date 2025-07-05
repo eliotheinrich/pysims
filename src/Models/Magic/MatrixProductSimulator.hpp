@@ -42,6 +42,7 @@ class MatrixProductSimulator : public Simulator {
     std::unique_ptr<ParticipationSampler> participation_sampler;
     std::unique_ptr<StabilizerEntropySampler> magic_sampler;
     QuantumStateSampler quantum_sampler;
+    bool sample_entanglement;
 
     CliffordTable z2_table;
 
@@ -107,6 +108,7 @@ class MatrixProductSimulator : public Simulator {
       unitary_type = dataframe::utils::get<int>(params, "unitary_type", MPSS_HAAR);
 
       state_type = dataframe::utils::get<int>(params, "state_type", MPSS_MPS);
+      sample_entanglement = dataframe::utils::get<int>(params, "sample_entanglement", true);
       if (state_type == MPSS_MPS) {
         participation_sampler = std::make_unique<MPSParticipationSampler>(params);
         magic_sampler = std::make_unique<MPSMagicSampler>(params);
@@ -173,8 +175,10 @@ class MatrixProductSimulator : public Simulator {
       magic_sampler->add_samples(samples, state);
       quantum_sampler.add_samples(samples, state);
 
-      std::vector<double> entanglement = state->get_entanglement<double>(1u);
-      dataframe::utils::emplace(samples, "entanglement", entanglement);
+      if (sample_entanglement) {
+        std::vector<double> entanglement = state->get_entanglement<double>(1u);
+        dataframe::utils::emplace(samples, "entanglement", entanglement);
+      }
 
       if (state_type == MPSS_MPS) {
         std::vector<double> bond_dimensions(system_size - 1);
