@@ -17,7 +17,7 @@
 #define TWO_QUBIT_PAULI PauliString("+XX")
 #define ONE_QUBIT_PAULI PauliString("+Z")
 
-static CliffordTable get_z2_table() {
+static CliffordTable<Eigen::MatrixXcd> get_z2_table() {
   auto symm = [](const QuantumCircuit& qc) {
     PauliString p = PauliString("+ZZ");
     PauliString p_ = p;
@@ -25,7 +25,7 @@ static CliffordTable get_z2_table() {
     return p == p_;
   };
 
-  return CliffordTable(symm);
+  return CliffordTable<Eigen::MatrixXcd>(symm);
 }
 
 class MatrixProductSimulator : public Simulator {
@@ -44,7 +44,7 @@ class MatrixProductSimulator : public Simulator {
     QuantumStateSampler quantum_sampler;
     bool sample_entanglement;
 
-    CliffordTable z2_table;
+    CliffordTable<Eigen::MatrixXcd> z2_table;
 
     bool offset;
 
@@ -150,8 +150,6 @@ class MatrixProductSimulator : public Simulator {
       }
 
       offset = false;
-
-      Random::seed_rng(randi());
     }
 
 		virtual void timesteps(uint32_t num_steps) override {
