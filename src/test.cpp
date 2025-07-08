@@ -36,7 +36,7 @@ void emulate_simulation(ExperimentParams& params, size_t num_threads=1) {
 
 bool test_mps() {
   ExperimentParams params;
-  params["system_size"] = static_cast<int>(32);
+  params["system_size"] = static_cast<int>(48);
   params["bond_dimension"] = static_cast<int>(64);
   params["beta"] = 1.2;
   params["p"] = 0.5;

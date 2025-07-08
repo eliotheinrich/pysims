@@ -93,7 +93,7 @@ class MatrixProductSimulator : public Simulator {
       } else if (unitary_type == MPSS_Z2_CLIFFORD) {
         z2_table.apply_random({i, j}, *state.get());
       } else {
-        throw std::runtime_error(std::format("Invalid unitary type {}.", unitary_type));
+        throw std::runtime_error(fmt::format("Invalid unitary type {}.", unitary_type));
       }
     }
 
