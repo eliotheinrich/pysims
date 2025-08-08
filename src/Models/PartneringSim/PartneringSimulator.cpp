@@ -102,29 +102,29 @@ void PartneringSimulator::timesteps(uint32_t num_steps) {
 void PartneringSimulator::add_affinity_samples(SampleMap& samples) const {
 	for (uint32_t i = 0; i < num_nodes; i++) {
 		for (uint32_t j = num_nodes; j < 2*num_nodes; j++) {
-			samples.emplace("affinity_" + std::to_string(i) + "_" + std::to_string(j - num_nodes), affinity(i, j));
+      dataframe::utils::emplace(samples, fmt::format("affinity_{}_{}", i, j - num_nodes), affinity(i, j));
 		}
 	}
 }
 
 void PartneringSimulator::add_global_properties_samples(SampleMap& samples) const {
-	samples.emplace("global_clustering_coefficient", partner_graph.global_clustering_coefficient());
-	samples.emplace("percolation_probability", partner_graph.percolation_probability());
-	samples.emplace("max_component_size", partner_graph.max_component_size());
-	samples.emplace("average_component_size", partner_graph.average_component_size());
+  dataframe::utils::emplace(samples, "global_clustering_coefficient", partner_graph.global_clustering_coefficient());
+	dataframe::utils::emplace(samples, "percolation_probability", partner_graph.percolation_probability());
+	dataframe::utils::emplace(samples, "max_component_size", partner_graph.max_component_size());
+	dataframe::utils::emplace(samples, "average_component_size", partner_graph.average_component_size());
 }
 
 void PartneringSimulator::add_local_properties_samples(SampleMap& samples) const {
 	auto degree_counts = partner_graph.compute_degree_counts();
 	for (uint32_t i = 0; i < 2*num_nodes; i++) {
-		samples.emplace("deg_" + std::to_string(i), degree_counts[i]);
+    dataframe::utils::emplace(samples, fmt::format("deg_{}", i), degree_counts[i]);
 	}
 }
 
 void PartneringSimulator::add_counts_samples(SampleMap& samples) const {
 	for (uint32_t i = 0; i < num_nodes; i++) {
 		for (uint32_t j = 0; j < num_nodes; j++) {
-			samples.emplace("count_" + std::to_string(i) + "_" + std::to_string(j), counts[i][j]);
+      dataframe::utils::emplace(samples, fmt::format("count_{}_{}", i, j), counts[i][j]);
 		}
 	}
 }

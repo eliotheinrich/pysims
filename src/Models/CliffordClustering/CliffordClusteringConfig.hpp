@@ -82,16 +82,18 @@ class CliffordClusteringConfig {
 
       dataframe::DataSlide slide;
       
-      slide.add_samples("intracopy_distance");
-      slide.push_samples("intracopy_distance", std::vector<std::vector<double>>{intracopy_samples});
+      std::vector<size_t> shape = {1};
+      for (size_t i = 0; i < intracopy_samples.size(); i++) {
+        slide.add_data("intracopy_distance", shape, std::vector<double>{intracopy_samples[i]});
+      }
 
-      slide.add_samples("intercopy_distance");
-      slide.push_samples("intercopy_distance", std::vector<std::vector<double>>{intercopy_samples});
+      for (size_t i = 0; i < intercopy_samples.size(); i++) {
+        slide.add_data("intracopy_distance", shape, std::vector<double>{intercopy_samples[i]});
+      }
 
       auto stop = std::chrono::high_resolution_clock::now();
       auto duration = std::chrono::duration_cast<std::chrono::seconds>(stop - start);
-      slide.add_data("time");
-      slide.push_samples_to_data("time", duration.count());
+      slide.add_data("time", shape, {static_cast<double>(duration.count())});
 
       return slide;
     }

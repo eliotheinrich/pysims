@@ -232,7 +232,7 @@ class RandomCliffordSimulator : public Simulator {
       interface_sampler.add_samples(samples, surface);
 
       if (sample_sparsity) {
-        samples.emplace("sparsity", state->sparsity());
+        dataframe::utils::emplace(samples, "sparsity", state->sparsity());
       }
 
       return samples;

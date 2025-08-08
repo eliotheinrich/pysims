@@ -138,7 +138,7 @@ void GroverSATSimulator::add_fidelity_samples(SampleMap& samples) {
 		}
 	}
 
-	samples.emplace("fidelity", p);
+  dataframe::utils::emplace(samples, "fidelity", p);
 }
 
 SampleMap GroverSATSimulator::take_samples() {

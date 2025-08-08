@@ -3,35 +3,21 @@ cmake_minimum_required(VERSION 3.27)
 project(cliffordsim LANGUAGES CXX)
 
 set(CMAKE_CXX_STANDARD 23)
-if (NOT CMAKE_BUILD_TYPE)
-    set(CMAKE_BUILD_TYPE Release)
-endif()
-
-find_program(CMAKE_C_COMPILER NAMES $ENV{CC} gcc PATHS ENV PATH NO_DEFAULT_PATH)
-find_program(CMAKE_CXX_COMPILER NAMES $ENV{CXX} g++ PATHS ENV PATH NO_DEFAULT_PATH)
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-all -Wno-unused-function -Wno-deprecated-declarations -pthread")
 set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS} -g")
-set(CMAKE_DEBUG_POSTFIX "d")
 set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS} -O3")
-set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 set(CMAKE_PREFIX_PATH "$ENV{CMAKE_PREFIX_PATH}")
-set(CMAKE_LIBRARY_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}/lib")
+string(REPLACE ":" ";" CMAKE_PREFIX_PATH "${CMAKE_PREFIX_PATH}")
+set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
-
-# Ignore annoying Intel warnings
-if (${CMAKE_CXX_COMPILER_ID} STREQUAL "Intel")
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -diag-disable=2196")
-endif()
 
 # -------------------------------- #
 # ---- Fetching dependencies ----- #
 # -------------------------------- #
 
-#find_package(OpenBLAS CONFIG REQUIRED)
-
 find_package(fmt REQUIRED)
-add_definitions(-DFMT_HEADER_ONLY=On)
+add_definitions(-DFMT_HEADER_ONLY)
 
 foreach(PATH IN LISTS CMAKE_PREFIX_PATH)
     include_directories("${PATH}/include")
@@ -46,6 +32,8 @@ find_package(Python 3.10
     REQUIRED COMPONENTS Interpreter Development.Module
     OPTIONAL_COMPONENTS Development.SABIModule
 )
+
+message("${Python_EXECUTABLE}")
 
 execute_process(
     COMMAND "${Python_EXECUTABLE}" -m nanobind --cmake_dir
@@ -133,9 +121,6 @@ add_subdirectory(${CMAKE_SOURCE_DIR}/src/Models/RandomHamiltonian)
 add_subdirectory(${CMAKE_SOURCE_DIR}/src/Models/HQAmplitude)
 add_subdirectory(${CMAKE_SOURCE_DIR}/src/Models/CliffordClustering)
 
-message("MODELS_LIBS = ${MODELS_LIBS}")
-message("MODELS_INCLUDE = ${MODELS_INCLUDE}")
-
 if (PS_BUILDING_PYTHON)
     nanobind_add_module(
         pysimulators 
@@ -154,7 +139,6 @@ if (PS_BUILDING_PYTHON)
 else()
     # --- MAIN --- #
     add_executable(main src/test.cpp)
-    set_target_properties(main PROPERTIES DEBUG_POSTFIX ${CMAKE_DEBUG_POSTFIX})
     target_link_libraries(main PUBLIC ${MODELS_LIBS} dataframe)
     target_include_directories(main PRIVATE src ${MODELS_INCLUDE})
 endif()

@@ -250,7 +250,7 @@ void SelfOrganizedCliffordSimulator::add_distance_distribution(SampleMap &sample
 	}
 
 	for (uint32_t i = 0; i < system_size/2; i++) {
-		samples.emplace("dist_" + std::to_string(i), hist[i]);
+    dataframe::utils::emplace(samples, fmt::format("dist_{}", i), hist[i]);
 	}
 }
 
@@ -259,11 +259,11 @@ SampleMap SelfOrganizedCliffordSimulator::take_samples() {
 	sampler.add_samples(samples, state);
 
 	if (feedback_type == FeedbackType::ClusterThreshold) {
-		samples.emplace("mzr_prob_f", mzr_prob);
-		samples.emplace("max_cluster_size", max_component_size());
+    dataframe::utils::emplace(samples, "mzr_prob_f", mzr_prob);
+		dataframe::utils::emplace(samples, "max_cluster_size", max_component_size());
 	} else if (feedback_type == FeedbackType::DistanceThreshold) {
-		samples.emplace("mzr_prob_f", mzr_prob);
-		samples.emplace("avg_distance", avg_dist());
+    dataframe::utils::emplace(samples, "mzr_prob_f", mzr_prob);
+		dataframe::utils::emplace(samples, "avg_distance", avg_dist());
 	}
 
 	add_distance_distribution(samples);

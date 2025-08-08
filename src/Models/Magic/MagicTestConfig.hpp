@@ -92,13 +92,14 @@ class MagicTestConfig {
       dataframe::SampleMap samples;
 
       sampler.add_samples(samples, state);
-      slide.add_samples(samples);
-      slide.push_samples(samples);
+      for (auto& [key, data] : samples) {
+        slide.add_data(key, std::move(data));
+      }
 
       auto stop = std::chrono::high_resolution_clock::now();
       auto duration = std::chrono::duration_cast<std::chrono::seconds>(stop - start);
-      slide.add_data("time");
-      slide.push_samples_to_data("time", duration.count());
+      std::vector<size_t> shape = {1};
+      slide.add_data("time", shape, {static_cast<double>(duration.count())});
 
       return slide;
     }

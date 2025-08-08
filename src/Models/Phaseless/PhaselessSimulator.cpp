@@ -100,8 +100,8 @@ SampleMap PhaselessSimulator::take_samples() {
 	sampler.add_samples(samples, state);
 
 	if (sample_measurement_outcomes) {
-		samples.emplace("mzr_expectation", state->CliffordState::mzr_expectation());
-		samples.emplace("mxr_expectation", state->CliffordState::mxr_expectation());
+    dataframe::utils::emplace(samples, "mzr_expectation", state->CliffordState::mzr_expectation());
+		dataframe::utils::emplace(samples, "mxr_expectation", state->CliffordState::mxr_expectation());
 	}
 
 	return samples;

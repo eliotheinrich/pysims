@@ -60,26 +60,18 @@ class VQSECircuitConfig {
 
       dataframe::DataSlide slide;
 
-      if (record_err) {
-        slide.add_data("rel_err");
-        slide.add_data("abs_err");
-      }
-
-      if (record_fidelity) {
-        slide.add_data("fidelity");
-      }
-
       Statevector target_state(num_qubits);
       auto callback = [this, &slide, &target_state](const std::vector<double>& params) {
+        std::vector<size_t> shape = {1};
         if (record_err) {
           auto [rel_err, abs_err] = vqse.error(target_state);
-          slide.push_samples_to_data("rel_err", rel_err);
-          slide.push_samples_to_data("abs_err", abs_err);
+          slide.add_data("rel_err", shape, {rel_err});
+          slide.add_data("abs_err", shape, {abs_err});
         }
 
         if (record_fidelity) {
           auto fidelity = vqse.fidelity(target_state, params);
-          slide.push_samples_to_data("fidelity", vqse.fidelity(target_state, params));
+          slide.add_data("fidelity", shape, vqse.fidelity(target_state, params));
         }
       };
 
@@ -114,11 +106,10 @@ class VQSECircuitConfig {
 
       auto stop = std::chrono::high_resolution_clock::now();
       auto duration = std::chrono::duration_cast<std::chrono::seconds>(stop - start);
-      slide.add_data("time");
-      slide.push_samples_to_data("time", duration.count());
-  
-      slide.add_data("circuit_depth");
-      slide.push_samples_to_data("circuit_depth", (target.length() - target_depth)/(num_qubits/2));
+
+      std::vector<size_t> shape = {1};
+      slide.add_data("time", shape, {static_cast<double>(duration.count())});
+      slide.add_data("circuit_depth", shape, {static_cast<double>(target.length() - target_depth)/(num_qubits/2)});
 
       return slide;
     }

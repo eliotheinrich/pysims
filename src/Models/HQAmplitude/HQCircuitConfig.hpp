@@ -228,10 +228,8 @@ class HQCircuitConfig {
       }
 
       dataframe::DataSlide slide;
-      slide.add_data("amplitudes");
-      for (auto const& a : all_amplitudes) {
-        slide.push_samples_to_data("amplitudes", a);
-      }
+      std::vector<size_t> shape = {all_amplitudes.size()};
+      slide.add_data("amplitudes", shape, all_amplitudes);
 
       return slide;
     }

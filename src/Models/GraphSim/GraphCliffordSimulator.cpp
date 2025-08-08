@@ -169,7 +169,7 @@ void GraphCliffordSimulator::add_distance_distribution(SampleMap &samples) const
 	}
 
 	for (uint32_t i = 0; i < max_dist; i++) {
-		samples.emplace("dist_" + std::to_string(i), distribution[i]);
+    dataframe::utils::emplace(samples, fmt::format("dist_{}", i), distribution[i]);
 	}
 }
 
@@ -194,18 +194,18 @@ void GraphCliffordSimulator::add_avg_max_dist(SampleMap &samples) const {
 	}
 
 	if (n == 0) {
-		samples.emplace("avg_dist", 0.);
-		samples.emplace("max_dist", 0.);
+    dataframe::utils::emplace(samples, "avg_dist", 0.);
+		dataframe::utils::emplace(samples, "max_dist", 0.);
 	} else {
-		samples.emplace("avg_dist", p1/n);
-		samples.emplace("max_dist", p2/system_size);
+    dataframe::utils::emplace(samples, "avg_dist", p1/n);
+		dataframe::utils::emplace(samples, "max_dist", p2/system_size);
 	}
 }
 
 void GraphCliffordSimulator::add_degree_distribution(SampleMap &samples) const {
 	auto degree_counts = state->graph.compute_degree_counts();
 	for (uint32_t i = 0; i < system_size; i++) {
-		samples.emplace("deg_" + std::to_string(i), degree_counts[i]);
+    dataframe::utils::emplace(samples, fmt::format("deg_{}", i), degree_counts[i]);
 	}
 }
 
@@ -218,9 +218,9 @@ SampleMap GraphCliffordSimulator::take_samples() {
 	add_distance_distribution(samples);
 	add_degree_distribution(samples);
 
-	samples.emplace("global_clustering_coefficient", state->graph.global_clustering_coefficient());
-	samples.emplace("average_cluster_size", state->graph.average_component_size());
-	samples.emplace("max_cluster_size", state->graph.max_component_size());
+  dataframe::utils::emplace(samples, "global_clustering_coefficient", state->graph.global_clustering_coefficient());
+	dataframe::utils::emplace(samples, "average_cluster_size", state->graph.average_component_size());
+	dataframe::utils::emplace(samples, "max_cluster_size", state->graph.max_component_size());
 
 	return samples;
 }

@@ -126,21 +126,20 @@ class QuantumIsingConfig {
       dataframe::SampleMap samples;
 
       auto surface = state->get_entanglement<double>(1);
-
-      slide.add_data("entanglement", surface.size());
-      slide.push_samples_to_data("entanglement", surface);
+      dataframe::utils::emplace(samples, "entanglement", surface);
 
       quantum_sampler.add_samples(samples, state);
       participation_sampler->add_samples(samples, state);
       magic_sampler->add_samples(samples, state);
       entropy_sampler.add_samples(samples, state);
-      slide.add_samples(samples);
-      slide.push_samples(samples);
+      for (auto& [key, data] : samples) {
+        slide.add_data(key, std::move(data));
+      }
 
       auto stop = std::chrono::high_resolution_clock::now();
       auto duration = std::chrono::duration_cast<std::chrono::seconds>(stop - start);
-      slide.add_data("time");
-      slide.push_samples_to_data("time", duration.count());
+      std::vector<size_t> shape = {1};
+      slide.add_data("time", shape, {static_cast<double>(duration.count())});
 
       return slide;
     }
