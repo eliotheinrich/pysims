@@ -188,7 +188,7 @@ class MatrixProductSimulator : public Simulator {
           }
         }
       } else {
-        throw std::runtime_error(std::format("Invalid unitary type {}.", unitary_type));
+        throw std::runtime_error(fmt::format("Invalid unitary type {}.", unitary_type));
       }
     }
 
