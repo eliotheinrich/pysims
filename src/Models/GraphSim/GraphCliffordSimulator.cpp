@@ -109,7 +109,7 @@ void GraphCliffordSimulator::unitary_timesteps(uint32_t num_steps) {
 }
 
 void GraphCliffordSimulator::generate_random_graph() {
-	Graph graph(system_size);
+	Graph<int> graph(system_size);
 
 	// Barabasi-Albert random graph model
 	for (uint32_t i = 0; i < system_size; i++) {

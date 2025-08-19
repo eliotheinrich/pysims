@@ -6,11 +6,11 @@
 
 class GraphEntropyState : public EntanglementEntropyState {
 	public:
-		Graph<> state;
+		Graph<int, int> state;
 		virtual double entanglement(const QubitSupport& support, uint32_t index) override;
 		GraphEntropyState()=default;
 		GraphEntropyState(uint32_t num_nodes) {
-			state = Graph<>(num_nodes);
+			state = Graph<int, int>(num_nodes);
 		}
 };
 

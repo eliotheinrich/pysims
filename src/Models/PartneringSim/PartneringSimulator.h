@@ -41,9 +41,9 @@ class PartneringSimulator : public Simulator {
 		void add_counts_samples(dataframe::SampleMap& samples) const;
 
 	public:
-		Graph<> partner_graph;
-		Graph<> affinity_graph;
-		Graph<> augmented_graph;
+		UndirectedGraph<int> partner_graph;
+		UndirectedGraph<int, int> affinity_graph;
+		UndirectedGraph<int, int> augmented_graph;
 
 		PartneringSimulator(dataframe::ExperimentParams &params, uint32_t);
 

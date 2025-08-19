@@ -11,6 +11,7 @@
 #define MPSS_CLIFFORD 1
 #define MPSS_Z2_CLIFFORD 2
 #define MPSS_DUAL_CLIFFORD 3
+#define MPSS_3_QUBIT 4
 
 #define MPSS_MPS 0
 #define MPSS_STATEVECTOR 1
@@ -122,6 +123,8 @@ class MatrixProductSimulator : public Simulator {
     double p;
     size_t bond_dimension;
 
+    bool qubits_random;
+
     int measurement_type;
     int unitary_type;
     int state_type;
@@ -138,53 +141,72 @@ class MatrixProductSimulator : public Simulator {
 
     bool offset;
 
-    void unitary_layer() {
+    void unitary_layer(QuantumCircuit& qc) {
+      auto get_qubits = [](const QuantumCircuit& circuit, uint32_t q) {
+        uint32_t nqb = circuit.get_num_qubits();
+        if (nqb == 1) {
+          return Qubits{q};
+        } else if (nqb == 2) {
+          return Qubits{q, q+1};
+        } else {
+          return Qubits{q, q+1, q+2};
+        }
+      };
+
       if (unitary_type == MPSS_HAAR) {
         for (size_t i = 0; i < system_size/2 - offset; i++) {
           size_t q1 = 2*i + offset;
           size_t q2 = 2*i + 1 + offset;
           Eigen::Matrix4cd gate = haar_unitary(2);
-          state->evolve(gate, {q1, q2});
+          qc.add_gate(gate, {q1, q2});
         }
       } else if (unitary_type == MPSS_CLIFFORD) {
         for (size_t i = 0; i < system_size/2 - offset; i++) {
           size_t q1 = 2*i + offset;
           size_t q2 = 2*i + 1 + offset;
-          state->random_clifford({q1, q2});
+          qc.random_clifford({q1, q2});
         }
       } else if (unitary_type == MPSS_Z2_CLIFFORD) {
         for (size_t i = 0; i < system_size/2 - offset; i++) {
           size_t q1 = 2*i + offset;
           size_t q2 = 2*i + 1 + offset;
           if (state_type == MPSS_CHP) {
-            z2_table_circuits.apply_random({q1, q2}, *state.get());
+            z2_table_circuits.apply_random({q1, q2}, qc);
           } else {
-            z2_table.apply_random({q1, q2}, *state.get());
+            z2_table.apply_random({q1, q2}, qc);
           }
         }
-      } else if (unitary_type == MPSS_DUAL_CLIFFORD) {
-        auto get_qubits = [](const QuantumCircuit& circuit, uint32_t q) {
-          uint32_t nqb = circuit.get_num_qubits();
-          if (nqb == 1) {
-            return Qubits{q};
-          } else if (nqb == 2) {
-            return Qubits{q, q+1};
-          } else {
-            return Qubits{q, q+1, q+2};
-          }
-        };
+      } else if (unitary_type == MPSS_DUAL_CLIFFORD || unitary_type == MPSS_3_QUBIT) {
+        if (qubits_random) {
+          for (size_t i = 0; i < system_size; i++) {
+            // Select random circuit and random qubits
+            size_t r = randi(0, dual_circuits.size());
+            size_t nqb = dual_circuits[r].get_num_qubits();
+            uint32_t q = randi(0, system_size - nqb + 1);
+            Qubits qubits = get_qubits(dual_circuits[r], q);
 
-        for (size_t i = 0; i < system_size; i++) {
-          // Select random qubit and random qubits
-          uint32_t q = randi(0, system_size - 2);
-          size_t r = randi(0, dual_circuits.size());
-          Qubits qubits = get_qubits(dual_circuits[r], q);
-          if (state_type == MPSS_CHP) {
-            const QuantumCircuit& circuit = dual_circuits[r];
-            state->evolve(circuit, qubits);
-          } else {
-            const Eigen::MatrixXcd& gate = dual_gates[r];
-            state->evolve(gate, qubits);
+            if (state_type == MPSS_CHP) {
+              const QuantumCircuit& circuit = dual_circuits[r];
+              qc.append(circuit, qubits);
+            } else {
+              const Eigen::MatrixXcd& gate = dual_gates[r];
+              qc.add_gate(gate, qubits);
+            }
+          }
+        } else {
+          int layer_offset = randi(0, 3);
+          for (uint32_t q = layer_offset; q < system_size - 2; q += 3) {
+            // Select random circuit and random qubits
+            size_t r = randi(0, dual_circuits.size());
+            Qubits qubits = get_qubits(dual_circuits[r], q);
+
+            if (state_type == MPSS_CHP) {
+              const QuantumCircuit& circuit = dual_circuits[r];
+              qc.append(circuit, qubits);
+            } else {
+              const Eigen::MatrixXcd& gate = dual_gates[r];
+              qc.add_gate(gate, qubits);
+            }
           }
         }
       } else {
@@ -192,25 +214,63 @@ class MatrixProductSimulator : public Simulator {
       }
     }
 
-    void measurement_layer() {
+    void measurement_layer(QuantumCircuit& qc) {
       if (measurement_type == MPSS_PROJECTIVE) {
-        for (uint32_t i = 0; i < system_size-1; i++) {
-          size_t q = randi(0, system_size-1);
-          if (randf() < beta) {
-            if (randf() < p) {
-              state->measure(Measurement({q, q+1}, TWO_QUBIT_PAULI));
-            } else {
-              state->measure(Measurement({q}, ONE_QUBIT_PAULI));
+        if (qubits_random) {
+          for (uint32_t i = 0; i < system_size; i++) {
+            bool applied_XX = randf() < p;
+            size_t nqb = applied_XX ? 2 : 1;
+
+            uint32_t q = randi(0, system_size - nqb + 1);
+
+            if (randf() < beta) {
+              if (applied_XX) {
+                qc.add_measurement(Measurement({q, q+1}, TWO_QUBIT_PAULI));
+              } else {
+                qc.add_measurement(Measurement({q}, ONE_QUBIT_PAULI));
+              }
+            }
+          }
+        } else {
+          int layer_offset = randi(0, 2);
+          for (uint32_t q = layer_offset; q < system_size-1; q += 2) {
+            bool applied_XX = randf() < p;
+            size_t nqb = applied_XX ? 2 : 1;
+
+            if (randf() < beta) {
+              if (applied_XX) {
+                qc.add_measurement(Measurement({q, q+1}, TWO_QUBIT_PAULI));
+              } else {
+                qc.add_measurement(Measurement({q}, ONE_QUBIT_PAULI));
+              }
             }
           }
         }
       } else if (measurement_type == MPSS_WEAK) { 
-        for (uint32_t i = 0; i < system_size; i++) {
-          size_t q = randi(0, system_size-1);
-          if (randf() < p) {
-            state->weak_measure(WeakMeasurement({q, q+1}, beta, TWO_QUBIT_PAULI));
-          } else {
-            state->weak_measure(WeakMeasurement({q}, beta, ONE_QUBIT_PAULI));
+        if (qubits_random) {
+          for (uint32_t i = 0; i < system_size; i++) {
+            bool applied_XX = randf() < p;
+            size_t nqb = applied_XX ? 2 : 1;
+
+            uint32_t q = randi(0, system_size - nqb + 1);
+
+            if (applied_XX) {
+              qc.add_weak_measurement(WeakMeasurement({q, q+1}, beta, TWO_QUBIT_PAULI));
+            } else {
+              qc.add_weak_measurement(WeakMeasurement({q}, beta, ONE_QUBIT_PAULI));
+            }
+          }
+        } else {
+          int layer_offset = randi(0, 2);
+          for (uint32_t q = layer_offset; q < system_size-1; q += 2) {
+            bool applied_XX = randf() < p;
+            size_t nqb = applied_XX ? 2 : 1;
+
+            if (applied_XX) {
+              qc.add_weak_measurement(WeakMeasurement({q, q+1}, beta, TWO_QUBIT_PAULI));
+            } else {
+              qc.add_weak_measurement(WeakMeasurement({q}, beta, ONE_QUBIT_PAULI));
+            }
           }
         }
       } else if (measurement_type == MPSS_NONE) {
@@ -221,16 +281,50 @@ class MatrixProductSimulator : public Simulator {
 	public:
     std::shared_ptr<QuantumState> state;
 
-		MatrixProductSimulator(dataframe::ExperimentParams &params, uint32_t num_threads) : Simulator(params), quantum_sampler(params), z2_table(get_z2_table<Eigen::MatrixXcd>()), dual_circuits(get_dual_cliffords()) {
+		MatrixProductSimulator(dataframe::ExperimentParams &params, uint32_t num_threads) : Simulator(params), quantum_sampler(params), z2_table(get_z2_table<Eigen::MatrixXcd>()) {
       system_size = dataframe::utils::get<int>(params, "system_size");
       beta = dataframe::utils::get<double>(params, "beta");
       p = dataframe::utils::get<double>(params, "p");
+
+      qubits_random = dataframe::utils::get<int>(params, "qubits_random", true);
 
       measurement_type = dataframe::utils::get<int>(params, "measurement_type", MPSS_PROJECTIVE);
       unitary_type = dataframe::utils::get<int>(params, "unitary_type", MPSS_HAAR);
 
       state_type = dataframe::utils::get<int>(params, "state_type", MPSS_MPS);
       sample_entanglement = dataframe::utils::get<int>(params, "sample_entanglement", true);
+
+      auto to_circuit = [](const std::string& s) {
+        PauliString p(s);
+        uint32_t nqb = p.num_qubits;
+        PauliString Z(nqb);
+        Z.set_z(0, 1);
+        QuantumCircuit reduction_circuit = p.transform(Z);
+
+        QuantumCircuit qc(nqb);
+        qc.append(reduction_circuit);
+        qc.sd(0);
+        qc.append(reduction_circuit.adjoint());
+        return qc;
+      };
+
+      auto to_matrix = [](const std::string& s) {
+        PauliString p(s);
+        constexpr std::complex<double> i_pi_over_4 = std::complex<double>(0, 0.78539816339);
+        Eigen::MatrixXcd M = (p.to_matrix()*i_pi_over_4).exp()/std::exp(i_pi_over_4);
+        return M;
+      };
+
+      if (unitary_type == MPSS_DUAL_CLIFFORD) {
+        dual_circuits = get_dual_cliffords();
+      } else if (unitary_type == MPSS_3_QUBIT) {
+        dual_circuits.push_back(to_circuit("ZZZ"));
+        dual_circuits.push_back(to_circuit("XXX"));
+        dual_circuits.push_back(to_circuit("ZXZ"));
+        dual_circuits.push_back(to_circuit("XZX"));
+        dual_circuits.push_back(to_circuit("XYX"));
+        dual_circuits.push_back(to_circuit("YYY"));
+      }
 
       for (size_t i = 0; i < dual_circuits.size(); i++) {
         dual_gates.push_back(dual_circuits[i].to_matrix());
@@ -284,11 +378,14 @@ class MatrixProductSimulator : public Simulator {
     }
 
 		virtual void timesteps(uint32_t num_steps) override {
+      QuantumCircuit qc(system_size);
       for (size_t t = 0; t < num_steps; t++) {
-        unitary_layer();
-        measurement_layer();
+        unitary_layer(qc);
+        measurement_layer(qc);
         offset = !offset;
       }
+
+      state->evolve(qc);
     }
 
     virtual dataframe::SampleMap take_samples() override {

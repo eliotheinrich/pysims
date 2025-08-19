@@ -24,9 +24,9 @@ PartneringSimulator::PartneringSimulator(ExperimentParams &params, uint32_t) : S
 	counts = std::vector<std::vector<uint32_t>>(num_nodes, std::vector<uint32_t>(num_nodes, 0));
 
 
-	partner_graph = Graph<>(2*num_nodes);
-	affinity_graph = Graph<>(2*num_nodes);
-	augmented_graph = Graph<>(2*num_nodes);
+	partner_graph = UndirectedGraph<int>(2*num_nodes);
+	affinity_graph = UndirectedGraph<int, int>(2*num_nodes);
+	augmented_graph = UndirectedGraph<int, int>(2*num_nodes);
 
 	for (uint32_t i = 0; i < num_nodes; i++) {
 		for (uint32_t j = num_nodes; j < 2*num_nodes; j++) {
@@ -43,9 +43,9 @@ PartneringSimulator::PartneringSimulator(ExperimentParams &params, uint32_t) : S
 				affinity = double(d)/num_nodes;
 			}
 
-			affinity_graph.add_weighted_edge(i, j, int(affinity*INT_MAX));
+			affinity_graph.add_edge(i, j, int(affinity*INT_MAX));
 
-			augmented_graph.add_weighted_edge(i, j, 0);
+			augmented_graph.add_edge(i, j, 0);
 		}
 	}
 }

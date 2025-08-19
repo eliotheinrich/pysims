@@ -16,14 +16,14 @@ NetworkCliffordSimulator::NetworkCliffordSimulator(ExperimentParams &params, uin
 	num_partitions = get<int>(params, "num_partition", DEFAULT_NUM_PARTITIONS);
 
 	state = std::make_shared<QuantumCHPState>(system_size);
-	network = Graph<>::scale_free_graph(system_size, alpha);
+	network = UndirectedGraph<int>::scale_free_graph(system_size, alpha);
 }
 
 void NetworkCliffordSimulator::timesteps(uint32_t num_steps) {
 	for (uint32_t k = 0; k < num_steps; k++) {
 		for (uint32_t i = 0; i < system_size; i++) {
 			uint32_t q = rand() % system_size;
-			for (auto const &[j, _] : network.edges[q]) {
+			for (auto const &j : network.edges_of(q)) {
 				if (randf() < p) {
 					std::vector<uint32_t> qubits{q, j};
 					state->random_clifford(qubits);
